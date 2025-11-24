@@ -1,9 +1,11 @@
+import React from "react";
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import {
   Sidebar,
   SidebarFooter,
@@ -54,9 +56,48 @@ import ResumeEditor from "./pages/(ResumeBuilder)/ResumeEditor";
 
 
 
+// const isAuthenticated = () => {
+//   return true;
+// };
+
 const isAuthenticated = () => {
-  return true;
+  const raw = localStorage.getItem("user");
+  if (!raw) return false;
+  try {
+    const parsed = JSON.parse(raw);
+    return !!parsed?.token;
+  } catch {
+    return false;
+  }
 };
+
+// const items = [
+//   {
+//     title: "Home",
+//     url: "/",
+//     icon: Home,
+//   },
+//   {
+//     title: "Inbox",
+//     url: "#",
+//     icon: Inbox,
+//   },
+//   {
+//     title: "Calendar",
+//     url: "#",
+//     icon: Calendar,
+//   },
+//   {
+//     title: "Search",
+//     url: "#",
+//     icon: Search,
+//   },
+//   {
+//     title: "Settings",
+//     url: "#",
+//     icon: Settings,
+//   },
+// ]
 
 const careerMap = [
   {
@@ -180,7 +221,20 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
             asChild
             className="p-5 flex items-center border-2 border-[#FF0000]"
           >
-            <a href={"logout"}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                try {
+                  localStorage.removeItem("user");
+                  localStorage.removeItem("token");
+                } catch {
+                  /* ignore */
+                }
+                window.location.href = "/login";
+                window.location.reload();
+              }}
+            >
               <LogOut color="#FF0000" size={16} />
               <span
                 className="ml-4"
@@ -209,6 +263,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const router = createBrowserRouter([
+    {
+      path: "/",
+      Component: () => <Navigate to="/login" />,   // Redirect to login
+    },
+    {
+      path: "login",
+      Component: () => <Login />,                  // ⬅ LOGIN ROUTE ADDED
+    },
     {
       path: "/",
       Component: () => <Home />,
