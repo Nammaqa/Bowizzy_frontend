@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { Plus, Trash2, ChevronDown, RotateCcw, Upload, X } from "lucide-react";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
+
+
 
 interface CertificateFormProps {
   onNext: (data: any) => void;
@@ -18,6 +22,9 @@ interface Certificate {
   uploadedFile: File | null;
   uploadedFileName: string;
   isExpanded: boolean;
+  uploadedFileUrl?: string;  
+  uploadedFileDeleteToken?: string;
+
 }
 
 export default function CertificateDetailsForm({
@@ -38,6 +45,7 @@ export default function CertificateDetailsForm({
         uploadedFile: null,
         uploadedFileName: "",
         isExpanded: true,
+        
       },
     ]
   );
@@ -172,35 +180,37 @@ export default function CertificateDetailsForm({
     }
   };
 
-  const handleFileUpload = (
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const error = validateFile(file);
-      
-      if (error) {
-        setErrors((prev) => ({ ...prev, [`cert-${index}-file`]: error }));
-        return;
-      }
+    if (!file) return;
 
-      const updated = [...certificates];
-      updated[index] = {
-        ...updated[index],
-        uploadedFile: file,
-        uploadedFileName: file.name,
-      };
-      setCertificates(updated);
-      
-      // Clear file error if valid
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[`cert-${index}-file`];
-        return newErrors;
-      });
+    const error = validateFile(file);
+    if (error) {
+      setErrors((prev) => ({ ...prev, [`cert-${index}-file`]: error }));
+      return;
     }
+
+    // Upload to Cloudinary
+    const result = await uploadToCloudinary(file);
+
+    const updated = [...certificates];
+    updated[index] = {
+      ...updated[index],
+      uploadedFile: file,
+      uploadedFileName: file.name,
+      uploadedFileUrl: result.url,
+      uploadedFileDeleteToken: result.deleteToken,
+    };
+
+    setCertificates(updated);
+
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[`cert-${index}-file`];
+      return newErrors;
+    });
   };
+
 
   const handleFileDrop = (
     index: number,
@@ -233,22 +243,31 @@ export default function CertificateDetailsForm({
     }
   };
 
-  const clearFile = (index: number) => {
+  const clearFile = async (index: number) => {
+    const { uploadedFileDeleteToken } = certificates[index];
+
+    if (uploadedFileDeleteToken) {
+      await deleteFromCloudinary(uploadedFileDeleteToken);
+    }
+
     const updated = [...certificates];
     updated[index] = {
       ...updated[index],
       uploadedFile: null,
       uploadedFileName: "",
+      uploadedFileUrl: "",
+      uploadedFileDeleteToken: "",
     };
+
     setCertificates(updated);
-    
-    // Clear file error
+
     setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[`cert-${index}-file`];
       return newErrors;
     });
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
