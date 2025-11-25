@@ -1,54 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import ProfileStepper from './components/ProfileStepper';
-import PersonalDetailsForm from './components/forms/PersonalDetailsForm';
-import EducationDetailsForm from './components/forms/EducationDetailsForm';
-import ExperienceDetailsForm from './components/forms/ExperienceDetailsForm';
-import ProjectsForm from './components/forms/ProjectsForm';
-import SkillsLinksForm from './components/forms/SkillsLinksForm';
-import CertificationsForm from './components/forms/CertificationsForm';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import ProfileStepper from "./components/ProfileStepper";
+import PersonalDetailsForm from "./components/forms/PersonalDetailsForm";
+import EducationDetailsForm from "./components/forms/EducationDetailsForm";
+import ExperienceDetailsForm from "./components/forms/ExperienceDetailsForm";
+import ProjectsForm from "./components/forms/ProjectsForm";
+import SkillsLinksForm from "./components/forms/SkillsLinksForm";
+import CertificationsForm from "./components/forms/CertificationsForm";
 import { initialResumeData } from "../../types/resume";
-import type { ResumeData } from '../../types/resume';
+import type { ResumeData } from "../../types/resume";
 import DashNav from "@/components/dashnav/dashnav";
-import { getTemplateById } from '@/templates/templateRegistry';
+import { getTemplateById } from "@/templates/templateRegistry";
+import ResumePreviewModal from "./components/ui/ResumePreviewModal";
 
 const steps = [
-  'Personal',
-  'Education',
-  'Experience',
-  'Projects',
-  'Skills & Links',
-  'Certification',
+  "Personal",
+  "Education",
+  "Experience",
+  "Projects",
+  "Skills & Links",
+  "Certification",
 ];
 
 const stepTitles = [
-  'Step 1: Personal Details',
-  'Step 2: Education Details',
-  'Step 3: Experience',
-  'Step 4: Projects',
-  'Step 5: Skill(s) & Link(s)',
-  'Step 6: Certification',
+  "Step 1: Personal Details",
+  "Step 2: Education Details",
+  "Step 3: Experience",
+  "Step 4: Projects",
+  "Step 5: Skill(s) & Link(s)",
+  "Step 6: Certification",
 ];
 
 const nextButtonLabels = [
-  'Proceed to Education',
-  'Proceed to Experience',
-  'Proceed to Projects',
-  'Proceed to Skill(s) & Link(s)',
-  'Proceed to Certification',
-  'Preview Resume',
+  "Proceed to Education",
+  "Proceed to Experience",
+  "Proceed to Projects",
+  "Proceed to Skill(s) & Link(s)",
+  "Proceed to Certification",
+  "Preview Resume",
 ];
 
 export const ResumeEditor: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const templateId = searchParams.get('templateId');
-  const resumeId = searchParams.get('resumeId');
+  const templateId = searchParams.get("templateId");
+  const resumeId = searchParams.get("resumeId");
 
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
-  const [validationErrors, setValidationErrors] = useState<{ [key: string]: boolean }>({});
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   useEffect(() => {
     // Load template
@@ -73,8 +77,8 @@ export const ResumeEditor: React.FC = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Save and preview
-      handleSaveResume();
+      // Last step - Open Preview Modal
+      setShowPreviewModal(true);
     }
   };
 
@@ -86,7 +90,7 @@ export const ResumeEditor: React.FC = () => {
 
   const handleSaveResume = () => {
     // TODO: Save resume to backend
-    console.log('Saving resume:', resumeData);
+    console.log("Saving resume:", resumeData);
     // After save, you can navigate or show success message
   };
 
@@ -180,7 +184,7 @@ export const ResumeEditor: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50 font-['Baloo_2'] overflow-hidden">
       <DashNav heading="Resume Builder" />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden p-4">
         <div className="flex-1 flex flex-col bg-white rounded-lg overflow-hidden">
           {/* Stepper */}
@@ -202,9 +206,7 @@ export const ResumeEditor: React.FC = () => {
                   {stepTitles[currentStep]}
                 </h2>
 
-                <div className="mb-6">
-                  {renderCurrentForm()}
-                </div>
+                <div className="mb-6">{renderCurrentForm()}</div>
 
                 {/* Navigation Buttons */}
                 <div className="flex items-center justify-center gap-4 py-4">
@@ -241,7 +243,7 @@ export const ResumeEditor: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Hide scrollbar styles */}
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
@@ -252,6 +254,13 @@ export const ResumeEditor: React.FC = () => {
           scrollbar-width: none;
         }
       `}</style>
+
+      <ResumePreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        resumeData={resumeData}
+        templateId={templateId}
+      />
     </div>
   );
 };

@@ -190,7 +190,7 @@ export const initialResumeData: ResumeData = {
         location: '',
         workMode: '',
         startDate: '',
-        endDate: '',
+        endDate: '',  
         currentlyWorking: false,
         description: '',
         enabled: true,

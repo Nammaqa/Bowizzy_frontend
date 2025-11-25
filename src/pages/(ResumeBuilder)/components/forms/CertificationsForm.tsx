@@ -17,11 +17,11 @@ const certificateTypes = [
   { value: 'Other', label: 'Other' },
 ];
 
-export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, onChange }) => {
-  // Collapse state for each certificate
+export const CertificationsForm: React.FC<CertificationsFormProps> = ({ 
+  data, 
+  onChange,
+}) => {
   const [collapsedStates, setCollapsedStates] = React.useState<{ [key: string]: boolean }>({});
-
-  // Validation errors state
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
   const toggleCollapse = (id: string) => {
@@ -31,7 +31,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
     }));
   };
 
-  // Validation functions
   const validateCertificateTitle = (value: string) => {
     if (value && !/^[a-zA-Z0-9\s.,-:()]+$/.test(value)) {
       return "Invalid characters in certificate title";
@@ -55,7 +54,7 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
 
   const validateFile = (file: File) => {
     const validTypes = ["application/pdf", "image/jpeg", "image/jpg"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
       return "Only PDF, JPG, and JPEG files are allowed";
@@ -73,7 +72,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
       data.map((cert) => (cert.id === id ? { ...cert, [field]: value } : cert))
     );
 
-    // Validate fields
     if (field === "certificateTitle" && typeof value === "string") {
       const error = validateCertificateTitle(value);
       setErrors((prev) => ({ ...prev, [`cert-${id}-certificateTitle`]: error }));
@@ -104,7 +102,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
         )
       );
       
-      // Clear file error if valid
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[`cert-${id}-file`];
@@ -132,7 +129,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
         )
       );
       
-      // Clear file error if valid
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[`cert-${id}-file`];
@@ -150,7 +146,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
       )
     );
     
-    // Clear file error
     setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[`cert-${id}-file`];
@@ -176,13 +171,11 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
   const removeCertificate = (id: string) => {
     if (data.length > 1) {
       onChange(data.filter((cert) => cert.id !== id));
-      // Clean up collapsed state
       setCollapsedStates(prev => {
         const newState = { ...prev };
         delete newState[id];
         return newState;
       });
-      // Clean up errors for removed certificate
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[`cert-${id}-certificateTitle`];
@@ -269,7 +262,6 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({ data, on
             />
           </div>
 
-          {/* Upload Certificate Image */}
           <div className="mt-4">
             <label className="text-xs text-gray-600 font-medium mb-2 block">
               Upload Certificate Image
