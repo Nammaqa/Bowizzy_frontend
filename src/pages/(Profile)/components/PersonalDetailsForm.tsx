@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 import { ChevronDown, RotateCcw, X } from "lucide-react";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
 
 interface PersonalDetailsFormProps {
   onNext: (data: any) => void;
@@ -28,7 +30,13 @@ export default function PersonalDetailsForm({
     pincode: initialData.pincode || "",
     nationality: initialData.nationality || "",
     passportNumber: initialData.passportNumber || "",
+    uploadedPhotoURL: initialData.uploadedPhotoURL || "",
+    uploadedPublicId: initialData.uploadedPublicId || "",
     profilePhoto: initialData.profilePhoto || null,
+    profilePhotoPreview: initialData.profilePhotoPreview || "",
+    uploadedDeleteToken: initialData.uploadedDeleteToken || "",
+
+
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -112,16 +120,36 @@ export default function PersonalDetailsForm({
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, profilePhoto: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    const previewURL = URL.createObjectURL(file);
+    const prev = formData.profilePhotoPreview;
+    if (prev && typeof prev === "string" && prev.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(prev);
+      } catch {
+        /* ignore */
+      }
     }
+
+    const cloudinaryRes = await uploadToCloudinary(file);
+
+    setFormData((prev) => ({
+      ...prev,
+      profilePhoto: file,
+      profilePhotoPreview: previewURL,
+      uploadedPhotoURL: cloudinaryRes.url,
+      uploadedPublicId: cloudinaryRes.publicId,
+      uploadedDeleteToken: cloudinaryRes.deleteToken || "",
+    }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+
+
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -143,7 +171,7 @@ export default function PersonalDetailsForm({
   const handleRemoveLanguage = (languageToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
-      languages: prev.languages.filter((lang) => lang !== languageToRemove),
+      languages: prev.languages.filter((lang: string) => lang !== languageToRemove),
     }));
   };
 
@@ -252,19 +280,51 @@ export default function PersonalDetailsForm({
                     >
                       {formData.profilePhoto ? (
                         <>
+                          
+
                           <img
-                            src={formData.profilePhoto}
-                            alt="Profile"
+                            src={
+                              formData.profilePhotoPreview ||
+                              (typeof formData.profilePhoto === "string" 
+                                ? `/uploads/${formData.profilePhoto}`
+                                : "")
+                            }
+
                             className="w-full h-full object-cover"
                           />
+
+
                           <button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
+
+                              if (formData.uploadedDeleteToken) {
+                                await deleteFromCloudinary(formData.uploadedDeleteToken);
+                              } else {
+                                console.warn("No delete token available — cannot delete on Cloudinary from FE");
+                              }
+
+                              // Revoke preview URL if it was an object URL
+                              try {
+                                const prev = formData.profilePhotoPreview;
+                                if (prev && typeof prev === "string" && prev.startsWith("blob:")) {
+                                  URL.revokeObjectURL(prev);
+                                }
+                              } catch (e) {
+                                console.warn('Failed to revoke object URL', e);
+                              }
+
                               setFormData((prev) => ({
                                 ...prev,
                                 profilePhoto: null,
+                                profilePhotoPreview: "",
+                                uploadedPhotoURL: "",
+                                uploadedPublicId: "",
+                                uploadedDeleteToken: "",
                               }));
+
+                              if (fileInputRef.current) fileInputRef.current.value = "";
                             }}
                             className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-red-50 z-10"
                           >
@@ -468,7 +528,7 @@ export default function PersonalDetailsForm({
                     </label>
                     <div className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-orange-400 focus-within:border-transparent min-h-[38px] sm:min-h-[42px]">
                       <div className="flex flex-wrap gap-2 items-center">
-                        {formData.languages.map((lang, index) => (
+                        {formData.languages.map((lang: string, index: number) => (
                           <span
                             key={index}
                             className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-gray-100 text-gray-700 rounded-md text-xs sm:text-sm"
@@ -510,9 +570,7 @@ export default function PersonalDetailsForm({
             <div className="flex gap-2 items-center">
               <button
                 type="button"
-                onClick={() =>
-                  setCurrentLocationExpanded(!currentLocationExpanded)
-                }
+                onClick={() => setCurrentLocationExpanded(!currentLocationExpanded)}
                 className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <ChevronDown
@@ -535,10 +593,11 @@ export default function PersonalDetailsForm({
             </div>
           </div>
 
-          {/* Content */}
-          {currentLocationExpanded && (
-            <div className="p-4 sm:p-5 md:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {/* Content */}
+                {currentLocationExpanded && (
+                  <div className="p-4 sm:p-5 md:p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+
                 {/* Address */}
                 <div className="sm:col-span-2 lg:col-span-3">
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">

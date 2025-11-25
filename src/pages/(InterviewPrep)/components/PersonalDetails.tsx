@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Upload, X } from "lucide-react";
+import { useRef } from "react";
 
 interface PersonalDetailsProps {
   formData: any;
@@ -11,6 +12,7 @@ interface PersonalDetailsProps {
 
 const PersonalDetails = ({ formData, setFormData, onNext }: PersonalDetailsProps) => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -27,6 +29,8 @@ const PersonalDetails = ({ formData, setFormData, onNext }: PersonalDetailsProps
   const removePhoto = () => {
     setPhotoPreview(null);
     setFormData({ ...formData, photo: null });
+    // clear file input value so selecting same file works again
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -53,6 +57,7 @@ const PersonalDetails = ({ formData, setFormData, onNext }: PersonalDetailsProps
               <label className="cursor-pointer flex flex-col items-center">
                 <Upload size={32} className="text-gray-400 mb-2" />
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoUpload}
