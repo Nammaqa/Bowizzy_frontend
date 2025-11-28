@@ -9,6 +9,7 @@ import {
   Upload,
 } from "lucide-react";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 
 import {
@@ -39,6 +40,7 @@ interface Certificate {
   isExpanded: boolean;
   uploadedFileUrl?: string;
   uploadedFileType?: string;
+  uploadedFileDeleteToken?: string; // Cloudinary delete token
   certificate_id?: number; // DB ID
 }
 
@@ -223,6 +225,7 @@ export default function CertificationDetailsForm({
           : ""),
       uploadedFileUrl: initial?.uploadedFileUrl || "",
       uploadedFileType: initial?.uploadedFileType || "",
+      uploadedFileDeleteToken: initial?.uploadedFileDeleteToken || "",
     };
     setCertificates(updated);
 
@@ -333,6 +336,7 @@ export default function CertificationDetailsForm({
         uploadedFileName: file.name,
         uploadedFileType: file.type,
         uploadedFileUrl: cloudinaryRes.url, // Store Cloudinary URL
+        uploadedFileDeleteToken: cloudinaryRes.deleteToken || "", // Store delete token
       };
 
       setCertificates(updated);
@@ -377,6 +381,7 @@ export default function CertificationDetailsForm({
         uploadedFileName: file.name,
         uploadedFileType: file.type,
         uploadedFileUrl: cloudinaryRes.url, // Store Cloudinary URL
+        uploadedFileDeleteToken: cloudinaryRes.deleteToken || "", // Store delete token
       };
       setCertificates(updated);
 
@@ -396,6 +401,18 @@ export default function CertificationDetailsForm({
 
   // Handler for removing attached file
   const clearFile = async (index: number) => {
+    const cert = certificates[index];
+
+    try {
+      // Delete from Cloudinary if delete token exists
+      if (cert.uploadedFileDeleteToken) {
+        await deleteFromCloudinary(cert.uploadedFileDeleteToken);
+        console.log("File deleted from Cloudinary");
+      }
+    } catch (error) {
+      console.error("Error deleting file from Cloudinary:", error);
+    }
+
     const updated = [...certificates];
     updated[index] = {
       ...updated[index],
@@ -403,6 +420,7 @@ export default function CertificationDetailsForm({
       uploadedFileName: "",
       uploadedFileUrl: "",
       uploadedFileType: "",
+      uploadedFileDeleteToken: "",
     };
 
     setCertificates(updated);
