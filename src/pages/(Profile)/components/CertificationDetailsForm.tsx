@@ -9,7 +9,7 @@ import {
   Upload,
 } from "lucide-react";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
-import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 import {
   updateCertificateDetails,
@@ -280,7 +280,7 @@ export default function CertificationDetailsForm({
           ...prev,
           [cert.id]: "Deleted successfully!",
         }));
-      } catch (error) {
+      } catch {
         setCertFeedback((prev) => ({
           ...prev,
           [cert.id]: "Failed to delete.",
@@ -322,24 +322,36 @@ export default function CertificationDetailsForm({
       return;
     }
 
-    const updated = [...certificates];
-    updated[index] = {
-      ...updated[index],
-      uploadedFile: file,
-      uploadedFileName: file.name,
-      uploadedFileType: file.type,
-    };
+    try {
+      // Upload to Cloudinary
+      const cloudinaryRes = await uploadToCloudinary(file);
 
-    setCertificates(updated);
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[`cert-${index}-file`];
-      return newErrors;
-    });
+      const updated = [...certificates];
+      updated[index] = {
+        ...updated[index],
+        uploadedFile: file,
+        uploadedFileName: file.name,
+        uploadedFileType: file.type,
+        uploadedFileUrl: cloudinaryRes.url, // Store Cloudinary URL
+      };
+
+      setCertificates(updated);
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`cert-${index}-file`];
+        return newErrors;
+      });
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary:", error);
+      setErrors((prev) => ({
+        ...prev,
+        [`cert-${index}-file`]: "Failed to upload file to cloud.",
+      }));
+    }
   };
 
   // Handler for dropping file (Drag and drop)
-  const handleFileDrop = (
+  const handleFileDrop = async (
     index: number,
     e: React.DragEvent<HTMLDivElement>
   ) => {
@@ -354,20 +366,32 @@ export default function CertificationDetailsForm({
       return;
     }
 
-    const updated = [...certificates];
-    updated[index] = {
-      ...updated[index],
-      uploadedFile: file,
-      uploadedFileName: file.name,
-      uploadedFileType: file.type,
-    };
-    setCertificates(updated);
+    try {
+      // Upload to Cloudinary
+      const cloudinaryRes = await uploadToCloudinary(file);
 
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[`cert-${index}-file`];
-      return newErrors;
-    });
+      const updated = [...certificates];
+      updated[index] = {
+        ...updated[index],
+        uploadedFile: file,
+        uploadedFileName: file.name,
+        uploadedFileType: file.type,
+        uploadedFileUrl: cloudinaryRes.url, // Store Cloudinary URL
+      };
+      setCertificates(updated);
+
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`cert-${index}-file`];
+        return newErrors;
+      });
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary:", error);
+      setErrors((prev) => ({
+        ...prev,
+        [`cert-${index}-file`]: "Failed to upload file to cloud.",
+      }));
+    }
   };
 
   // Handler for removing attached file
@@ -417,7 +441,7 @@ export default function CertificationDetailsForm({
     }
 
     // --- 1. Construct FormData ---
-    let formDataToSend = new FormData();
+    const formDataToSend = new FormData();
 
     // Append all text fields
     formDataToSend.append("certificate_type", cert.certificateType || "");
@@ -432,35 +456,10 @@ export default function CertificationDetailsForm({
 
     // --- 2. Handle File Logic ---
 
-    // If a new local File object exists, append it
-    if (cert.uploadedFile && changes.includes("fileUpload")) {
-      try {
-        // Append the file object directly for the API to handle upload
-        formDataToSend.append("file", cert.uploadedFile);
-      } catch (error) {
-        setCertFeedback((prev) => ({
-          ...prev,
-          [certId]: "File processing failed.",
-        }));
-        setTimeout(
-          () =>
-            setCertFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[certId];
-              return updated;
-            }),
-          3000
-        );
-        return;
-      }
-    }
-
-    // If URL changed (cleared or new value due to save) or if other fields changed, send file_url
-    if (
-      changes.includes("uploadedFileUrl") ||
-      (cert.uploadedFileUrl && !cert.uploadedFile)
-    ) {
-      formDataToSend.append("file_url", cert.uploadedFileUrl || "");
+    // If Cloudinary URL exists, send it to backend
+    if (cert.uploadedFileUrl) {
+      formDataToSend.append("file_url", cert.uploadedFileUrl);
+      console.log("Sending Cloudinary URL to backend:", cert.uploadedFileUrl);
     }
 
     // --- 3. API Call ---
@@ -798,18 +797,17 @@ export default function CertificationDetailsForm({
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Description
                 </label>
-                <textarea
+                <RichTextEditor
                   value={certificate.description}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     handleCertificateChange(
                       index,
                       "description",
-                      e.target.value
+                      value
                     )
                   }
                   placeholder="Provide Description..."
-                  rows={3}
-                  className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm resize-none"
+                  rows={5}
                 />
               </div>
 

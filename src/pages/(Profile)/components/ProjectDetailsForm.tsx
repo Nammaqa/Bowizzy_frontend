@@ -6,6 +6,7 @@ import {
   updateProjectDetails, 
   deleteProject
 } from "@/services/projectService";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 interface ProjectDetailsFormProps {
   onNext: (data: any) => void;
@@ -579,14 +580,13 @@ export default function ProjectDetailsForm({
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Description
                 </label>
-                <textarea
+                <RichTextEditor
                   value={project.description}
-                  onChange={(e) =>
-                    handleProjectChange(index, "description", e.target.value)
+                  onChange={(value) =>
+                    handleProjectChange(index, "description", value)
                   }
                   placeholder="Provide Description of your project.."
-                  rows={4}
-                  className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm resize-none"
+                  rows={6}
                 />
               </div>
 
@@ -595,18 +595,17 @@ export default function ProjectDetailsForm({
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Roles & Responsibilities
                 </label>
-                <textarea
+                <RichTextEditor
                   value={project.rolesAndResponsibilities}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     handleProjectChange(
                       index,
                       "rolesAndResponsibilities",
-                      e.target.value
+                      value
                     )
                   }
                   placeholder="Provide your roles & responsibilities in the project.."
-                  rows={4}
-                  className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm resize-none"
+                  rows={6}
                 />
               </div>
             </div>

@@ -6,6 +6,7 @@ import {
   deleteExperience,
   updateJobRole // NEW IMPORT
 } from "@/services/experienceService";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 interface ExperienceDetailsFormProps {
   onNext: (data: any) => void;
@@ -728,14 +729,13 @@ export default function ExperienceDetailsForm({
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Description
                 </label>
-                <textarea
+                <RichTextEditor
                   value={experience.description}
-                  onChange={(e) =>
-                    handleExperienceChange(index, "description", e.target.value)
+                  onChange={(value) =>
+                    handleExperienceChange(index, "description", value)
                   }
                   placeholder="Provide Description / Projects of your Work"
-                  rows={4}
-                  className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm resize-none"
+                  rows={6}
                 />
               </div>
             </div>
@@ -833,6 +833,7 @@ export default function ExperienceDetailsForm({
                   >
                     <option value="">Select Job Role</option>
                     <option value="Software Engineer">Software Engineer</option>
+                    <option value="Software Developer">Software Developer</option>
                     <option value="Senior Software Engineer">
                       Senior Software Engineer
                     </option>

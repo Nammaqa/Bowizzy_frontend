@@ -8,6 +8,7 @@ import {
   saveLinksDetails,
   deleteLink
 } from "@/services/skillsLinksService";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 interface SkillsLinksFormProps {
   onNext: (data: any) => void;
@@ -497,44 +498,50 @@ export default function SkillsLinksDetailsForm({
 
   // Helper component to render Link fields with Save/Delete
   const renderLinkField = (link: Link, linkIndex: number, label: string, fieldName: keyof Link, dbIdField: keyof Link, isTextArea: boolean = false) => {
-    const urlField = link[fieldName] as string; 
+    const urlField = link[fieldName] as string;
     
-    const isChanged = linkChanges[link.id]?.includes(fieldName);
-    const hasDbId = !!link[dbIdField];
-    
-    const Component = isTextArea ? 'textarea' : 'input';
+    // Check if this is a description field
+    const isDescriptionField = fieldName === 'portfolioDescription' || fieldName === 'publicationDescription';
     
     return (
         <div key={fieldName} className={isTextArea ? "sm:col-span-2" : ""}>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                 {label}
             </label>
-            <div className="relative">
-                <Component
-                    type={isTextArea ? undefined : "text"}
-                    value={urlField} 
-                    onChange={(e) => handleLinkChange(linkIndex, fieldName as string, e.target.value)}
+            {isDescriptionField ? (
+                <RichTextEditor
+                    value={urlField}
+                    onChange={(value) => handleLinkChange(linkIndex, fieldName as string, value)}
                     placeholder={`Enter ${label}...`}
-                    rows={isTextArea ? 3 : undefined}
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${
-                        errors[`link-${linkIndex}-${fieldName}`]
-                            ? "border-red-500 focus:ring-red-400"
-                            : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    } ${isTextArea ? 'resize-none' : ''}`}
+                    rows={5}
                 />
-                
-                {/* Clear Button (Always inside the input/textarea) */}
-                {urlField && (
-                    <button
-                        type="button"
-                        onClick={() => clearLinkField(linkIndex, fieldName as string)}
-                        className={`absolute right-3 p-0.5 hover:bg-gray-100 rounded-full transition-colors cursor-pointer ${isTextArea ? 'top-3' : 'top-1/2 -translate-y-1/2'}`}
-                        title="Clear field"
-                    >
-                        <X className="w-3.5 h-3.5 text-gray-500" />
-                    </button>
-                )}
-            </div>
+            ) : (
+                <div className="relative">
+                    <input
+                        type="text"
+                        value={urlField} 
+                        onChange={(e) => handleLinkChange(linkIndex, fieldName as string, e.target.value)}
+                        placeholder={`Enter ${label}...`}
+                        className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${
+                            errors[`link-${linkIndex}-${fieldName}`]
+                                ? "border-red-500 focus:ring-red-400"
+                                : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
+                        }`}
+                    />
+                    
+                    {/* Clear Button (Always inside the input) */}
+                    {urlField && (
+                        <button
+                            type="button"
+                            onClick={() => clearLinkField(linkIndex, fieldName as string)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            title="Clear field"
+                        >
+                            <X className="w-3.5 h-3.5 text-gray-500" />
+                        </button>
+                    )}
+                </div>
+            )}
             {errors[`link-${linkIndex}-${fieldName}`] && (
                 <p className="mt-1 text-xs text-red-500">
                     {errors[`link-${linkIndex}-${fieldName}`]}
