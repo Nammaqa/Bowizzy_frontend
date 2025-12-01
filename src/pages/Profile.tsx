@@ -16,6 +16,7 @@ import {
 import DashNav from "@/components/dashnav/dashnav";
 import { useNavigate } from "react-router-dom";
 import { getProfileProgress } from "@/services/dashboardServices";
+import { uploadResume } from "@/services/resumeServices";
 
 const items = [
   { title: "Personal Details", Icon: User, step: 0 },
@@ -141,11 +142,36 @@ export default function Profile() {
   };
 
   const handleSubmit = async () => {
-    if (selectedFile) {
-      console.log("Submitting file:", selectedFile.name);
-      navigate("/profile/parsing");
+  if (!selectedFile) return;
+
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.user_id;
+    const token = user?.token;
+
+    if (!userId || !token) {
+      alert("User not logged in");
+      return;
     }
-  };
+
+    console.log("Uploading resume to server…");
+
+    const response = await uploadResume(userId, selectedFile, token);
+
+    //  If server upload SUCCESS → go to Parsing Steps
+    if (response.status === 200 || response.status === 201) {
+      navigate("/profile/parsing", { state: { file: selectedFile, uploadSuccess: true }});
+    }
+
+  } catch (error) {
+    console.error("Upload failed →", error);
+
+    //  On failure → also go to parsing page but show FAILED UI
+    navigate("/profile/parsing", { state: { uploadSuccess: false }});
+  }
+};
+
+
 
   const handleBrowseClick = () => {
     document.getElementById("file-upload-input").click();

@@ -40,65 +40,44 @@ export default function ParsingSteps() {
   };
 
   useEffect(() => {
-    // Optional: Validate that user came from file upload
-    // For now, we'll proceed even without a file
-    const uploadedFile = location.state?.file;
-    
-    if (!uploadedFile) {
-      // If no file found, redirect back to profile page
-      console.warn("No file found. Redirecting to profile page.");
-      // setTimeout(() => {
-      //   navigate("/profile", { replace: true });
-      // }, 1000);
-      // return;
-    }
+  const uploadSuccess = location.state?.uploadSuccess;
 
-    // Start the animation sequence
-    const interval = setInterval(() => {
-      setCurrentStepIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1;
-        
-        if (nextIndex < steps.length) {
-          // Simulate step execution
-          const success = simulateStepExecution(nextIndex);
-          
-          if (!success) {
-            // Step failed
-            setSteps((prevSteps) =>
-              prevSteps.map((step, index) =>
-                index === nextIndex ? { ...step, failed: true } : step
-              )
-            );
-            setParsingError("Failed to parse resume file. The file may be corrupted or in an unsupported format.");
-            clearInterval(interval);
-            return nextIndex;
-          }
-          
-          // Mark current step as completed
-          setSteps((prevSteps) =>
-            prevSteps.map((step, index) =>
-              index === nextIndex ? { ...step, completed: true } : step
-            )
-          );
-          return nextIndex;
-        } else {
-          // All steps completed
-          clearInterval(interval);
-          
-          // Navigate to profile form after a short delay
-          setTimeout(() => {
-            // TODO: In future, pass parsed data here
-            // navigate("/profile/form", { state: { parsedData: extractedData } });
-            navigate("/profile/form");
-          }, 500);
-          
-          return prevIndex;
-        }
-      });
-    }, 800); // 0.8 seconds per step (10 steps = 8 seconds total)
+  // Step-1: Uploading status
+  setSteps(prev =>
+    prev.map((s, i) =>
+      i === 0 
+        ? { ...s, completed: uploadSuccess, failed: !uploadSuccess } 
+        : s
+    )
+  );
 
-    return () => clearInterval(interval);
-  }, [navigate, location.state]);
+  if (!uploadSuccess) {
+    setParsingError(" Resume upload failed — resume not accepted by server.");
+    return; 
+  }
+
+  // Continue previous parsing animation...
+  const interval = setInterval(() => {
+    setCurrentStepIndex(prev => {
+      const next = prev + 1;
+      if (next < steps.length) {
+        setSteps(prevSteps =>
+          prevSteps.map((step, i) =>
+            i === next ? { ...step, completed: true } : step
+          )
+        );
+        return next;
+      } else {
+        clearInterval(interval);
+        navigate("/profile/form");
+      }
+      return prev;
+    });
+  }, 800);
+
+  return () => clearInterval(interval);
+}, []);
+
 
   const handleRetry = () => {
     // Reset state and try again
@@ -115,8 +94,8 @@ export default function ParsingSteps() {
       <DashNav heading="Profile" />
 
       <div className="flex-1 bg-gray-50 overflow-hidden">
-        <div className="bg-white rounded-lg m-3 md:m-5 h-[calc(100vh-110px)] flex flex-col overflow-hidden">
-          <div className="flex-1 max-w-2xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col justify-center py-6 overflow-auto">
+        <div className="bg-white rounded-lg m-3 md:m-5 h-[calc(100vh-110px)] flex flex-col overflow-hidden hide-scrollbar">
+          <div className="flex-1 max-w-2xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col justify-center py-6 overflow-auto hide-scrollbar">
             <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-3 text-center">
               {parsingError ? "Processing Failed" : "Processing Your Resume"}
             </h1>

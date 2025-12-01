@@ -225,9 +225,9 @@ export default function PersonalDetailsForm({
       // Immediately save to backend with cloudinary URL
       if (personalDetailsId) {
         const payload = {
-          uploadedPhotoURL: cloudinaryRes.url,
+          profile_photo_url: cloudinaryRes.url,
         };
-        console.log("Updating profile photo with payload:", payload);
+        // console.log("Updating profile photo with payload:", payload);
         await updatePersonalDetails(userId, token, personalDetailsId, payload);
       }
 
