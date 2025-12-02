@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import type { ResumeData } from "@/types/resume";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { exportPagesAsPdf } from "@/lib/pdfExport";
 
 interface ModernProfessionalTemplateProps {
   data: ResumeData;
@@ -1618,6 +1619,8 @@ export const ModernProfessionalTemplate: React.FC<
     setCurrentPage(0);
   }, [leftSections, rightSections]);
 
+  // PDF export is handled by `exportPagesAsPdf` in `src/lib/pdfExport.ts`
+
   // -------- RENDER A SINGLE PAGE (web preview) --------
 
   const renderPage = (pageIndex: number) => {
@@ -1845,6 +1848,22 @@ export const ModernProfessionalTemplate: React.FC<
         >
           Page {currentPage + 1} of {totalPages}
         </span>
+        <button
+          onClick={() => exportPagesAsPdf(renderPage, totalPages)}
+          style={{
+            padding: "0.6rem 1.2rem",
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "none",
+            borderRadius: "0.375rem",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            marginLeft: "0.5rem",
+          }}
+        >
+          Download PDF
+        </button>
       </div>
     </div>
   );

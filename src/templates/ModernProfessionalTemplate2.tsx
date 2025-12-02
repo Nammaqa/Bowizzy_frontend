@@ -7,9 +7,7 @@ import React, {
 } from "react";
 import type { ResumeData } from "@/types/resume";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { createRoot } from "react-dom/client";
+import { exportPagesAsPdf } from "@/lib/pdfExport";
 
 interface ModernProfessionalTemplateProps {
   data: ResumeData;
@@ -1691,60 +1689,7 @@ export const ModernProfessionalTemplate: React.FC<
     setCurrentPage(0);
   }, [leftSections, rightSections]);
 
-  // -------- HTML2CANVAS + jsPDF DOWNLOAD (current preview page) --------
-
-const handleDownloadPDF = async () => {
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-
-  for (let i = 0; i < totalPages; i++) {
-    const temp = document.createElement("div");
-    temp.style.width = "210mm";
-    temp.style.minHeight = "297mm";
-    temp.style.padding = "0";
-    temp.style.position = "absolute";
-    temp.style.left = "-9999px";
-    temp.style.top = "0";
-    temp.style.background = "white";
-    document.body.appendChild(temp);
-
-    // Render the page inside a wrapper
-    const wrapper = document.createElement("div");
-    temp.appendChild(wrapper);
-
-    // Convert React element to DOM by rendering temporarily
-    const pageElement = renderPage(i);
-
-    const container = document.createElement("div");
-    wrapper.appendChild(container);
-
-    // Render using ReactDOM
-    // IMPORTANT
-    // You MUST import:  import { createRoot } from "react-dom/client";
-    const root = window.__tempRoot || createRoot(container);
-    window.__tempRoot = root;
-    root.render(pageElement);
-
-    // Wait a tick for layout
-    await new Promise((res) => setTimeout(res, 50));
-
-    const canvas = await html2canvas(wrapper, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-    const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-    if (i !== 0) pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
-
-    document.body.removeChild(temp);
-  }
-
-  pdf.save("resume.pdf");
-};
+  // PDF export is handled by `exportPagesAsPdf` in `src/lib/pdfExport.ts`
 
 
 
@@ -1975,7 +1920,7 @@ const handleDownloadPDF = async () => {
         </span>
 
         <button
-          onClick={handleDownloadPDF}
+          onClick={() => exportPagesAsPdf(renderPage, totalPages)}
           style={{
             padding: "0.6rem 1.2rem",
             backgroundColor: "#4F46E5",
