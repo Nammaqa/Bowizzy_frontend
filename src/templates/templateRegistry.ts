@@ -1,5 +1,6 @@
-import ModernProfessionalTemplate from '../pages/(ResumeBuilder)/templates/ModernProfessional';
+// import ModernProfessionalTemplate from '../pages/(ResumeBuilder)/templates/ModernProfessional';
 import ModernProfessionalTemplate2 from './ModernProfessionalTemplate2';
+import ModernProfessionalTemplate from './ModernProfessionalTemplate';
 export interface TemplateInfo {
   id: string;
   name: string;
