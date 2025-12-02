@@ -6,7 +6,6 @@ import React, {
   useRef,
 } from "react";
 import type { ResumeData } from "@/types/resume";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { exportPagesAsPdf } from "@/lib/pdfExport";
 
 interface ModernProfessionalTemplateProps {
@@ -17,469 +16,6 @@ interface Section {
   key: string;
   content: React.ReactNode;
 }
-
-// ---------------- PDF STYLES (for react-pdf) ----------------
-
-const pdfStyles = StyleSheet.create({
-  page: {
-    paddingTop: 28,
-    paddingBottom: 28,
-    paddingHorizontal: 32,
-    flexDirection: "column",
-    fontSize: 10,
-    fontFamily: "Helvetica",
-  },
-  headerBoxWrapper: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  headerBox: {
-    borderWidth: 1,
-    borderColor: "#7C3AED", // purple border
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    minWidth: 220,
-    alignItems: "center",
-  },
-  headerName: {
-    fontSize: 18,
-    fontWeight: 700,
-    textTransform: "uppercase",
-  },
-  headerTitle: {
-    fontSize: 10,
-    marginTop: 4,
-  },
-  contentRow: {
-    flexDirection: "row",
-    flexGrow: 1,
-  },
-  left: {
-    width: "35%",
-    paddingRight: 12,
-    borderRightWidth: 1,
-    borderRightColor: "#111827", // vertical divider
-  },
-  right: {
-    width: "65%",
-    paddingLeft: 16,
-  },
-  section: {
-    marginBottom: 10,
-  },
-  heading: {
-    fontSize: 11,
-    fontWeight: 700,
-    marginBottom: 4,
-    textTransform: "uppercase",
-  },
-  subHeading: {
-    fontSize: 10,
-    fontWeight: 600,
-    marginBottom: 2,
-  },
-  text: {
-    fontSize: 9,
-    marginBottom: 2,
-  },
-  mutedText: {
-    fontSize: 9,
-    marginBottom: 2,
-    color: "#4B5563",
-  },
-});
-
-// ---------------- PDF DOCUMENT (for download via react-pdf if needed) ----------------
-
-export const ResumePDF: React.FC<{ data: ResumeData }> = ({ data }) => {
-  const fullName = [
-    data.personal.firstName,
-    data.personal.middleName,
-    data.personal.lastName,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const formatMonthYear = (dateStr?: string) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-    });
-  };
-
-  const buildAddress = () => {
-    const parts: string[] = [];
-    if (data.personal.address) parts.push(data.personal.address);
-    if (data.personal.city) parts.push(data.personal.city);
-    if (data.personal.state) parts.push(data.personal.state);
-    if (data.personal.pincode) parts.push(data.personal.pincode);
-    return parts.join(", ");
-  };
-
-  const address = buildAddress();
-
-  const jobTitle =
-    data.experience.jobRole ||
-    data.experience.workExperiences?.[0]?.jobTitle ||
-    "";
-
-  return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page} wrap>
-        {/* HEADER / NAME BOX */}
-        <View style={pdfStyles.headerBoxWrapper}>
-          <View style={pdfStyles.headerBox}>
-            <Text style={pdfStyles.headerName}>{fullName}</Text>
-            {jobTitle ? (
-              <Text style={pdfStyles.headerTitle}>{jobTitle}</Text>
-            ) : null}
-          </View>
-        </View>
-
-        {/* CONTENT ROW: LEFT + RIGHT */}
-        <View style={pdfStyles.contentRow}>
-          {/* LEFT COLUMN - PDF (About, Contact, Skills, Languages, Links) */}
-          <View style={pdfStyles.left}>
-            {/* ABOUT ME */}
-            {data.personal.aboutCareerObjective && (
-              <View style={pdfStyles.section}>
-                <Text style={pdfStyles.heading}>About Me</Text>
-                <Text style={pdfStyles.text}>
-                  {data.personal.aboutCareerObjective}
-                </Text>
-              </View>
-            )}
-
-            {/* CONTACT */}
-            {(address ||
-              data.personal.email ||
-              data.personal.mobileNumber) && (
-              <View style={pdfStyles.section}>
-                <Text style={pdfStyles.heading}>Contact</Text>
-                {address ? (
-                  <Text style={pdfStyles.text}>Address: {address}</Text>
-                ) : null}
-                {data.personal.email ? (
-                  <Text style={pdfStyles.text}>Email: {data.personal.email}</Text>
-                ) : null}
-                {data.personal.mobileNumber ? (
-                  <Text style={pdfStyles.text}>
-                    Phone: {data.personal.mobileNumber}
-                  </Text>
-                ) : null}
-              </View>
-            )}
-
-            {/* SKILLS */}
-            {data.skillsLinks.skills &&
-              data.skillsLinks.skills.some(
-                (s) => s.enabled && s.skillName.trim()
-              ) && (
-                <View style={pdfStyles.section}>
-                  <Text style={pdfStyles.heading}>Skills</Text>
-                  {data.skillsLinks.skills
-                    .filter((s) => s.enabled && s.skillName.trim())
-                    .map((s, i) => (
-                      <Text key={i} style={pdfStyles.text}>
-                        • {s.skillName}
-                        {s.skillLevel ? ` (${s.skillLevel})` : ""}
-                      </Text>
-                    ))}
-                </View>
-              )}
-
-            {/* LANGUAGES */}
-            {data.personal.languagesKnown &&
-              data.personal.languagesKnown.length > 0 && (
-                <View style={pdfStyles.section}>
-                  <Text style={pdfStyles.heading}>Languages</Text>
-                  {data.personal.languagesKnown.map((lang, i) => (
-                    <Text key={i} style={pdfStyles.text}>
-                      • {lang}
-                    </Text>
-                  ))}
-                </View>
-              )}
-
-            {/* LINKS */}
-            {data.skillsLinks.linksEnabled &&
-              (data.skillsLinks.links.linkedinProfile ||
-                data.skillsLinks.links.githubProfile ||
-                data.skillsLinks.links.portfolioUrl) && (
-                <View style={pdfStyles.section}>
-                  <Text style={pdfStyles.heading}>Links</Text>
-                  {data.skillsLinks.links.linkedinEnabled &&
-                    data.skillsLinks.links.linkedinProfile && (
-                      <View>
-                        <Text style={pdfStyles.subHeading}>LinkedIn</Text>
-                        <Text style={pdfStyles.mutedText}>
-                          {data.skillsLinks.links.linkedinProfile}
-                        </Text>
-                      </View>
-                    )}
-                  {data.skillsLinks.links.githubEnabled &&
-                    data.skillsLinks.links.githubProfile && (
-                      <View>
-                        <Text style={pdfStyles.subHeading}>GitHub</Text>
-                        <Text style={pdfStyles.mutedText}>
-                          {data.skillsLinks.links.githubProfile}
-                        </Text>
-                      </View>
-                    )}
-                  {data.skillsLinks.links.portfolioEnabled &&
-                    data.skillsLinks.links.portfolioUrl && (
-                      <View>
-                        <Text style={pdfStyles.subHeading}>Portfolio</Text>
-                        <Text style={pdfStyles.mutedText}>
-                          {data.skillsLinks.links.portfolioUrl}
-                        </Text>
-                      </View>
-                    )}
-                </View>
-              )}
-          </View>
-
-          {/* RIGHT COLUMN - PDF */}
-          <View style={pdfStyles.right}>
-            {/* EDUCATION */}
-            {(data.education.higherEducationEnabled &&
-              data.education.higherEducation.length > 0) ||
-            (data.education.preUniversityEnabled &&
-              data.education.preUniversity.instituteName) ||
-            (data.education.sslcEnabled &&
-              data.education.sslc.instituteName) ? (
-              <View style={pdfStyles.section} wrap>
-                <Text style={pdfStyles.heading}>Education</Text>
-
-                {data.education.higherEducationEnabled &&
-                  data.education.higherEducation.map((edu, i) => (
-                    <View key={edu.id || i} wrap>
-                      <Text style={pdfStyles.subHeading}>
-                        {edu.degree}
-                        {edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
-                      </Text>
-                      {edu.instituteName && (
-                        <Text style={pdfStyles.mutedText}>
-                          {edu.instituteName}
-                        </Text>
-                      )}
-                      {(edu.startYear || edu.endYear) && (
-                        <Text style={pdfStyles.mutedText}>
-                          {edu.startYear}
-                          {edu.endYear ? ` - ${edu.endYear}` : ""}
-                        </Text>
-                      )}
-                      {edu.universityBoard && (
-                        <Text style={pdfStyles.mutedText}>
-                          {edu.universityBoard}
-                        </Text>
-                      )}
-                      {edu.result && edu.resultFormat && (
-                        <Text style={pdfStyles.mutedText}>
-                          {edu.resultFormat}: {edu.result}
-                        </Text>
-                      )}
-                    </View>
-                  ))}
-
-                {data.education.preUniversityEnabled &&
-                  data.education.preUniversity.instituteName && (
-                    <View wrap>
-                      <Text style={pdfStyles.subHeading}>
-                        Pre-University / 12th
-                        {data.education.preUniversity.subjectStream
-                          ? ` (${data.education.preUniversity.subjectStream})`
-                          : ""}
-                      </Text>
-                      <Text style={pdfStyles.mutedText}>
-                        {data.education.preUniversity.instituteName}
-                      </Text>
-                      {data.education.preUniversity.yearOfPassing && (
-                        <Text style={pdfStyles.mutedText}>
-                          {data.education.preUniversity.yearOfPassing}
-                        </Text>
-                      )}
-                    </View>
-                  )}
-
-                {data.education.sslcEnabled &&
-                  data.education.sslc.instituteName && (
-                    <View wrap>
-                      <Text style={pdfStyles.subHeading}>SSLC / 10th</Text>
-                      <Text style={pdfStyles.mutedText}>
-                        {data.education.sslc.instituteName}
-                      </Text>
-                      {data.education.sslc.yearOfPassing && (
-                        <Text style={pdfStyles.mutedText}>
-                          {data.education.sslc.yearOfPassing}
-                        </Text>
-                      )}
-                    </View>
-                  )}
-              </View>
-            ) : null}
-
-            {/* EXPERIENCE */}
-            {data.experience.workExperiences &&
-              data.experience.workExperiences.some(
-                (exp) => exp.enabled && (exp.companyName || exp.jobTitle)
-              ) && (
-                <View style={pdfStyles.section} wrap>
-                  <Text style={pdfStyles.heading}>Experience</Text>
-                  {data.experience.workExperiences
-                    .filter(
-                      (exp) => exp.enabled && (exp.companyName || exp.jobTitle)
-                    )
-                    .map((exp, i) => (
-                      <View key={exp.id || i} wrap>
-                        {exp.jobTitle && (
-                          <Text style={pdfStyles.subHeading}>
-                            {exp.jobTitle}
-                          </Text>
-                        )}
-                        {exp.companyName && (
-                          <Text style={pdfStyles.mutedText}>
-                            {exp.companyName}
-                            {exp.location ? ` | ${exp.location}` : ""}
-                          </Text>
-                        )}
-                        {(exp.startDate ||
-                          exp.endDate ||
-                          exp.currentlyWorking) && (
-                          <Text style={pdfStyles.mutedText}>
-                            {exp.startDate
-                              ? formatMonthYear(exp.startDate)
-                              : ""}{" "}
-                            -{" "}
-                            {exp.currentlyWorking
-                              ? "Present"
-                              : exp.endDate
-                              ? formatMonthYear(exp.endDate)
-                              : ""}
-                          </Text>
-                        )}
-                        {exp.description &&
-                          exp.description.split("•").map((line, j) =>
-                            line.trim() ? (
-                              <Text key={j} style={pdfStyles.text} wrap>
-                                • {line.trim()}
-                              </Text>
-                            ) : null
-                          )}
-                      </View>
-                    ))}
-                </View>
-              )}
-
-            {/* PROJECTS */}
-            {data.projects &&
-              data.projects.some((proj) => proj.enabled && proj.projectTitle) && (
-                <View style={pdfStyles.section} wrap>
-                  <Text style={pdfStyles.heading}>Projects</Text>
-                  {data.projects
-                    .filter((proj) => proj.enabled && proj.projectTitle)
-                    .map((proj, i) => (
-                      <View key={proj.id || i} wrap>
-                        <Text style={pdfStyles.subHeading}>
-                          {proj.projectTitle}
-                        </Text>
-                        {proj.projectType && (
-                          <Text style={pdfStyles.mutedText}>
-                            {proj.projectType}
-                          </Text>
-                        )}
-                        {(proj.startDate ||
-                          proj.endDate ||
-                          proj.currentlyWorking) && (
-                          <Text style={pdfStyles.mutedText}>
-                            {proj.startDate
-                              ? formatMonthYear(proj.startDate)
-                              : ""}{" "}
-                            -{" "}
-                            {proj.currentlyWorking
-                              ? "Present"
-                              : proj.endDate
-                              ? formatMonthYear(proj.endDate)
-                              : ""}
-                          </Text>
-                        )}
-                        {proj.description && (
-                          <Text style={pdfStyles.text}>{proj.description}</Text>
-                        )}
-                      </View>
-                    ))}
-                </View>
-              )}
-
-            {/* CERTIFICATIONS */}
-            {data.certifications &&
-              data.certifications.some(
-                (cert) => cert.enabled && cert.certificateTitle
-              ) && (
-                <View style={pdfStyles.section} wrap>
-                  <Text style={pdfStyles.heading}>Certifications</Text>
-                  {data.certifications
-                    .filter((cert) => cert.enabled && cert.certificateTitle)
-                    .map((cert, i) => (
-                      <View key={cert.id || i} wrap>
-                        <Text style={pdfStyles.subHeading}>
-                          {cert.certificateTitle}
-                        </Text>
-                        {cert.providedBy && (
-                          <Text style={pdfStyles.mutedText}>
-                            {cert.providedBy}
-                          </Text>
-                        )}
-                        {cert.date && (
-                          <Text style={pdfStyles.mutedText}>
-                            {formatMonthYear(cert.date)}
-                          </Text>
-                        )}
-                      </View>
-                    ))}
-                </View>
-              )}
-
-            {/* PERSONAL DETAILS */}
-            {(data.personal.dateOfBirth ||
-              data.personal.gender ||
-              data.personal.nationality ||
-              data.personal.passportNumber) && (
-              <View style={pdfStyles.section} wrap>
-                <Text style={pdfStyles.heading}>Personal Details</Text>
-                {data.personal.dateOfBirth && (
-                  <Text style={pdfStyles.text}>
-                    Date of Birth:{" "}
-                    {new Date(
-                      data.personal.dateOfBirth
-                    ).toLocaleDateString()}
-                  </Text>
-                )}
-                {data.personal.gender && (
-                  <Text style={pdfStyles.text}>
-                    Gender: {data.personal.gender}
-                  </Text>
-                )}
-                {data.personal.nationality && (
-                  <Text style={pdfStyles.text}>
-                    Nationality: {data.personal.nationality}
-                  </Text>
-                )}
-                {data.personal.passportNumber && (
-                  <Text style={pdfStyles.text}>
-                    Passport: {data.personal.passportNumber}
-                  </Text>
-                )}
-              </View>
-            )}
-          </View>
-        </View>
-      </Page>
-    </Document>
-  );
-};
 
 // ---------------- WEB PREVIEW (multi-page A4) + HTML2CANVAS DOWNLOAD ----------------
 
@@ -926,10 +462,11 @@ export const ModernProfessionalTemplate: React.FC<
       (data.education.higherEducationEnabled &&
         data.education.higherEducation.length > 0)
     ) {
+      // Push a header for Education
       sections.push({
-        key: "right-education",
+        key: "right-education-header",
         content: (
-          <div>
+          <div style={{ marginTop: "0.75rem" }}>
             <h3
               style={{
                 fontSize: "0.9rem",
@@ -943,185 +480,201 @@ export const ModernProfessionalTemplate: React.FC<
             >
               Education
             </h3>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
-            >
-              {data.education.higherEducationEnabled &&
-                data.education.higherEducation.map((edu, idx) => (
-                  <div key={edu.id || idx}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "rgb(17, 24, 39)",
-                        }}
-                      >
-                        {edu.degree}{" "}
-                        {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}
-                      </p>
-                      {(edu.startYear || edu.endYear) && (
-                        <span
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "rgb(75, 85, 99)",
-                          }}
-                        >
-                          {edu.startYear} {edu.endYear && `- ${edu.endYear}`}
-                        </span>
-                      )}
-                    </div>
-                    {edu.instituteName && (
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "rgb(55, 65, 81)",
-                          marginBottom: "0.15rem",
-                        }}
-                      >
-                        {edu.instituteName}
-                      </p>
-                    )}
-                    {edu.universityBoard && (
-                      <p
-                        style={{
-                          fontSize: "0.7rem",
-                          color: "rgb(75, 85, 99)",
-                        }}
-                      >
-                        {edu.universityBoard}
-                      </p>
-                    )}
-                    {edu.result && edu.resultFormat && (
-                      <p
-                        style={{
-                          fontSize: "0.7rem",
-                          color: "rgb(75, 85, 99)",
-                          marginTop: "0.2rem",
-                        }}
-                      >
-                        {edu.resultFormat}: {edu.result}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              {data.education.preUniversityEnabled &&
-                data.education.preUniversity.instituteName && (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "rgb(17, 24, 39)",
-                        }}
-                      >
-                        Pre-University / 12th{" "}
-                        {data.education.preUniversity.subjectStream &&
-                          `(${data.education.preUniversity.subjectStream})`}
-                      </p>
-                      {data.education.preUniversity.yearOfPassing && (
-                        <span
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "rgb(75, 85, 99)",
-                          }}
-                        >
-                          {data.education.preUniversity.yearOfPassing}
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "rgb(55, 65, 81)",
-                        marginBottom: "0.15rem",
-                      }}
-                    >
-                      {data.education.preUniversity.instituteName}
-                    </p>
-                    {data.education.preUniversity.boardType && (
-                      <p
-                        style={{
-                          fontSize: "0.7rem",
-                          color: "rgb(75, 85, 99)",
-                        }}
-                      >
-                        {data.education.preUniversity.boardType}
-                      </p>
-                    )}
-                  </div>
-                )}
-              {data.education.sslcEnabled &&
-                data.education.sslc.instituteName && (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "rgb(17, 24, 39)",
-                        }}
-                      >
-                        SSLC / 10th
-                      </p>
-                      {data.education.sslc.yearOfPassing && (
-                        <span
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "rgb(75, 85, 99)",
-                          }}
-                        >
-                          {data.education.sslc.yearOfPassing}
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "rgb(55, 65, 81)",
-                        marginBottom: "0.15rem",
-                      }}
-                    >
-                      {data.education.sslc.instituteName}
-                    </p>
-                    {data.education.sslc.boardType && (
-                      <p
-                        style={{
-                          fontSize: "0.7rem",
-                          color: "rgb(75, 85, 99)",
-                        }}
-                      >
-                        {data.education.sslc.boardType}
-                      </p>
-                    )}
-                  </div>
-                )}
-            </div>
           </div>
         ),
       });
+
+      // Higher education entries as separate sections
+      if (data.education.higherEducationEnabled) {
+        data.education.higherEducation.forEach((edu, idx) => {
+          sections.push({
+            key: `right-edu-${idx}`,
+            content: (
+              <div key={edu.id || idx}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    marginBottom: "0.2rem",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      color: "rgb(17, 24, 39)",
+                    }}
+                  >
+                    {edu.degree} {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}
+                  </p>
+                  {(edu.startYear || edu.endYear) && (
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "rgb(75, 85, 99)",
+                      }}
+                    >
+                      {edu.startYear} {edu.endYear && `- ${edu.endYear}`}
+                    </span>
+                  )}
+                </div>
+                {edu.instituteName && (
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "rgb(55, 65, 81)",
+                      marginBottom: "0.15rem",
+                    }}
+                  >
+                    {edu.instituteName}
+                  </p>
+                )}
+                {edu.universityBoard && (
+                  <p
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "rgb(75, 85, 99)",
+                    }}
+                  >
+                    {edu.universityBoard}
+                  </p>
+                )}
+                {edu.result && edu.resultFormat && (
+                  <p
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "rgb(75, 85, 99)",
+                      marginTop: "0.2rem",
+                    }}
+                  >
+                    {edu.resultFormat}: {edu.result}
+                  </p>
+                )}
+              </div>
+            ),
+          });
+        });
+      }
+
+      // Pre-university as its own section
+      if (
+        data.education.preUniversityEnabled &&
+        data.education.preUniversity.instituteName
+      ) {
+        sections.push({
+          key: "right-preuniversity",
+          content: (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "rgb(17, 24, 39)",
+                  }}
+                >
+                  Pre-University / 12th {data.education.preUniversity.subjectStream && `(${data.education.preUniversity.subjectStream})`}
+                </p>
+                {data.education.preUniversity.yearOfPassing && (
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "rgb(75, 85, 99)",
+                    }}
+                  >
+                    {data.education.preUniversity.yearOfPassing}
+                  </span>
+                )}
+              </div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "rgb(55, 65, 81)",
+                  marginBottom: "0.15rem",
+                }}
+              >
+                {data.education.preUniversity.instituteName}
+              </p>
+              {data.education.preUniversity.boardType && (
+                <p
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "rgb(75, 85, 99)",
+                  }}
+                >
+                  {data.education.preUniversity.boardType}
+                </p>
+              )}
+            </div>
+          ),
+        });
+      }
+
+      // SSLC as its own section
+      if (data.education.sslcEnabled && data.education.sslc.instituteName) {
+        sections.push({
+          key: "right-sslc",
+          content: (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "rgb(17, 24, 39)",
+                  }}
+                >
+                  SSLC / 10th
+                </p>
+                {data.education.sslc.yearOfPassing && (
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "rgb(75, 85, 99)",
+                    }}
+                  >
+                    {data.education.sslc.yearOfPassing}
+                  </span>
+                )}
+              </div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "rgb(55, 65, 81)",
+                  marginBottom: "0.15rem",
+                }}
+              >
+                {data.education.sslc.instituteName}
+              </p>
+              {data.education.sslc.boardType && (
+                <p
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "rgb(75, 85, 99)",
+                  }}
+                >
+                  {data.education.sslc.boardType}
+                </p>
+              )}
+            </div>
+          ),
+        });
+      }
     }
 
     // EXPERIENCE
@@ -1157,7 +710,7 @@ export const ModernProfessionalTemplate: React.FC<
       );
 
       exps.forEach((exp, idx) => {
-        const descChunks = splitText(exp.description, 700);
+        const descChunks = splitText(exp.description, 300);
 
         sections.push({
           key: `right-experience-${idx}-0`,
@@ -1294,7 +847,7 @@ export const ModernProfessionalTemplate: React.FC<
       );
 
       projs.forEach((proj, idx) => {
-        const descChunks = splitText(proj.description, 700);
+        const descChunks = splitText(proj.description, 300);
 
         sections.push({
           key: `right-project-${idx}-0`,
@@ -1376,7 +929,7 @@ export const ModernProfessionalTemplate: React.FC<
                       lineHeight: "1.5",
                     }}
                   >
-                    {proj.rolesResponsibilities}
+                    {splitText(proj.rolesResponsibilities, 300)[0]}
                   </p>
                 </div>
               )}
@@ -1403,16 +956,43 @@ export const ModernProfessionalTemplate: React.FC<
             ),
           });
         }
+
+        // split roles & responsibilities into additional sections if present
+        if (proj.rolesResponsibilities) {
+          const rolesChunks = splitText(proj.rolesResponsibilities, 300);
+          for (let r = 1; r < rolesChunks.length; r++) {
+            sections.push({
+              key: `right-project-${idx}-roles-${r}`,
+              content: (
+                <div>
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "rgb(75, 85, 99)",
+                      lineHeight: "1.5",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {rolesChunks[r]}
+                  </p>
+                </div>
+              ),
+            });
+          }
+        }
       });
     }
 
-    // TECHNICAL SUMMARY
+    // TECHNICAL SUMMARY (split into chunks so it can flow across pages)
     if (
       data.skillsLinks.technicalSummaryEnabled &&
       data.skillsLinks.technicalSummary
     ) {
+      const techChunks = splitText(data.skillsLinks.technicalSummary, 450);
+
+      // header section
       sections.push({
-        key: "right-technical",
+        key: "right-technical-header",
         content: (
           <div style={{ marginTop: "0.75rem" }}>
             <h3
@@ -1428,29 +1008,42 @@ export const ModernProfessionalTemplate: React.FC<
             >
               Technical Summary
             </h3>
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: "rgb(75, 85, 99)",
-                lineHeight: "1.5",
-              }}
-            >
-              {data.skillsLinks.technicalSummary}
-            </p>
           </div>
         ),
       });
+
+      techChunks.forEach((chunk, i) => {
+        sections.push({
+          key: `right-technical-${i}`,
+          content: (
+            <div>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "rgb(75, 85, 99)",
+                  lineHeight: "1.5",
+                }}
+              >
+                {chunk}
+              </p>
+            </div>
+          ),
+        });
+      });
     }
 
-    // CERTIFICATIONS
+    // CERTIFICATIONS (split into per-cert sections so they can flow across pages)
     if (
       data.certifications &&
-      data.certifications.some(
-        (cert) => cert.enabled && cert.certificateTitle
-      )
+      data.certifications.some((cert) => cert.enabled && cert.certificateTitle)
     ) {
+      const certs = data.certifications.filter(
+        (cert) => cert.enabled && cert.certificateTitle
+      );
+
+      // header section
       sections.push({
-        key: "right-certifications",
+        key: "right-certifications-header",
         content: (
           <div style={{ marginTop: "0.75rem" }}>
             <h3
@@ -1466,96 +1059,118 @@ export const ModernProfessionalTemplate: React.FC<
             >
               Certifications
             </h3>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.55rem",
-              }}
-            >
-              {data.certifications
-                .filter((cert) => cert.enabled && cert.certificateTitle)
-                .map((cert, idx) => (
-                  <div key={cert.id || idx}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: "rgb(17, 24, 39)",
-                        }}
-                      >
-                        {cert.certificateTitle}
-                      </p>
-                      {cert.date && (
-                        <span
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "rgb(75, 85, 99)",
-                          }}
-                        >
-                          {formatMonthYear(cert.date)}
-                        </span>
-                      )}
-                    </div>
-                    {cert.providedBy && (
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "rgb(55, 65, 81)",
-                          marginBottom: "0.15rem",
-                        }}
-                      >
-                        {cert.providedBy}
-                        {cert.domain && ` • ${cert.domain}`}
-                      </p>
-                    )}
-                    {cert.certificateType && (
-                      <p
-                        style={{
-                          fontSize: "0.7rem",
-                          color: "rgb(75, 85, 99)",
-                          marginBottom: "0.15rem",
-                        }}
-                      >
-                        Type: {cert.certificateType}
-                      </p>
-                    )}
-                    {cert.description && (
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "rgb(75, 85, 99)",
-                          lineHeight: "1.5",
-                        }}
-                      >
-                        {cert.description}
-                      </p>
-                    )}
-                    {cert.certificateUrl && (
-                      <p
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "rgb(37, 99, 235)",
-                          marginTop: "0.25rem",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {cert.certificateUrl}
-                      </p>
-                    )}
-                  </div>
-                ))}
-            </div>
           </div>
         ),
+      });
+
+      certs.forEach((cert, idx) => {
+        const descChunks = splitText(cert.description, 450);
+
+        sections.push({
+          key: `right-cert-${idx}-0`,
+          content: (
+            <div style={{ marginTop: "0.55rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "rgb(17, 24, 39)",
+                  }}
+                >
+                  {cert.certificateTitle}
+                </p>
+                {cert.date && (
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      color: "rgb(75, 85, 99)",
+                    }}
+                  >
+                    {formatMonthYear(cert.date)}
+                  </span>
+                )}
+              </div>
+
+              {cert.providedBy && (
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "rgb(55, 65, 81)",
+                    marginBottom: "0.15rem",
+                  }}
+                >
+                  {cert.providedBy}
+                  {cert.domain && ` • ${cert.domain}`}
+                </p>
+              )}
+
+              {cert.certificateType && (
+                <p
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "rgb(75, 85, 99)",
+                    marginBottom: "0.15rem",
+                  }}
+                >
+                  Type: {cert.certificateType}
+                </p>
+              )}
+
+              {descChunks[0] && (
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "rgb(75, 85, 99)",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {descChunks[0]}
+                </p>
+              )}
+
+              {cert.certificateUrl && (
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "rgb(37, 99, 235)",
+                    marginTop: "0.25rem",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {cert.certificateUrl}
+                </p>
+              )}
+            </div>
+          ),
+        });
+
+        for (let c = 1; c < descChunks.length; c++) {
+          sections.push({
+            key: `right-cert-${idx}-desc-${c}`,
+            content: (
+              <div>
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "rgb(75, 85, 99)",
+                    lineHeight: "1.5",
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  {descChunks[c]}
+                </p>
+              </div>
+            ),
+          });
+        }
       });
     }
 
@@ -1690,9 +1305,6 @@ export const ModernProfessionalTemplate: React.FC<
   }, [leftSections, rightSections]);
 
   // PDF export is handled by `exportPagesAsPdf` in `src/lib/pdfExport.ts`
-
-
-
 
   // -------- RENDER A SINGLE PAGE (web preview) --------
 
