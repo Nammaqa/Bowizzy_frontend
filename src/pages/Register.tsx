@@ -19,9 +19,23 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agree, setAgree] = useState(false);
   const [formError, setFormError] = useState("");
-  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [errors, setErrors] = useState<RegisterErrors>({});
+
+
+  type RegisterErrors = {
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  phone?: string;
+  dob?: string;
+  email?: string;
+  linkedin?: string;
+  password?: string;
+  confirmPassword?: string;
+};
+
 
   const setFieldError = (field, message) => {
     setErrors((prev) => ({ ...prev, [field]: message }));
