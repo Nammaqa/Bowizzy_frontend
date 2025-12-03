@@ -6,7 +6,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { uploadPdfToCloudinary } from "@/utils/uploadPdfToCloudinary";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { ResumePDF } from "@/components/ResumePDF"; 
+// import { ResumePDF } from "@/components/ResumePDF"; 
 
 interface ResumePreviewModalProps {
   isOpen: boolean;
@@ -624,7 +624,7 @@ export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
                 {/* DOWNLOAD PDF USING REACT-PDF */}
                 <PDFDownloadLink
-                  document={<ResumePDF data={resumeData} />}
+                  // document={<ResumePDF data={resumeData} />}
                   fileName={`${resumeName || "resume"}.pdf`}
                 >
                   {({ loading }) => (

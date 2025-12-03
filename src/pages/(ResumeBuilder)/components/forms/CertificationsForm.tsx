@@ -205,7 +205,12 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
     onChange(
       data.map((cert) =>
         cert.id === id
-          ? { ...cert, uploadedFile: null, uploadedFileName: "", certificateUrl: "" }
+          ? {
+              ...cert,
+              uploadedFile: null,
+              uploadedFileName: "",
+              certificateUrl: "",
+            }
           : cert
       )
     );
@@ -295,7 +300,8 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
             ...certificate,
             certificate_id: newCertificateId,
             uploadedFile: null,
-            certificateUrl: finalCertData.file_url || certificate.certificateUrl,
+            certificateUrl:
+              finalCertData.file_url || certificate.certificateUrl,
             uploadedFileName: finalCertData.file_url
               ? finalCertData.file_url.split("/").pop()
               : certificate.uploadedFileName,
@@ -331,11 +337,19 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
         let hasChanges = false;
 
         if (certificate.certificateType !== (initial?.certificateType || "")) {
-          minimalFormData.append("certificate_type", certificate.certificateType);
+          minimalFormData.append(
+            "certificate_type",
+            certificate.certificateType
+          );
           hasChanges = true;
         }
-        if (certificate.certificateTitle !== (initial?.certificateTitle || "")) {
-          minimalFormData.append("certificate_title", certificate.certificateTitle);
+        if (
+          certificate.certificateTitle !== (initial?.certificateTitle || "")
+        ) {
+          minimalFormData.append(
+            "certificate_title",
+            certificate.certificateTitle
+          );
           hasChanges = true;
         }
         if (certificate.domain !== (initial?.domain || "")) {
@@ -343,7 +357,10 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
           hasChanges = true;
         }
         if (certificate.providedBy !== (initial?.providedBy || "")) {
-          minimalFormData.append("certificate_provided_by", certificate.providedBy);
+          minimalFormData.append(
+            "certificate_provided_by",
+            certificate.providedBy
+          );
           hasChanges = true;
         }
         if (certificate.date !== (initial?.date || "")) {
@@ -356,10 +373,15 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
         }
 
         // Handle file changes
-        if (certificate.uploadedFile && certificate.uploadedFile !== initial?.uploadedFile) {
+        if (
+          certificate.uploadedFile &&
+          certificate.uploadedFile !== initial?.uploadedFile
+        ) {
           minimalFormData.append("file", certificate.uploadedFile);
           hasChanges = true;
-        } else if (certificate.certificateUrl !== (initial?.certificateUrl || "")) {
+        } else if (
+          certificate.certificateUrl !== (initial?.certificateUrl || "")
+        ) {
           minimalFormData.append("file_url", certificate.certificateUrl || "");
           hasChanges = true;
         }
@@ -372,11 +394,14 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
             minimalFormData
           );
 
-          const finalCertData = Array.isArray(response) ? response[0] : response;
+          const finalCertData = Array.isArray(response)
+            ? response[0]
+            : response;
           const updatedCertificate: Certificate = {
             ...certificate,
             uploadedFile: null,
-            certificateUrl: finalCertData?.file_url || certificate.certificateUrl,
+            certificateUrl:
+              finalCertData?.file_url || certificate.certificateUrl,
             uploadedFileName: finalCertData?.file_url
               ? finalCertData.file_url.split("/").pop()
               : certificate.uploadedFileName,
@@ -439,7 +464,11 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
             date: initial.date || "",
             description: initial.description || "",
             uploadedFile: null,
-            uploadedFileName: initial.uploadedFileName || (initial.certificateUrl ? initial.certificateUrl.split("/").pop() : ""),
+            uploadedFileName:
+              initial.uploadedFileName ||
+              (initial.certificateUrl
+                ? initial.certificateUrl.split("/").pop()
+                : ""),
             certificateUrl: initial.certificateUrl || "",
           }
         : cert
@@ -609,7 +638,9 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
               label="Certificate Title"
               placeholder="Enter Certificate Title"
               value={cert.certificateTitle}
-              onChange={(v) => updateCertificate(cert.id, "certificateTitle", v)}
+              onChange={(v) =>
+                updateCertificate(cert.id, "certificateTitle", v)
+              }
               error={errors[`cert-${cert.id}-certificateTitle`]}
             />
 
@@ -618,7 +649,9 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
                 label="Certificate Type"
                 placeholder="Select Certificate Type"
                 value={cert.certificateType}
-                onChange={(v) => updateCertificate(cert.id, "certificateType", v)}
+                onChange={(v) =>
+                  updateCertificate(cert.id, "certificateType", v)
+                }
                 options={certificateTypes}
               />
               <FormInput
@@ -651,13 +684,15 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
             </div>
 
             <div className="mt-4">
-              <RichTextEditor
-                label="Description"
-                placeholder="Provide Description..."
-                value={cert.description}
-                onChange={(v) => updateCertificate(cert.id, "description", v)}
-                rows={3}
-              />
+              <div className="flex flex-col gap-1">
+                <label className="font-medium">Description</label>
+                <RichTextEditor
+                  placeholder="Provide Description..."
+                  value={cert.description}
+                  onChange={(v) => updateCertificate(cert.id, "description", v)}
+                  rows={3}
+                />
+              </div>
             </div>
 
             <div className="mt-4">

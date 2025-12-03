@@ -35,6 +35,7 @@ export default function Profile() {
   const [profileProgress, setProfileProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch profile progress on component mount
   useEffect(() => {
@@ -142,36 +143,39 @@ export default function Profile() {
   };
 
   const handleSubmit = async () => {
-  if (!selectedFile) return;
+    if (!selectedFile || submitting) return;
 
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userId = user?.user_id;
-    const token = user?.token;
+    setSubmitting(true);
 
-    if (!userId || !token) {
-      alert("User not logged in");
-      return;
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.user_id;
+      const token = user?.token;
+
+      if (!userId || !token) {
+        alert("User not logged in");
+        setSubmitting(false);
+        return;
+      }
+
+      console.log("Uploading resume to server…");
+
+      const response = await uploadResume(userId, selectedFile, token);
+
+      console.log("Upload response →", response);
+
+      if (response.status === 200 || response.status === 201) {
+        navigate("/profile/parsing", {
+          state: { file: selectedFile, uploadSuccess: true },
+        });
+      }
+    } catch (error) {
+      console.error("Upload failed →", error);
+      navigate("/profile/parsing", { state: { uploadSuccess: false } });
+    } finally {
+      setSubmitting(false);
     }
-
-    console.log("Uploading resume to server…");
-
-    const response = await uploadResume(userId, selectedFile, token);
-
-    //  If server upload SUCCESS → go to Parsing Steps
-    if (response.status === 200 || response.status === 201) {
-      navigate("/profile/parsing", { state: { file: selectedFile, uploadSuccess: true }});
-    }
-
-  } catch (error) {
-    console.error("Upload failed →", error);
-
-    //  On failure → also go to parsing page but show FAILED UI
-    navigate("/profile/parsing", { state: { uploadSuccess: false }});
-  }
-};
-
-
+  };
 
   const handleBrowseClick = () => {
     document.getElementById("file-upload-input").click();
@@ -203,7 +207,6 @@ export default function Profile() {
       {showDashboard ? (
         // Profile Dashboard View (when > 50% complete)
         <div className="flex-1 bg-gray-50 overflow-auto px-4 sm:px-6 py-4">
-
           {/* PAGE TITLE */}
           <h2 className="text-2xl sm:text-3xl font-semibold mb-4">
             User Profile
@@ -356,14 +359,14 @@ export default function Profile() {
                       />
                       <button
                         onClick={handleSubmit}
-                        disabled={!selectedFile}
-                        className={`px-6 sm:px-8 py-3.5 rounded-2xl font-medium text-sm sm:text-[15px] transition-colors duration-300 shadow-sm cursor-pointer ${
-                          selectedFile
-                            ? "bg-orange-400 hover:bg-orange-500 text-white"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        disabled={!selectedFile || submitting}
+                        className={`px-6 sm:px-8 py-3.5 rounded-2xl font-medium text-sm sm:text-[15px] transition-colors duration-300 shadow-sm ${
+                          !selectedFile || submitting
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-orange-400 hover:bg-orange-500 text-white cursor-pointer"
                         }`}
                       >
-                        Submit
+                        {submitting ? "Submitting..." : "Submit"}
                       </button>
                     </div>
 
