@@ -12,6 +12,7 @@ import {
   Bell,
   Share2,
   Menu,
+  X, // <-- Import the X icon for the remove button
 } from "lucide-react";
 import DashNav from "@/components/dashnav/dashnav";
 import { useNavigate } from "react-router-dom";
@@ -122,6 +123,17 @@ export default function Profile() {
 
   const handleDragOver = (event) => {
     event.preventDefault();
+  };
+
+  const handleFileRemove = (e) => {
+    e.stopPropagation(); // Prevents triggering handleBrowseClick
+    setSelectedFile(null);
+    setFileError("");
+    const fileInput = document.getElementById("file-upload-input");
+    if (fileInput) {
+      fileInput.value = ""; // Clear the input field for re-selection
+    }
+    console.log("File removed");
   };
 
   const handleAddDetailsMyself = () => {
@@ -324,32 +336,57 @@ export default function Profile() {
                 {showUploadSection && (
                   <div className="flex flex-col items-center w-full max-w-xl mt-2 px-2 sm:px-0">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+                      {/* File Upload/Drop Area */}
                       <div
                         onClick={handleBrowseClick}
                         onDrop={handleFileDrop}
                         onDragOver={handleDragOver}
-                        className={`flex-1 border-2 rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        className={`flex-1 border-2 rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between gap-2 cursor-pointer transition-colors ${
                           fileError
                             ? "border-red-500 bg-red-50"
-                            : "border-gray-300"
+                            : "border-gray-300 hover:bg-gray-50"
                         }`}
                       >
-                        <Upload
-                          size={16}
-                          className={`sm:w-[18px] sm:h-[18px] flex-shrink-0 ${
-                            fileError ? "text-red-600" : "text-gray-600"
-                          }`}
-                        />
-                        <span
-                          className={`text-xs sm:text-sm md:text-[15px] truncate ${
-                            fileError ? "text-red-600" : "text-gray-600"
-                          }`}
-                        >
-                          {selectedFile
-                            ? selectedFile.name
-                            : "Browse or Drop your resume"}
-                        </span>
+                        <div className="flex items-center min-w-0 pr-2">
+                          {selectedFile ? (
+                            <FileText
+                              size={16}
+                              className={`sm:w-[18px] sm:h-[18px] flex-shrink-0 mr-2 ${
+                                fileError ? "text-red-600" : "text-gray-600"
+                              }`}
+                            />
+                          ) : (
+                            <Upload
+                              size={16}
+                              className={`sm:w-[18px] sm:h-[18px] flex-shrink-0 mr-2 ${
+                                fileError ? "text-red-600" : "text-gray-600"
+                              }`}
+                            />
+                          )}
+
+                          <span
+                            className={`text-xs sm:text-sm md:text-[15px] truncate ${
+                              fileError ? "text-red-600" : "text-gray-600"
+                            }`}
+                          >
+                            {selectedFile
+                              ? selectedFile.name
+                              : "Browse or Drop your resume"}
+                          </span>
+                        </div>
+
+                        {/* Remove File Button */}
+                        {selectedFile && (
+                          <button
+                            onClick={handleFileRemove}
+                            className="p-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors flex-shrink-0"
+                            aria-label="Remove selected file"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
                       </div>
+
                       <input
                         id="file-upload-input"
                         type="file"
