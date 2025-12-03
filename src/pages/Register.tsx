@@ -12,52 +12,69 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
-  // Store only the LinkedIn username/handle part (the prefix is auto-filled)
   const [linkedinUsername, setLinkedinUsername] = useState("");
   const [gender, setGender] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState(""); // <-- Date Field State
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agree, setAgree] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Allow only letters and spaces in name fields (prevents digits and special chars)
-  const sanitizeName = (value: string) => {
-    return value.replace(/[^A-Za-z\s]/g, "");
+  const setFieldError = (field, message) => {
+    setErrors((prev) => ({ ...prev, [field]: message }));
   };
 
-  // Extract username from a full LinkedIn URL or sanitize a typed username
-  const extractLinkedinUsername = (value: string) => {
+  const sanitizeName = (value) => value.replace(/[^A-Za-z\s]/g, "");
+  const sanitizePhone = (value) => value.replace(/\D/g, "").slice(0, 10);
+
+  const extractLinkedinUsername = (value) => {
     if (!value) return "";
-    // If user pasted a full linkedin URL, try to extract the username
     const m = value.match(/linkedin\.com\/in\/([^/?#\s]+)/i);
-    if (m && m[1]) return m[1];
-    // Otherwise sanitize the value to allow letters, numbers and hyphens
+    if (m?.[1]) return m[1];
     return value.replace(/[^A-Za-z0-9-]/g, "");
   };
 
-  // Allow only digits for phone and limit length to 10
-  const sanitizePhone = (value: string) => {
-    return value.replace(/\D/g, "").slice(0, 10);
+  // Check if DOB is 18+
+  const isAdult = (dob) => {
+    const birth = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birth.getFullYear();
+    const month = today.getMonth() - birth.getMonth();
+
+    return age > 18 || (age === 18 && month >= 0);
+  };
+
+  // Password rule
+  const validPassword = (pwd) => {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_#])[A-Za-z\d@$!%*?&_#]{8,}$/.test(pwd);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setFormError("");
 
-    if (!agree) return setError("You must agree to the terms to continue.");
+    if (!agree) return setFormError("You must agree to the terms.");
+
     if (password !== confirmPassword)
-      return setError("Passwords do not match.");
+      return setFormError("Passwords do not match.");
 
-    // Validate phone number: must be 10 digits and start with 6-9
+    if (!validPassword(password))
+      return setFormError("Password must be 8+ chars, include upper, lower, number, symbol.");
+
     if (!/^[6-9]\d{9}$/.test(phoneNumber))
-      return setError("Phone number must be 10 digits and start with 6, 7, 8, or 9.");
+      return setFormError("Phone number must be valid.");
 
-    // Validate LinkedIn username
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email))
+      return setFormError("Enter a valid Gmail address.");
+
+    if (!isAdult(dateOfBirth))
+      return setFormError("You must be 18 years or older.");
+
     if (!linkedinUsername || !/^[A-Za-z0-9-]+$/.test(linkedinUsername))
-      return setError("Please enter a valid LinkedIn profile identifier.");
+      return setFormError("Invalid LinkedIn identifier.");
 
     try {
       await api.post("/auth", {
@@ -68,42 +85,34 @@ export default function Register() {
         middle_name: middleName,
         last_name: lastName,
         phone_number: phoneNumber,
-        date_of_birth: dateOfBirth, // <-- Added to Payload
+        date_of_birth: dateOfBirth,
         linkedin_url: `https://www.linkedin.com/in/${linkedinUsername}`,
         gender,
       });
 
       navigate("/login");
     } catch (err) {
-      setError(err?.response?.data?.message || "Signup error");
+      setFormError(err?.response?.data?.message || "Signup error");
     }
   };
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-[700px_1fr] font-['Baloo_2']">
 
-      {/* LEFT FIXED PANEL */}
-      <div className="hidden md:flex flex-col justify-between bg-[#FFE9D6] p-12
-                      sticky top-0 h-screen overflow-hidden">
-
+      {/* LEFT SIDE */}
+      <div className="hidden md:flex flex-col justify-between bg-[#FFE9D6] p-12 sticky top-0 h-screen">
         <img src={Bowizzy} alt="Logo" className="w-32" />
-
-        <h1 className="text-4xl md:text-5xl font-semibold text-orange-700 leading-snug">
+        <h1 className="text-4xl md:text-5xl font-semibold text-orange-700">
           Prep for interviews. <br /> Grow your career.
         </h1>
-
-        <p className="text-sm text-gray-700">
-          Ready to get started? Sign up for free.
-        </p>
+        <p className="text-sm text-gray-700">Ready to get started? Sign up for free.</p>
       </div>
 
-      {/* RIGHT SCROLLABLE PANEL */}
+      {/* RIGHT SIDE */}
       <div className="h-screen overflow-y-auto bg-white">
         <div className="max-w-3xl mx-auto px-6 py-10">
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-10">
-            Create Account
-          </h2>
+          <h2 className="text-2xl font-semibold mb-10">Create Account</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -111,208 +120,258 @@ export default function Register() {
 
               {/* FIRST NAME */}
               <div className="col-span-12 md:col-span-6">
-                <label className="block text-sm font-medium text-gray-700">First Name*</label>
+                <label>First Name*</label>
                 <input
                   value={firstName}
-                  onChange={(e) => setFirstName(sanitizeName(e.target.value))}
-                  required
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                  placeholder="Enter your first name"
+                  onChange={(e) => {
+                    const raw = e.target.value;
+
+                    if (/[^A-Za-z\s]/.test(raw)) {
+                      setFieldError("firstName", "Only letters allowed");
+                    } else if (raw.length > 32) {
+                      setFieldError("firstName", "Max 32 characters");
+                    } else {
+                      setFieldError("firstName", "");
+                    }
+
+                    const val = sanitizeName(raw);
+                    setFirstName(val.slice(0, 32));
+                  }}
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
               </div>
 
               {/* MIDDLE NAME */}
               <div className="col-span-12 md:col-span-6">
-                <label className="block text-sm font-medium text-gray-700">Middle Name</label>
+                <label>Middle Name</label>
                 <input
                   value={middleName}
-                  onChange={(e) => setMiddleName(sanitizeName(e.target.value))}
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                  placeholder="Enter your middle name"
+                  onChange={(e) => {
+                    const raw = e.target.value;
+
+                    if (/[^A-Za-z\s]/.test(raw)) {
+                      setFieldError("middleName", "Only letters allowed");
+                    } else if (raw.length > 32) {
+                      setFieldError("middleName", "Max 32 characters");
+                    } else {
+                      setFieldError("middleName", "");
+                    }
+
+                    const val = sanitizeName(raw);
+                    setMiddleName(val.slice(0, 32));
+                  }}
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.middleName && <p className="text-red-500 text-sm">{errors.middleName}</p>}
               </div>
 
               {/* LAST NAME */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Last Name*</label>
+                <label>Last Name*</label>
                 <input
                   value={lastName}
-                  onChange={(e) => setLastName(sanitizeName(e.target.value))}
-                  required
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                  placeholder="Enter your last name"
+                  onChange={(e) => {
+                    const raw = e.target.value;
+
+                    if (/[^A-Za-z\s]/.test(raw)) {
+                      setFieldError("lastName", "Only letters allowed");
+                    } else if (raw.length > 32) {
+                      setFieldError("lastName", "Max 32 characters");
+                    } else {
+                      setFieldError("lastName", "");
+                    }
+
+                    const val = sanitizeName(raw);
+                    setLastName(val.slice(0, 32));
+                  }}
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
               </div>
 
               {/* PHONE */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Phone Number*</label>
+                <label>Phone Number*</label>
                 <input
-                  type="tel"
-                  inputMode="numeric"
                   value={phoneNumber}
                   onChange={(e) => {
                     const v = sanitizePhone(e.target.value);
-                    // If there's at least one digit, ensure the first digit is 6-9.
-                    // If not, do not accept the input (prevents entering invalid starting digits).
                     if (v.length > 0 && !/^[6-9]/.test(v)) {
+                      setFieldError("phone", "Must start with 6-9");
                       return;
+                    } else {
+                      setFieldError("phone", "");
                     }
                     setPhoneNumber(v);
                   }}
-                  required
-                  pattern="[6-9][0-9]{9}"
-                  maxLength={10}
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                  placeholder="Enter your phone number"
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
               </div>
 
-              {/* DATE OF BIRTH */}
+              {/* DOB */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Date of Birth*</label>
+                <label>Date of Birth*</label>
                 <input
                   type="date"
                   value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)} // <-- Works
-                  required
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDateOfBirth(val);
+
+                    if (!isAdult(val)) {
+                      setFieldError("dob", "You must be 18+");
+                    } else {
+                      setFieldError("dob", "");
+                    }
+                  }}
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.dob && <p className="text-red-500 text-sm">{errors.dob}</p>}
               </div>
 
               {/* EMAIL */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Email*</label>
+                <label>Email*</label>
                 <input
-                  type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                  placeholder="Enter your email"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEmail(val);
+
+                    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(val)) {
+                      setFieldError("email", "Only Gmail allowed");
+                    } else {
+                      setFieldError("email", "");
+                    }
+                  }}
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 />
+                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
               </div>
 
               {/* LINKEDIN */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">LinkedIn URL*</label>
-                <div className="mt-2 flex">
-                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-sm text-gray-600">
+                <label>LinkedIn URL*</label>
+                <div className="flex mt-2">
+                  <span className="px-3 rounded-l-lg border bg-gray-100 flex items-center">
                     https://www.linkedin.com/in/
                   </span>
                   <input
-                    type="text"
                     value={linkedinUsername}
                     onChange={(e) => {
-                      const v = e.target.value;
-                      const extracted = extractLinkedinUsername(v);
+                      const extracted = extractLinkedinUsername(e.target.value);
                       setLinkedinUsername(extracted);
+                      setFieldError("linkedin", extracted ? "" : "Invalid LinkedIn");
                     }}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                    placeholder="your-profile-identifier"
+                    className="w-full px-4 py-3 border rounded-r-lg"
                   />
                 </div>
+                {errors.linkedin && <p className="text-red-500 text-sm">{errors.linkedin}</p>}
               </div>
 
               {/* GENDER */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Gender*</label>
+                <label>Gender*</label>
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  required
-                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
+                  className="mt-2 w-full px-4 py-3 border rounded-lg"
                 >
-                  <option value="">Select gender</option>
+                  <option value="">Select</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="non-binary">Non-Binary</option>
-                  <option value="prefer not to say">Prefer not to say</option>
                 </select>
               </div>
 
               {/* PASSWORD */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Password*</label>
+                <label>Password*</label>
                 <div className="relative mt-2">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                    placeholder="Enter a strong password"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPassword(val);
+
+                      if (!validPassword(val)) {
+                        setFieldError(
+                          "password",
+                          "Min 8 chars, 1 upper, 1 lower, 1 number, 1 symbol"
+                        );
+                      } else {
+                        setFieldError("password", "");
+                      }
+                    }}
+                    className="w-full px-4 py-3 border rounded-lg"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-500"
+                    className="absolute right-3 top-3"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
               </div>
 
               {/* CONFIRM PASSWORD */}
               <div className="col-span-12">
-                <label className="block text-sm font-medium text-gray-700">Confirm Password*</label>
+                <label>Confirm Password*</label>
                 <div className="relative mt-2">
                   <input
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setConfirmPassword(val);
+
+                      if (password !== val) {
+                        setFieldError("confirmPassword", "Passwords do not match");
+                      } else {
+                        setFieldError("confirmPassword", "");
+                      }
+                    }}
+                    className="w-full px-4 py-3 border rounded-lg"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                    placeholder="Re-enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 top-3 text-gray-500"
+                    className="absolute right-3 top-3"
                   >
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+                )}
               </div>
-
             </div>
 
-            {/* ERROR MESSAGE */}
-            {error && <div className="text-red-500 text-sm">{error}</div>}
+            {formError && <p className="text-red-500 text-sm">{formError}</p>}
 
-            {/* AGREEMENT */}
+            {/* AGREE */}
             <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-                className="h-4 w-4 text-orange-500 border-gray-300 rounded"
-              />
-              <p className="text-sm text-gray-700">
-                By continuing, I agree to the Wizzybox{" "}
-                <span className="text-orange-600 font-medium cursor-pointer">Terms of Service</span> and{" "}
-                <span className="text-orange-600 font-medium cursor-pointer">Privacy Policy</span>.
-              </p>
+              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+              <p className="text-sm">I agree to the Terms and Privacy Policy.</p>
             </div>
 
-            {/* BUTTON */}
+            {/* SUBMIT */}
             <button
               type="submit"
               disabled={!agree}
               className={`w-full py-3 rounded-lg text-white font-medium ${
-                agree ? "bg-gray-700 hover:bg-gray-800" : "bg-gray-300 cursor-not-allowed cursor-pointer"
+                agree ? "bg-gray-700" : "bg-gray-300 cursor-not-allowed"
               }`}
             >
               Sign Up
             </button>
-
-            <p className="text-sm text-gray-700">
-              Already have an account?{" "}
-              <span onClick={() => navigate("/login")} className="text-orange-500 cursor-pointer font-medium hover:underline cursor-pointer">
-                Sign in.
-              </span>
-            </p>
 
           </form>
         </div>
