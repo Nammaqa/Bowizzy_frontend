@@ -229,6 +229,7 @@ export default function Register() {
                 <label>Date of Birth*</label>
                 <input
                   type="date"
+                  max={new Date().toISOString().split("T")[0]}
                   value={dateOfBirth}
                   onChange={(e) => {
                     const val = e.target.value;
