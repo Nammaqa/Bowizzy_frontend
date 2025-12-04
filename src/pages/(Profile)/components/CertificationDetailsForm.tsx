@@ -136,15 +136,17 @@ export default function CertificationDetailsForm({
   };
 
   const validateDomain = (value: string) => {
-    if (value && !/^[a-zA-Z0-9\s.,-/&]+$/.test(value)) {
-      return "Invalid characters in domain";
+    // Domain should not contain digits; allow letters, spaces and common punctuation
+    if (value && !/^[a-zA-Z\s.,&\/\-]+$/.test(value)) {
+      return "Invalid characters in domain (no numbers allowed)";
     }
     return "";
   };
 
   const validateProvider = (value: string) => {
-    if (value && !/^[a-zA-Z0-9\s.,&'-]+$/.test(value)) {
-      return "Invalid characters in provider name";
+    // Provider name should not contain digits; allow letters, spaces and common punctuation
+    if (value && !/^[a-zA-Z\s.,&'\-]+$/.test(value)) {
+      return "Invalid characters in provider name (no numbers allowed)";
     }
     return "";
   };
@@ -417,9 +419,32 @@ export default function CertificationDetailsForm({
     const localErrors = [
       errors[`cert-${index}-certificateTitle`],
       errors[`cert-${index}-file`],
+      errors[`cert-${index}-domain`],
+      errors[`cert-${index}-certificateProvidedBy`],
     ].filter(Boolean);
 
-    if (localErrors.length > 0) return;
+    // Re-run domain/provider validation to ensure no numbers are present
+    const domainError = validateDomain(cert.domain || "");
+    const providerError = validateProvider(cert.certificateProvidedBy || "");
+
+    if (domainError) {
+      setErrors((prev) => ({ ...prev, [`cert-${index}-domain`]: domainError }));
+    }
+    if (providerError) {
+      setErrors((prev) => ({
+        ...prev,
+        [`cert-${index}-certificateProvidedBy`]: providerError,
+      }));
+    }
+
+    const updatedLocalErrors = [
+      errors[`cert-${index}-certificateTitle`],
+      errors[`cert-${index}-file`],
+      domainError,
+      providerError,
+    ].filter(Boolean);
+
+    if (updatedLocalErrors.length > 0) return;
 
     if (!changes || changes.length === 0) {
       setCertFeedback((prev) => ({ ...prev, [certId]: "No changes to save." }));
