@@ -30,6 +30,7 @@ export const getAllInterviewSlots = async (token) => {
 };
 
 export const getInterviewSlotById = async (userId, token, slotId) => {
+    console.log(userId, token, slotId);
     const response = await api.get(`/users/${userId}/mock-interview/interview-slot/${slotId}`, {
         headers: {
             Authorization: `Bearer ${token}`,

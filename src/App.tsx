@@ -366,7 +366,7 @@ function App() {
       ),
     },
     {
-      path: "interview-prep/interview-details",
+      path: "interview-prep/interview-details/:id",
       Component: () => (
         <ProtectedRoute>
           <LayoutWrapper>
