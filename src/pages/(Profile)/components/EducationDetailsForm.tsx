@@ -266,10 +266,11 @@ export default function EducationDetailsForm({
   const validateInstitutionName = (value: string) => {
     if (!value || !value.trim()) return "Institution name is required";
 
-    const regex = /^[a-zA-Z\s.,&'\-]+$/;
+    // allow letters, numbers, spaces, dot, comma, &, apostrophe, hyphen
+    const regex = /^[a-zA-Z0-9\s.,&'-]+$/;
 
     if (!regex.test(value)) {
-      return "Invalid institution name (numbers not allowed)";
+      return "Invalid institution name";
     }
     if (!/[a-zA-Z]/.test(value)) {
       return "Institution name must include a letter";
@@ -277,6 +278,7 @@ export default function EducationDetailsForm({
 
     return "";
   };
+
 
   // Helper function to validate date range
   const validateDateRange = (startDate: string, endDate: string) => {
