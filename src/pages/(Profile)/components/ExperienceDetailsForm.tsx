@@ -137,7 +137,6 @@ export default function ExperienceDetailsForm({
     setExperienceChanges(changes);
   }, [workExperiences]);
 
-  // Validation functions
   const validateCompanyName = (value: string) => {
     if (!value.trim()) return "Company name is required";
 
@@ -145,6 +144,10 @@ export default function ExperienceDetailsForm({
 
     if (!regex.test(value)) {
       return "Invalid company name";
+    }
+
+    if (!/[a-zA-Z]/.test(value)) {
+      return "Company name must include a letter";
     }
 
     return "";
@@ -157,6 +160,14 @@ export default function ExperienceDetailsForm({
 
     if (!regex.test(value)) {
       return "Invalid job title";
+    }
+
+    if (!/\d/.test(value)) {
+      return "Job title must include a number";
+    }
+
+    if (!/[a-zA-Z]/.test(value)) {
+      return "Job title must include a letter";
     }
 
     return "";
