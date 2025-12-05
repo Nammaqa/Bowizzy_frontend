@@ -318,6 +318,19 @@ export default function EducationDetailsForm({
     return `${year}-${month}`;
   };
 
+  const validateMonthFormat = (value: string) => {
+    if (!value || value === "") return "";
+    if (!/^\d{4}-\d{2}$/.test(value)) {
+      return "Please select a valid month (YYYY-MM)";
+    }
+    const [y, m] = value.split("-");
+    if (y.length !== 4) return "Year must be 4 digits";
+    const monthNum = parseInt(m, 10);
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12)
+      return "Invalid month";
+    return "";
+  };
+
   // Handler for SSLC data changes
   const handleSslcChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -406,11 +419,32 @@ export default function EducationDetailsForm({
       const error = validateInstitutionName(value);
       setErrors((prev) => ({ ...prev, [`${prefix}-universityBoard`]: error }));
     } else if (field === "startYear" && typeof value === "string") {
-      const error = validateDateRange(value, updatedEdu.endYear);
-      setErrors((prev) => ({ ...prev, [`${prefix}-endYear`]: error }));
+      const fmtError = validateMonthFormat(value);
+      if (fmtError) {
+        setErrors((prev) => ({ ...prev, [`${prefix}-startYear`]: fmtError }));
+      } else {
+        setErrors((prev) => {
+          const updated = { ...prev };
+          delete updated[`${prefix}-startYear`];
+          return updated;
+        });
+      }
+
+      const rangeError = validateDateRange(value, updatedEdu.endYear);
+      setErrors((prev) => ({ ...prev, [`${prefix}-endYear`]: rangeError }));
     } else if (field === "endYear" && typeof value === "string") {
-      const error = validateDateRange(updatedEdu.startYear, value);
-      setErrors((prev) => ({ ...prev, [`${prefix}-endYear`]: error }));
+      const fmtError = validateMonthFormat(value);
+      if (fmtError) {
+        setErrors((prev) => ({ ...prev, [`${prefix}-endYear`]: fmtError }));
+      } else {
+        setErrors((prev) => {
+          const updated = { ...prev };
+          delete updated[`${prefix}-endYear`];
+          return updated;
+        });
+        const rangeError = validateDateRange(updatedEdu.startYear, value);
+        setErrors((prev) => ({ ...prev, [`${prefix}-endYear`]: rangeError }));
+      }
     }
   };
 
@@ -606,6 +640,7 @@ export default function EducationDetailsForm({
       errors[`${prefix}-result`] ||
       errors[`${prefix}-institutionName`] ||
       errors[`${prefix}-universityBoard`] ||
+      errors[`${prefix}-startYear`] ||
       errors[`${prefix}-endYear`]
     )
       return;
@@ -1225,9 +1260,15 @@ export default function EducationDetailsForm({
                     type="month"
                     value={education.startYear}
                     onChange={(e) => handleChange("startYear", e.target.value)}
+                    max={getCurrentMonth()}
                     className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm"
                   />
                 </div>
+                {errors[`${prefix}-startYear`] && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors[`${prefix}-startYear`]}
+                  </p>
+                )}
               </div>
 
               {/* End Year */}
@@ -1240,6 +1281,7 @@ export default function EducationDetailsForm({
                     type="month"
                     value={education.endYear}
                     onChange={(e) => handleChange("endYear", e.target.value)}
+                    max={getCurrentMonth()}
                     disabled={education.currentlyPursuing}
                     className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm disabled:bg-gray-100 ${
                       errors[`${prefix}-endYear`]
