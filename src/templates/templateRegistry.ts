@@ -22,7 +22,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     id: 'template1',
     name: 'Executive Professional',
     category: 'Professional',
-    thumbnail: '/resume-templates/thumbnails/template1.png',
+    thumbnail: '/resume-templates/thumbnails/template1.jpg',
     component: Template1Display,
     displayComponent: Template1Display,
     pdfComponent: Template1PDF,

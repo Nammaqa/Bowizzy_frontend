@@ -45,7 +45,7 @@ export default function TemplateSelection() {
                 onClick={() => handleTemplateSelect(template.id)}
               >
                 <img
-                  src={template.thumbnailUrl}
+                  src={template.thumbnail}
                   alt={template.name}
                   className="w-full h-[439px] object-cover"
                 />
