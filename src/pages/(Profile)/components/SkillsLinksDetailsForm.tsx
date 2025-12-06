@@ -165,6 +165,11 @@ export default function SkillsLinksDetailsForm({
     if (value && !/^[a-zA-Z0-9\s.+#-]+$/.test(value)) {
       return "Invalid characters in skill name";
     }
+
+    if (value && !/(?=.*[A-Za-z])(?=.*\d)/.test(value)) {
+      return "Skill must contain at least one letter and one number";
+    }
+
     return "";
   };
 

@@ -245,18 +245,20 @@ export default function EducationDetailsForm({
 
     switch (format) {
       case "Percentage":
+        if (!/^\d+(\.\d{1,2})?$/.test(value)) return "Enter valid percentage (e.g., 85 or 85.5)";
         const percentage = parseFloat(value);
         if (isNaN(percentage)) return "Must be a number";
         if (percentage < 0 || percentage > 100) return "Must be between 0-100";
         break;
       case "CGPA":
+        if (!/^\d+(\.\d{1,2})?$/.test(value)) return "Enter valid CGPA (e.g., 8.5)";
         const cgpa = parseFloat(value);
         if (isNaN(cgpa)) return "Must be a number";
         if (cgpa < 0 || cgpa > 10) return "Must be between 0-10";
         break;
       case "Grade":
-        if (!/^[A-F]\+?$/i.test(value))
-           return "Grade should not be negative";
+        if (!/^[A-F][+-]?$|^Pass$|^Fail$/i.test(value))
+          return "Enter valid grade (A, B+, C-, Pass, Fail)";
         break;
     }
     return "";
