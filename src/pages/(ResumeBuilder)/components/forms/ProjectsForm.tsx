@@ -93,6 +93,9 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({
     if (value && !/^[a-zA-Z0-9\s.,-]+$/.test(value)) {
       return "Invalid characters in project title";
     }
+    if (value && !/[a-zA-Z]/.test(value)) {
+      return "Project title must include at least one letter";
+    }
     return "";
   };
 
@@ -154,6 +157,18 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({
         delete newErrors[`project-${id}-endDate`];
         return newErrors;
       });
+    }
+    // If projectType is changed, ensure it's not purely numeric
+    if (field === "projectType" && typeof value === "string") {
+      if (value && !/[a-zA-Z]/.test(value)) {
+        setErrors((prev) => ({ ...prev, [`project-${id}-projectType`]: "Project type must include at least one letter" }));
+      } else {
+        setErrors((prev) => {
+          const updated = { ...prev };
+          delete updated[`project-${id}-projectType`];
+          return updated;
+        });
+      }
     }
   };
 

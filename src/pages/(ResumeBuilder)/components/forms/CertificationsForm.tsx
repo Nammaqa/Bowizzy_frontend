@@ -89,6 +89,9 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
     if (value && !/^[a-zA-Z0-9\s.,-:()]+$/.test(value)) {
       return "Invalid characters in certificate title";
     }
+    if (value && !/[a-zA-Z]/.test(value)) {
+      return "Certificate Title must include at least one letter";
+    }
     return "";
   };
 
@@ -96,12 +99,18 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
     if (value && !/^[a-zA-Z0-9\s.,-/&]+$/.test(value)) {
       return "Invalid characters in domain";
     }
+    if (value && !/[a-zA-Z]/.test(value)) {
+      return "Domain must include at least one letter";
+    }
     return "";
   };
 
   const validateProvider = (value: string) => {
     if (value && !/^[a-zA-Z0-9\s.,&'-]+$/.test(value)) {
       return "Invalid characters in provider name";
+    }
+    if (value && !/[a-zA-Z]/.test(value)) {
+      return "Provider must include at least one letter";
     }
     return "";
   };

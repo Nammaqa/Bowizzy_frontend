@@ -136,20 +136,43 @@ export const SkillsLinksForm: React.FC<SkillsLinksFormProps> = ({
     if (value && !/^[a-zA-Z0-9\s.+#-]+$/.test(value)) {
       return "Invalid characters in skill name";
     }
+    if (value && (!/[a-zA-Z]/.test(value) || !/\d/.test(value))) {
+      return "Skill must include both letters and numbers";
+    }
     return "";
   };
 
   const validateUrl = (value: string, type: string) => {
     if (!value) return "";
+
     const urlPattern =
-      /^(https?:\/\/)?([\w\-]+(\.[\w\-]+)+)([\w\-\.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?$/;
+      /^(https?:\/\/)?([\w\-]+(\.[\w\-]+)+)([\w\-\.,@?^=%&:/~\+#]*[\w\-@?^=%&/~\+#])?$/i;
+
     if (!urlPattern.test(value)) {
       return `Invalid ${type} URL format`;
     }
-    if (type === "LinkedIn" && !value.includes("linkedin.com"))
+
+    if (
+      type === "LinkedIn" &&
+      value &&
+      !value.toLowerCase().includes("linkedin.com")
+    )
       return "Please enter a valid LinkedIn URL";
-    if (type === "GitHub" && !value.includes("github.com"))
+
+    if (
+      type === "GitHub" &&
+      value &&
+      !value.toLowerCase().includes("github.com")
+    )
       return "Please enter a valid GitHub URL";
+
+    if (
+      type === "Portfolio" &&
+      value &&
+      !value.toLowerCase().includes("portfolio")
+    )
+      return "Please enter a valid Portfolio URL";
+
     return "";
   };
 
