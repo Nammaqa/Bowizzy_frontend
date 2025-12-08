@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import ProfileStepper from "./components/ProfileStepper";
+import ProfileStepper from "./components/ui/ProfileStepper";
 import PersonalDetailsForm from "./components/forms/PersonalDetailsForm";
 import EducationDetailsForm from "./components/forms/EducationDetailsForm";
 import ExperienceDetailsForm from "./components/forms/ExperienceDetailsForm";
@@ -161,7 +161,6 @@ const mapExperienceApiToLocal = (apiData: {
         experiences.length > 0
           ? experiences
           : initialResumeData.experience.workExperiences,
-      experienceEnabled: true,
     },
     idMap,
   };
@@ -337,7 +336,9 @@ export const ResumeEditor: React.FC = () => {
     Record<string, number>
   >({});
   const [deleteExperienceIds, setDeleteExperienceIds] = useState<number[]>([]);
-  const [technicalSummaryId, setTechnicalSummaryId] = useState<number | null>(null);
+  const [technicalSummaryId, setTechnicalSummaryId] = useState<number | null>(
+    null
+  );
 
   // 1. Initial user and token check
   useEffect(() => {
@@ -518,7 +519,10 @@ export const ResumeEditor: React.FC = () => {
 
       // --- Technical Summary Details ---
       try {
-        const apiResponse = await getTechnicalSummary(currentUserId, currentToken);
+        const apiResponse = await getTechnicalSummary(
+          currentUserId,
+          currentToken
+        );
         console.log("Fetched Technical Summary:", apiResponse);
 
         if (apiResponse) {

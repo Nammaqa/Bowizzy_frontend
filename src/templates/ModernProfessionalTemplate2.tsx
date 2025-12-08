@@ -6,7 +6,8 @@ import React, {
   useRef,
 } from "react";
 import type { ResumeData } from "@/types/resume";
-import { exportPagesAsPdf } from "@/lib/pdfExport";
+import { exportPagesAsPdf } from "@/pages/(ResumeBuilder)/lib/pdfExport";
+
 
 interface ModernProfessionalTemplateProps {
   data: ResumeData;
