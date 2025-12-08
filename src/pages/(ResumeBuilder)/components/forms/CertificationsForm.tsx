@@ -14,6 +14,8 @@ import {
   updateCertificateDetails,
   deleteCertificate,
 } from "@/services/certificateService";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
 
 interface CertificationsFormProps {
   data: Certificate[];
@@ -159,76 +161,142 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const error = validateFile(file);
+    if (!file) return;
 
-      if (error) {
-        setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: error }));
-        return;
+    const error = validateFile(file);
+    if (error) {
+      setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: error }));
+      return;
+    }
+
+    // Perform cloud delete of any existing file, then upload new file
+    const existing = data.find((c) => c.id === id);
+    (async () => {
+      try {
+        if (existing?.cloudDeleteToken) {
+          await deleteFromCloudinary(existing.cloudDeleteToken as string);
+        }
+      } catch (err) {
+        console.warn("Cloudinary delete failed:", err);
       }
 
-      onChange(
-        data.map((cert) =>
-          cert.id === id
-            ? { ...cert, uploadedFile: file, uploadedFileName: file.name }
-            : cert
-        )
-      );
+      try {
+        const uploadRes = await uploadToCloudinary(file);
+        if (!uploadRes?.url) {
+          setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: "Upload failed" }));
+          return;
+        }
 
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[`cert-${id}-file`];
-        return newErrors;
-      });
-    }
+        onChange(
+          data.map((cert) =>
+            cert.id === id
+              ? {
+                  ...cert,
+                  uploadedFile: null,
+                  uploadedFileName: file.name,
+                  certificateUrl: uploadRes.url,
+                  uploadedFileType: file.type,
+                  cloudDeleteToken: uploadRes.deleteToken,
+                }
+              : cert
+          )
+        );
+
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[`cert-${id}-file`];
+          return newErrors;
+        });
+      } catch (err) {
+        console.error("Upload to Cloudinary failed:", err);
+        setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: "Upload failed" }));
+      }
+    })();
   };
 
   const handleFileDrop = (id: string, e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      const error = validateFile(file);
+    if (!file) return;
 
-      if (error) {
-        setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: error }));
-        return;
+    const error = validateFile(file);
+    if (error) {
+      setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: error }));
+      return;
+    }
+
+    const existing = data.find((c) => c.id === id);
+    (async () => {
+      try {
+        if (existing?.cloudDeleteToken) {
+          await deleteFromCloudinary(existing.cloudDeleteToken as string);
+        }
+      } catch (err) {
+        console.warn("Cloudinary delete failed:", err);
       }
 
-      onChange(
-        data.map((cert) =>
-          cert.id === id
-            ? { ...cert, uploadedFile: file, uploadedFileName: file.name }
-            : cert
-        )
-      );
+      try {
+        const uploadRes = await uploadToCloudinary(file);
+        if (!uploadRes?.url) {
+          setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: "Upload failed" }));
+          return;
+        }
 
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[`cert-${id}-file`];
-        return newErrors;
-      });
-    }
+        onChange(
+          data.map((cert) =>
+            cert.id === id
+              ? {
+                  ...cert,
+                  uploadedFile: null,
+                  uploadedFileName: file.name,
+                  certificateUrl: uploadRes.url,
+                  uploadedFileType: file.type,
+                  cloudDeleteToken: uploadRes.deleteToken,
+                }
+              : cert
+          )
+        );
+
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[`cert-${id}-file`];
+          return newErrors;
+        });
+      } catch (err) {
+        console.error("Upload to Cloudinary failed:", err);
+        setErrors((prev) => ({ ...prev, [`cert-${id}-file`]: "Upload failed" }));
+      }
+    })();
   };
 
   const clearFile = (id: string) => {
-    onChange(
-      data.map((cert) =>
-        cert.id === id
-          ? {
-              ...cert,
-              uploadedFile: null,
-              uploadedFileName: "",
-              certificateUrl: "",
-            }
-          : cert
-      )
-    );
+    const cert = data.find((c) => c.id === id);
+    if (!cert) return;
 
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[`cert-${id}-file`];
-      return newErrors;
-    });
+    (async () => {
+      try {
+        if (cert.cloudDeleteToken) {
+          await deleteFromCloudinary(cert.cloudDeleteToken as string);
+        }
+      } catch (err) {
+        console.warn("Cloudinary delete failed:", err);
+      }
+
+      onChange(
+        data.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                uploadedFile: null,
+                uploadedFileName: "",
+                certificateUrl: "",
+                uploadedFileType: "",
+                cloudDeleteToken: undefined,
+              }
+            : c
+        )
+      );
+    })();
   };
 
   // Handler for saving individual Certificate card (PUT/POST call)
@@ -522,6 +590,16 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
     const certificate = data.find((c) => c.id === id);
     if (!certificate) return;
 
+    // If there is a Cloudinary asset associated, try deleting it first from Cloudinary
+    if (certificate.cloudDeleteToken) {
+      try {
+        await deleteFromCloudinary(certificate.cloudDeleteToken as string);
+      } catch (err) {
+        // Log and continue - backend may also clean up or token may be stale
+        console.warn("Cloudinary delete on removeCertificate failed:", err);
+      }
+    }
+
     if (certificate.certificate_id) {
       try {
         await deleteCertificate(userId, token, certificate.certificate_id);
@@ -752,7 +830,18 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Upload className="w-4 h-4 text-gray-600 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-700 truncate">
-                      {cert.uploadedFileName || cert.certificateUrl}
+                      {cert.certificateUrl ? (
+                        <a
+                          href={cert.certificateUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-xs text-gray-700 truncate"
+                        >
+                          {cert.uploadedFileName || cert.certificateUrl.split("/").pop()}
+                        </a>
+                      ) : (
+                        cert.uploadedFileName
+                      )}
                     </span>
                   </div>
                   <button
