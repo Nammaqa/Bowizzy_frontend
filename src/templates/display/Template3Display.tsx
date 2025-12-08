@@ -12,127 +12,305 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
 }) => {
   const { personal, education, experience, projects, skillsLinks, certifications } = data;
 
+  // Constants based on image analysis
+  const primaryColor = '#5B8FB9'; 
+  const lightGrayBg = '#E8E8E8';
+  const darkTextColor = '#333333';
+  const mediumTextColor = '#666666';
+  const lightTextColor = '#999999';
+  const dividerColor = '#d0d0d0';
+  const sidebarHeaderColor = '#4a4a4a';
+  const mainHeaderColor = '#4a4a4a';
+  const accentColor = primaryColor;
+  const sidebarWidth = '35%';
+  const mainContentWidth = '65%';
+  const padding = '45px 30px';
+  const mainContentPadding = '45px 40px 45px 35px';
+
   return (
-    <div className="w-[210mm] bg-white flex" style={{ minHeight: '297mm', paddingTop: '2px', paddingBottom: '2px' }}>
-      {/* Left Sidebar - Blue/Gray */}
-      <div className="w-[35%] bg-gradient-to-b from-blue-400 to-blue-500 text-white" style={{ padding: '20mm 15mm', paddingTop: 'calc(20mm + 2px)' }}>
-        {/* Profile Photo */}
-        <div className="flex justify-center mb-6">
-          <div className="w-32 h-32 rounded-full bg-white overflow-hidden border-4 border-white shadow-lg">
-            {personal.profilePhotoUrl ? (
-              <img 
-                src={personal.profilePhotoUrl} 
-                alt="Profile" 
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400 text-4xl">👤</span>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="w-[210mm] bg-white flex relative" style={{ minHeight: '297mm', fontFamily: 'Arial, sans-serif' }}>
+      {/* Sidebar with Diagonal Blue Background */}
+      <div style={{ 
+        width: sidebarWidth,
+        position: 'relative',
+        backgroundColor: lightGrayBg
+      }}>
+        {/* Diagonal Blue Shape */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '280px',
+          background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 65%, transparent 65%)`,
+          zIndex: 0
+        }} />
 
-        {/* Name */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold" style={{ fontSize: '28px' }}>
-            {personal.firstName}
-          </h1>
-          <h1 className="text-3xl font-bold" style={{ fontSize: '28px' }}>
-            {personal.lastName}
-          </h1>
-          <p className="text-sm mt-2 opacity-90" style={{ fontSize: '12px' }}>
-            {experience.jobRole || 'Marketing Manager'}
-          </p>
-        </div>
-
-        {/* Contact */}
-        <div className="resume-section mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">📞</span>
-            <h2 className="text-sm font-bold" style={{ fontSize: '12px', letterSpacing: '1px' }}>
-              Contact
-            </h2>
+        {/* Sidebar Content */}
+        <div style={{ 
+          position: 'relative',
+          zIndex: 1,
+          padding: padding
+        }}>
+          {/* Profile Photo */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '35px' }}>
+            <div style={{
+              width: '140px',
+              height: '140px',
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
+              overflow: 'hidden',
+              border: '6px solid #ffffff',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}>
+              {personal.profilePhotoUrl ? (
+                <img 
+                  src={personal.profilePhotoUrl} 
+                  alt="Profile" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  backgroundColor: '#e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '48px',
+                  color: '#999999'
+                }}>
+                  👤
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-2 text-white" style={{ fontSize: '9px', paddingLeft: '28px' }}>
-            <div className="flex items-start gap-2">
-              <span>📞</span>
-              <span>{personal.mobileNumber || '+123-456-7890'}</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span>✉️</span>
-              <span className="break-all">{personal.email || 'hello@reallygreatsite.com'}</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span>📍</span>
-              <span>{personal.address || '123 Anywhere St., Any City, ST 12345'}</span>
-            </div>
-          </div>
-        </div>
 
-        {/* About Me */}
-        {personal.aboutCareerObjective && (
-          <div className="resume-section mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">👤</span>
-              <h2 className="text-sm font-bold" style={{ fontSize: '12px', letterSpacing: '1px' }}>
-                About Me
-              </h2>
-            </div>
-            <p className="text-justify leading-relaxed" style={{ fontSize: '9px', paddingLeft: '28px', opacity: 0.95 }}>
-              {personal.aboutCareerObjective}
+          {/* Name */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold',
+              color: primaryColor,
+              margin: '0',
+              lineHeight: '1.2'
+            }}>
+              {personal.firstName || 'Lorna'}
+            </h1>
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold',
+              color: primaryColor,
+              margin: '0',
+              lineHeight: '1.2'
+            }}>
+              {personal.lastName || 'Alvarado'}
+            </h1>
+            <p style={{ 
+              fontSize: '14px', 
+              color: mediumTextColor,
+              marginTop: '12px',
+              fontWeight: '400'
+            }}>
+              {experience.jobRole || 'Marketing Manager'}
             </p>
           </div>
-        )}
 
-        {/* Skills */}
-        {skillsLinks.skills.length > 0 && (
-          <div className="resume-section mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🎯</span>
-              <h2 className="text-sm font-bold" style={{ fontSize: '12px', letterSpacing: '1px' }}>
-                Skills
+          {/* Contact Section */}
+          <div className="resume-section" style={{ marginBottom: '32px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              marginBottom: '16px'
+            }}>
+              <span style={{ fontSize: '18px' }}>📞</span>
+              <h2 style={{ 
+                fontSize: '13px', 
+                fontWeight: 'bold',
+                letterSpacing: '0.5px',
+                margin: '0',
+                color: sidebarHeaderColor
+              }}>
+                Contact
               </h2>
             </div>
-            <ul className="space-y-1" style={{ paddingLeft: '28px' }}>
-              {skillsLinks.skills.filter(s => s.enabled && s.skillName).map((skill, idx) => (
-                <li key={idx} className="skill-item flex items-center gap-2" style={{ fontSize: '9px' }}>
-                  <span>•</span>
-                  <span>{skill.skillName}</span>
-                </li>
-              ))}
-            </ul>
+            <div style={{ 
+              paddingLeft: '0', 
+              fontSize: '10px',
+              borderTop: `1px solid ${dividerColor}`,
+              paddingTop: '12px',
+              color: sidebarHeaderColor
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', minWidth: '16px', color: primaryColor }}>📞</span>
+                <span>{personal.mobileNumber || '+123-456-7890'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', minWidth: '16px', color: primaryColor }}>@</span>
+                <span style={{ wordBreak: 'break-all' }}>{personal.email || 'hello@reallygreatsite.com'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', minWidth: '16px', color: primaryColor }}>📍</span>
+                <span>{personal.address || '123 Anywhere St., Any City, ST 12345'}</span>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* About Me Section */}
+          {personal.aboutCareerObjective && (
+            <div className="resume-section" style={{ marginBottom: '32px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                marginBottom: '16px'
+              }}>
+                <span style={{ fontSize: '18px' }}>👤</span>
+                <h2 style={{ 
+                  fontSize: '13px', 
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  margin: '0',
+                  color: sidebarHeaderColor
+                }}>
+                  About Me
+                </h2>
+              </div>
+              <p style={{ 
+                fontSize: '10px',
+                paddingLeft: '0',
+                paddingTop: '12px',
+                borderTop: `1px solid ${dividerColor}`,
+                textAlign: 'justify',
+                lineHeight: '1.5',
+                margin: '0',
+                color: sidebarHeaderColor
+              }}>
+                {personal.aboutCareerObjective}
+              </p>
+            </div>
+          )}
+
+          {/* Skills Section */}
+          {skillsLinks.skills.length > 0 && skillsLinks.skills.some(s => s.enabled && s.skillName) && (
+            <div className="resume-section" style={{ marginBottom: '32px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                marginBottom: '16px'
+              }}>
+                <span style={{ fontSize: '18px' }}>🧩</span>
+                <h2 style={{ 
+                  fontSize: '13px', 
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  margin: '0',
+                  color: sidebarHeaderColor
+                }}>
+                  Skills
+                </h2>
+              </div>
+              <ul style={{ 
+                listStyle: 'none', 
+                padding: '0', 
+                margin: '0',
+                borderTop: `1px solid ${dividerColor}`,
+                paddingTop: '12px'
+              }}>
+                {skillsLinks.skills.filter(s => s.enabled && s.skillName).map((skill, idx) => (
+                  <li key={idx} style={{ 
+                    fontSize: '10px',
+                    marginBottom: '8px',
+                    paddingLeft: '0',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    color: sidebarHeaderColor
+                  }}>
+                    <span>•</span>
+                    <span>{skill.skillName}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right Content - White */}
-      <div className="w-[65%] bg-white text-gray-800" style={{ padding: '20mm 20mm 20mm 15mm' }}>
-        {/* Education */}
+      <div style={{ 
+        width: mainContentWidth, 
+        backgroundColor: '#ffffff',
+        color: mediumTextColor,
+        padding: mainContentPadding,
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Education Section */}
         {education.higherEducationEnabled && education.higherEducation.length > 0 && (
-          <div className="resume-section mb-6">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-300">
-              <span className="text-2xl">🎓</span>
-              <h2 className="text-base font-bold text-gray-800" style={{ fontSize: '14px', letterSpacing: '1px' }}>
+          <div className="resume-section" style={{ marginBottom: '35px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '10px',
+              borderBottom: `1px solid ${dividerColor}`
+            }}>
+              <span style={{ fontSize: '20px' }}>🎓</span>
+              <h2 style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                color: mainHeaderColor,
+                letterSpacing: '0.5px',
+                margin: '0'
+              }}>
                 Education
               </h2>
             </div>
             {education.higherEducation.map((edu, idx) => (
-              <div key={idx} className="education-item mb-4 ml-8">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
-                  <div>
-                    <h3 className="font-bold text-gray-800" style={{ fontSize: '11px' }}>
+              <div key={idx} className="education-item" style={{ marginBottom: '20px', marginLeft: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    marginTop: '5px',
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 'bold',
+                      color: darkTextColor,
+                      margin: '0 0 4px 0'
+                    }}>
                       {edu.degree || 'Bachelor of Business Management'}
                     </h3>
-                    <p className="text-blue-600 italic" style={{ fontSize: '10px' }}>
+                    <p style={{ 
+                      fontSize: '11px',
+                      color: '#777777',
+                      fontStyle: 'italic',
+                      margin: '0 0 4px 0'
+                    }}>
                       {edu.instituteName || 'Borcelle University'}
                     </p>
-                    <p className="text-gray-500" style={{ fontSize: '9px' }}>
-                      {edu.startYear} - {edu.endYear || '2020'}
+                    <p style={{ 
+                      fontSize: '10px',
+                      color: lightTextColor,
+                      margin: '0 0 6px 0'
+                    }}>
+                      {edu.startYear || '2016'} - {edu.currentlyPursuing ? 'Present' : (edu.endYear || '2020')}
                     </p>
                     {edu.resultFormat && edu.result && (
-                      <p className="text-gray-600 mt-1" style={{ fontSize: '9px' }}>
+                      <p style={{ 
+                        fontSize: '10px',
+                        color: mediumTextColor,
+                        margin: '0'
+                      }}>
                         {edu.resultFormat}: {edu.result}
                       </p>
                     )}
@@ -140,34 +318,156 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
                 </div>
               </div>
             ))}
+
+            {/* SSLC */}
+            {education.sslcEnabled && education.sslc.instituteName && (
+              <div className="education-item" style={{ marginBottom: '20px', marginLeft: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    marginTop: '5px',
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 'bold',
+                      color: darkTextColor,
+                      margin: '0 0 4px 0'
+                    }}>
+                      SSLC
+                    </h3>
+                    <p style={{ 
+                      fontSize: '11px',
+                      color: '#777777',
+                      fontStyle: 'italic',
+                      margin: '0 0 4px 0'
+                    }}>
+                      {education.sslc.instituteName}
+                    </p>
+                    <p style={{ 
+                      fontSize: '10px',
+                      color: lightTextColor,
+                      margin: '0'
+                    }}>
+                      {education.sslc.yearOfPassing}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pre-University */}
+            {education.preUniversityEnabled && education.preUniversity.instituteName && (
+              <div className="education-item" style={{ marginBottom: '20px', marginLeft: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    marginTop: '5px',
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 'bold',
+                      color: darkTextColor,
+                      margin: '0 0 4px 0'
+                    }}>
+                      {education.preUniversity.subjectStream}
+                    </h3>
+                    <p style={{ 
+                      fontSize: '11px',
+                      color: '#777777',
+                      fontStyle: 'italic',
+                      margin: '0 0 4px 0'
+                    }}>
+                      {education.preUniversity.instituteName}
+                    </p>
+                    <p style={{ 
+                      fontSize: '10px',
+                      color: lightTextColor,
+                      margin: '0'
+                    }}>
+                      {education.preUniversity.yearOfPassing}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Experience */}
-        {experience.workExperiences.length > 0 && (
-          <div className="resume-section mb-6">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-300">
-              <span className="text-2xl">💼</span>
-              <h2 className="text-base font-bold text-gray-800" style={{ fontSize: '14px', letterSpacing: '1px' }}>
+        {/* Experience Section */}
+        {experience.workExperiences.length > 0 && experience.workExperiences.some(exp => exp.enabled) && (
+          <div className="resume-section" style={{ marginBottom: '35px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '10px',
+              borderBottom: `1px solid ${dividerColor}`
+            }}>
+              <span style={{ fontSize: '20px' }}>💼</span>
+              <h2 style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                color: mainHeaderColor,
+                letterSpacing: '0.5px',
+                margin: '0'
+              }}>
                 Experience
               </h2>
             </div>
             {experience.workExperiences.filter(exp => exp.enabled).map((exp, idx) => (
-              <div key={idx} className="work-item mb-4 ml-8">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
-                  <div>
-                    <h3 className="font-bold text-gray-800" style={{ fontSize: '11px' }}>
+              <div key={idx} className="work-item" style={{ marginBottom: '20px', marginLeft: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    marginTop: '5px',
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 'bold',
+                      color: darkTextColor,
+                      margin: '0 0 4px 0'
+                    }}>
                       {exp.jobTitle}
                     </h3>
-                    <p className="text-blue-600 italic" style={{ fontSize: '10px' }}>
+                    <p style={{ 
+                      fontSize: '11px',
+                      color: '#777777',
+                      fontStyle: 'italic',
+                      margin: '0 0 4px 0'
+                    }}>
                       {exp.companyName}
                     </p>
-                    <p className="text-gray-500" style={{ fontSize: '9px' }}>
+                    <p style={{ 
+                      fontSize: '10px',
+                      color: lightTextColor,
+                      margin: '0 0 10px 0'
+                    }}>
                       {exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate}
                     </p>
                     {exp.description && (
-                      <p className="text-gray-600 mt-2 leading-relaxed text-justify" style={{ fontSize: '9px' }}>
+                      <p style={{ 
+                        fontSize: '10px',
+                        color: mediumTextColor,
+                        margin: '0',
+                        lineHeight: '1.6',
+                        textAlign: 'justify'
+                      }}>
                         {exp.description}
                       </p>
                     )}
@@ -178,28 +478,63 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
           </div>
         )}
 
-        {/* Projects */}
+        {/* Projects Section */}
         {projects.length > 0 && projects.some(p => p.enabled && p.projectTitle) && (
-          <div className="resume-section mb-6">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-300">
-              <span className="text-2xl">📁</span>
-              <h2 className="text-base font-bold text-gray-800" style={{ fontSize: '14px', letterSpacing: '1px' }}>
+          <div className="resume-section" style={{ marginBottom: '35px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '10px',
+              borderBottom: `1px solid ${dividerColor}`
+            }}>
+              <span style={{ fontSize: '20px' }}>📁</span>
+              <h2 style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                color: mainHeaderColor,
+                letterSpacing: '0.5px',
+                margin: '0'
+              }}>
                 Projects
               </h2>
             </div>
             {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
-              <div key={idx} className="project-item mb-4 ml-8">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
-                  <div>
-                    <h3 className="font-bold text-gray-800" style={{ fontSize: '11px' }}>
+              <div key={idx} className="project-item" style={{ marginBottom: '20px', marginLeft: '0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    marginTop: '5px',
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 'bold',
+                      color: darkTextColor,
+                      margin: '0 0 4px 0'
+                    }}>
                       {project.projectTitle}
                     </h3>
-                    <p className="text-gray-500" style={{ fontSize: '9px' }}>
+                    <p style={{ 
+                      fontSize: '10px',
+                      color: lightTextColor,
+                      margin: '0 0 10px 0'
+                    }}>
                       {project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}
                     </p>
                     {project.description && (
-                      <p className="text-gray-600 mt-2 leading-relaxed text-justify" style={{ fontSize: '9px' }}>
+                      <p style={{ 
+                        fontSize: '10px',
+                        color: mediumTextColor,
+                        margin: '0',
+                        lineHeight: '1.6',
+                        textAlign: 'justify'
+                      }}>
                         {project.description}
                       </p>
                     )}
@@ -210,41 +545,103 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
           </div>
         )}
 
-        {/* References */}
+        {/* Technical Summary */}
+        {skillsLinks.technicalSummaryEnabled && skillsLinks.technicalSummary && (
+          <div className="resume-section" style={{ marginBottom: '35px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '10px',
+              borderBottom: `1px solid ${dividerColor}`
+            }}>
+              <span style={{ fontSize: '20px' }}>💻</span>
+              <h2 style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                color: mainHeaderColor,
+                letterSpacing: '0.5px',
+                margin: '0'
+              }}>
+                Technical Summary
+              </h2>
+            </div>
+            <p style={{ 
+              fontSize: '10px',
+              color: mediumTextColor,
+              lineHeight: '1.6',
+              textAlign: 'justify',
+              margin: '0'
+            }}>
+              {skillsLinks.technicalSummary}
+            </p>
+          </div>
+        )}
+
+        {/* References Section */}
         <div className="resume-section">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-gray-300">
-            <span className="text-2xl">📋</span>
-            <h2 className="text-base font-bold text-gray-800" style={{ fontSize: '14px', letterSpacing: '1px' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px',
+            marginBottom: '20px',
+            paddingBottom: '10px',
+            borderBottom: `1px solid ${dividerColor}`
+          }}>
+            <span style={{ fontSize: '20px' }}>📋</span>
+            <h2 style={{ 
+              fontSize: '16px', 
+              fontWeight: 'bold',
+              color: mainHeaderColor,
+              letterSpacing: '0.5px',
+              margin: '0'
+            }}>
               References
             </h2>
           </div>
-          <div className="ml-8 grid grid-cols-2 gap-4">
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '25px',
+            marginLeft: '0'
+          }}>
             <div>
-              <h3 className="font-bold text-gray-800" style={{ fontSize: '10px' }}>
+              <h3 style={{ 
+                fontSize: '11px', 
+                fontWeight: 'bold',
+                color: darkTextColor,
+                margin: '0 0 4px 0'
+              }}>
                 Harumi Kobayashi
               </h3>
-              <p className="text-gray-600" style={{ fontSize: '9px' }}>
+              <p style={{ fontSize: '10px', color: mediumTextColor, margin: '0 0 3px 0' }}>
                 Wardiere Inc. / CEO
               </p>
-              <p className="text-gray-500" style={{ fontSize: '8px' }}>
-                Phone: 123-456-7890
+              <p style={{ fontSize: '9px', color: lightTextColor, margin: '0 0 2px 0' }}>
+                <span style={{ fontWeight: '600' }}>Phone:</span> 123-456-7890
               </p>
-              <p className="text-gray-500 break-all" style={{ fontSize: '8px' }}>
-                Email: hello@reallygreatsite.com
+              <p style={{ fontSize: '9px', color: lightTextColor, margin: '0', wordBreak: 'break-all' }}>
+                <span style={{ fontWeight: '600' }}>Email:</span> hello@reallygreatsite.com
               </p>
             </div>
             <div>
-              <h3 className="font-bold text-gray-800" style={{ fontSize: '10px' }}>
+              <h3 style={{ 
+                fontSize: '11px', 
+                fontWeight: 'bold',
+                color: darkTextColor,
+                margin: '0 0 4px 0'
+              }}>
                 Bailey Dupont
               </h3>
-              <p className="text-gray-600" style={{ fontSize: '9px' }}>
+              <p style={{ fontSize: '10px', color: mediumTextColor, margin: '0 0 3px 0' }}>
                 Wardiere Inc. / CEO
               </p>
-              <p className="text-gray-500" style={{ fontSize: '8px' }}>
-                Phone: 123-456-7890
+              <p style={{ fontSize: '9px', color: lightTextColor, margin: '0 0 2px 0' }}>
+                <span style={{ fontWeight: '600' }}>Phone:</span> 123-456-7890
               </p>
-              <p className="text-gray-500 break-all" style={{ fontSize: '8px' }}>
-                Email: hello@reallygreatsite.com
+              <p style={{ fontSize: '9px', color: lightTextColor, margin: '0', wordBreak: 'break-all' }}>
+                <span style={{ fontWeight: '600' }}>Email:</span> hello@reallygreatsite.com
               </p>
             </div>
           </div>
