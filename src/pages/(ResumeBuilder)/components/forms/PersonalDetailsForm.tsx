@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import ReactDOM from "react-dom";
 import type { PersonalDetails } from "src/types/resume";
 import {
   FormInput,
@@ -46,6 +47,25 @@ const genders = [
   { value: "Other", label: "Other" },
 ];
 
+const ALL_LANGUAGES = [
+  "Kannada",
+  "English",
+  "Tamil",
+  "Hindi",
+  "Telugu",
+  "Malayalam",
+  "Bengali",
+  "Marathi",
+  "Gujarati",
+  "Punjabi",
+  "Urdu",
+  "French",
+  "Spanish",
+  "German",
+  "Mandarin",
+  "Japanese",
+];
+
 export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
   data,
   onChange,
@@ -75,6 +95,12 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initialLanguages = useRef<string[]>(data.languagesKnown || []);
+  const [newLanguage, setNewLanguage] = useState("");
+  const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false);
+  const languageInputRef = useRef<HTMLInputElement>(null);
+  const languageContainerRef = useRef<HTMLDivElement>(null);
+  const suggestionBoxRef = useRef<HTMLDivElement>(null);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const initialLocation = useRef({
     address: data.address || "",
     country: data.country || "",
@@ -97,6 +123,103 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
       JSON.stringify(initialLanguages.current);
     setLanguagesChanged(hasChanged);
   }, [data.languagesKnown]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        languageContainerRef.current &&
+        !languageContainerRef.current.contains(event.target as Node) &&
+        suggestionBoxRef.current &&
+        !suggestionBoxRef.current.contains(event.target as Node)
+      ) {
+        const trimmedLang = newLanguage.trim();
+        const isValidLanguage = ALL_LANGUAGES.some(
+          (lang) => lang.toLowerCase() === trimmedLang.toLowerCase()
+        );
+
+        if (trimmedLang && !isValidLanguage) {
+          setNewLanguage("");
+        }
+
+        setShowLanguageSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [newLanguage]);
+
+  // update dropdown rect when suggestions open or window scroll/resize
+  useEffect(() => {
+    if (!showLanguageSuggestions) return;
+
+    const updateRect = () => {
+      const el = languageInputRef.current || languageContainerRef.current;
+      if (el) setDropdownRect(el.getBoundingClientRect());
+    };
+
+    updateRect();
+    window.addEventListener("resize", updateRect);
+    window.addEventListener("scroll", updateRect, true);
+
+    return () => {
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
+    };
+  }, [showLanguageSuggestions, newLanguage]);
+
+  const handleLanguageInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setNewLanguage(e.target.value);
+    setShowLanguageSuggestions(true);
+  };
+
+  const handleSelectLanguage = (language: string) => {
+    if (!data.languagesKnown.includes(language.trim())) {
+      onChange({ ...data, languagesKnown: [...data.languagesKnown, language.trim()] });
+    }
+    setNewLanguage("");
+    setShowLanguageSuggestions(false);
+  };
+
+  const handleAddLanguage = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && newLanguage.trim()) {
+      e.preventDefault();
+
+      const exactMatch = filteredSuggestions.find(
+        (lang) => lang.toLowerCase() === newLanguage.trim().toLowerCase()
+      );
+
+      if (exactMatch && !data.languagesKnown.includes(exactMatch)) {
+        onChange({ ...data, languagesKnown: [...data.languagesKnown, exactMatch] });
+        setNewLanguage("");
+      } else if (newLanguage.trim() && filteredSuggestions.length === 0) {
+        setNewLanguage("");
+      }
+
+      setShowLanguageSuggestions(false);
+    }
+  };
+
+  const handleRemoveLanguage = (languageToRemove: string) => {
+    onChange({
+      ...data,
+      languagesKnown: data.languagesKnown.filter((lang) => lang !== languageToRemove),
+    });
+  };
+
+  const filteredSuggestions = useMemo(() => {
+    if (!newLanguage.trim()) return [];
+    const normalizedInput = newLanguage.trim().toLowerCase();
+
+    return ALL_LANGUAGES.filter(
+      (lang) =>
+        lang.toLowerCase().startsWith(normalizedInput) &&
+        !data.languagesKnown.some((addedLang: string) => addedLang.toLowerCase() === lang.toLowerCase())
+    ).slice(0, 5);
+  }, [newLanguage, data.languagesKnown]);
 
   useEffect(() => {
     const changedFields: string[] = [];
@@ -452,7 +575,7 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-visible">
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
           <span className="text-sm font-semibold text-gray-800">
             Profile Photo
@@ -675,12 +798,64 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
               </button>
             </div>
 
-            <TagInput
-              label=""
-              placeholder="Add Languages known to you..."
-              tags={data.languagesKnown}
-              onChange={(v) => updateField("languagesKnown", v)}
-            />
+            <div
+              ref={languageContainerRef}
+              className="relative w-full overflow-visible"
+            >
+              <div className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-orange-400 focus-within:border-transparent min-h-[38px] sm:min-h-[42px] flex flex-wrap gap-2 items-center">
+                {data.languagesKnown.map((lang: string, index: number) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-gray-100 text-gray-700 rounded-md text-xs sm:text-sm"
+                  >
+                    {lang}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLanguage(lang)}
+                      className="hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-3 h-3 sm:w-3.5 sm:h-3.5 cursor-pointer" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  ref={languageInputRef}
+                  type="text"
+                  value={newLanguage}
+                  onChange={handleLanguageInputChange}
+                  onKeyDown={handleAddLanguage}
+                  onFocus={() => setShowLanguageSuggestions(true)}
+                  placeholder="Add Languages known to you..."
+                  className="flex-1 min-w-[150px] sm:min-w-[200px] outline-none text-xs sm:text-sm"
+                />
+              </div>
+
+              {showLanguageSuggestions && filteredSuggestions.length > 0 && dropdownRect && ReactDOM.createPortal(
+                <div
+                  ref={suggestionBoxRef}
+                  style={{
+                    position: "absolute",
+                    top: dropdownRect.bottom + window.scrollY + 6,
+                    left: dropdownRect.left + window.scrollX,
+                    width: dropdownRect.width,
+                    zIndex: 9999,
+                  }}
+                >
+                  <div className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto w-full">
+                    {filteredSuggestions.map((lang, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSelectLanguage(lang)}
+                        className="px-4 py-2 cursor-pointer hover:bg-orange-50 text-gray-700 text-sm whitespace-nowrap"
+                      >
+                        {lang}
+                      </div>
+                    ))}
+                  </div>
+                </div>,
+                document.body
+              )}
+            </div>
           </div>
         )}
       </div>

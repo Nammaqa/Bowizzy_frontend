@@ -160,13 +160,17 @@ const mapProjectsApiToLocal = (apiData: any[]) => {
   }));
 };
 
-const mapCertificatesApiToLocal = (apiData: any[]) => {
-  if (!apiData || apiData.length === 0) {
+const mapCertificatesApiToLocal = (apiData: any) => {
+  const list = Array.isArray(apiData)
+    ? apiData
+    : apiData?.data || apiData?.certificates || [];
+
+  if (!list || list.length === 0) {
     return [{ ...initialResumeData.certifications[0] }];
   }
 
-  return apiData.map((item) => ({
-    id: item.certificate_id.toString(),
+  return list.map((item: any) => ({
+    id: (item.certificate_id ?? item.id ?? Date.now()).toString(),
     certificate_id: item.certificate_id,
     certificateType: item.certificate_type || "",
     certificateTitle: item.certificate_title || "",
@@ -174,8 +178,10 @@ const mapCertificatesApiToLocal = (apiData: any[]) => {
     providedBy: item.certificate_provided_by || "",
     date: item.date ? item.date.substring(0, 7) : "",
     description: item.description || "",
-    certificateUrl: item.file_url || "",
-    uploadedFileName: item.file_url ? item.file_url.split("/").pop() : "",
+    certificateUrl: item.file_url || item.fileUrl || item.file || "",
+    uploadedFileName: (item.file_url || item.fileUrl || item.file)
+      ? (item.file_url || item.fileUrl || item.file).split("/").pop()
+      : "",
     enabled: true,
   }));
 };
@@ -386,9 +392,9 @@ export const ResumeEditor: React.FC = () => {
         }
 
         // Certificates
-        const certificatesResponse = await getCertificatesByUserId(currentUserId, currentToken);
-        const certificatesData = mapCertificatesApiToLocal(certificatesResponse);
-        setResumeData((prev) => ({ ...prev, certifications: certificatesData }));
+          const certificatesResponse = await getCertificatesByUserId(currentUserId, currentToken);
+          const certificatesData = mapCertificatesApiToLocal(certificatesResponse);
+          setResumeData((prev) => ({ ...prev, certifications: certificatesData }));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
