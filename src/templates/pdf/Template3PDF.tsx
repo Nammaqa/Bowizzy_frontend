@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '150px',
+    width: '0%',
+    height: '0px',
     backgroundColor: '#5B8FB9',
   },
   leftSidebarContent: {
@@ -322,58 +322,70 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                 <Text style={styles.contentTitle}>Education</Text>
               </View>
               
-              {/* Higher Education */}
-              {education.higherEducation.map((edu, idx) => (
-                <View key={idx} style={styles.itemContainer}>
-                  <View style={styles.itemWithBullet}>
-                    <View style={styles.blueBullet} />
-                    <View style={styles.itemContent}>
-                      <Text style={styles.itemTitle}>
-                        {edu.degree || 'Bachelor of Business Management'}
-                      </Text>
-                      <Text style={styles.itemSubtitle}>
-                        {edu.instituteName || 'Borcelle University'}
-                      </Text>
-                      <Text style={styles.itemDate}>
-                        {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}
-                      </Text>
-                      {edu.resultFormat && edu.result && (
-                        <Text style={styles.itemResult}>
-                          {edu.resultFormat}: {edu.result}
+              <View style={{ position: 'relative', paddingLeft: 20 }}>
+                {/* Vertical Line */}
+                <View style={{
+                  position: 'absolute',
+                  left: 3.5,
+                  top: 5,
+                  bottom: 20,
+                  width: 2,
+                  backgroundColor: '#5B8FB9'
+                }} />
+                
+                {/* Higher Education */}
+                {education.higherEducation.map((edu, idx) => (
+                  <View key={idx} style={styles.itemContainer}>
+                    <View style={styles.itemWithBullet}>
+                      <View style={styles.blueBullet} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>
+                          {edu.degree || 'Bachelor of Business Management'}
                         </Text>
-                      )}
+                        <Text style={styles.itemSubtitle}>
+                          {edu.instituteName || 'Borcelle University'}
+                        </Text>
+                        <Text style={styles.itemDate}>
+                          {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}
+                        </Text>
+                        {edu.resultFormat && edu.result && (
+                          <Text style={styles.itemResult}>
+                            {edu.resultFormat}: {edu.result}
+                          </Text>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                ))}
 
-              {/* SSLC */}
-              {education.sslcEnabled && education.sslc.instituteName && (
-                <View style={styles.itemContainer}>
-                  <View style={styles.itemWithBullet}>
-                    <View style={styles.blueBullet} />
-                    <View style={styles.itemContent}>
-                      <Text style={styles.itemTitle}>SSLC</Text>
-                      <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
-                      <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                {/* SSLC */}
+                {education.sslcEnabled && education.sslc.instituteName && (
+                  <View style={styles.itemContainer}>
+                    <View style={styles.itemWithBullet}>
+                      <View style={styles.blueBullet} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>SSLC</Text>
+                        <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
+                        <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              )}
+                )}
 
-              {/* Pre-University */}
-              {education.preUniversityEnabled && education.preUniversity.instituteName && (
-                <View style={styles.itemContainer}>
-                  <View style={styles.itemWithBullet}>
-                    <View style={styles.blueBullet} />
-                    <View style={styles.itemContent}>
-                      <Text style={styles.itemTitle}>{education.preUniversity.subjectStream}</Text>
-                      <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
-                      <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                {/* Pre-University */}
+                {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                  <View style={styles.itemContainer}>
+                    <View style={styles.itemWithBullet}>
+                      <View style={styles.blueBullet} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{education.preUniversity.subjectStream}</Text>
+                        <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
+                        <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              )}
+                )}
+              </View>
             </View>
           )}
 
@@ -384,23 +396,36 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                 <Text style={styles.contentIcon}>💼</Text>
                 <Text style={styles.contentTitle}>Experience</Text>
               </View>
-              {experience.workExperiences.filter(exp => exp.enabled).map((exp, idx) => (
-                <View key={idx} style={styles.itemContainer}>
-                  <View style={styles.itemWithBullet}>
-                    <View style={styles.blueBullet} />
-                    <View style={styles.itemContent}>
-                      <Text style={styles.itemTitle}>{exp.jobTitle}</Text>
-                      <Text style={styles.itemSubtitle}>{exp.companyName}</Text>
-                      <Text style={styles.itemDate}>
-                        {exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate}
-                      </Text>
-                      {exp.description && (
-                        <Text style={styles.itemDescription}>{exp.description}</Text>
-                      )}
+              
+              <View style={{ position: 'relative', paddingLeft: 20 }}>
+                {/* Vertical Line */}
+                <View style={{
+                  position: 'absolute',
+                  left: 3.5,
+                  top: 5,
+                  bottom: 20,
+                  width: 2,
+                  backgroundColor: '#5B8FB9'
+                }} />
+                
+                {experience.workExperiences.filter(exp => exp.enabled).map((exp, idx) => (
+                  <View key={idx} style={styles.itemContainer}>
+                    <View style={styles.itemWithBullet}>
+                      <View style={styles.blueBullet} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{exp.jobTitle}</Text>
+                        <Text style={styles.itemSubtitle}>{exp.companyName}</Text>
+                        <Text style={styles.itemDate}>
+                          {exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate}
+                        </Text>
+                        {exp.description && (
+                          <Text style={styles.itemDescription}>{exp.description}</Text>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
           )}
 
@@ -411,22 +436,35 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                 <Text style={styles.contentIcon}>📁</Text>
                 <Text style={styles.contentTitle}>Projects</Text>
               </View>
-              {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
-                <View key={idx} style={styles.itemContainer}>
-                  <View style={styles.itemWithBullet}>
-                    <View style={styles.blueBullet} />
-                    <View style={styles.itemContent}>
-                      <Text style={styles.itemTitle}>{project.projectTitle}</Text>
-                      <Text style={styles.itemDate}>
-                        {project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}
-                      </Text>
-                      {project.description && (
-                        <Text style={styles.itemDescription}>{project.description}</Text>
-                      )}
+              
+              <View style={{ position: 'relative', paddingLeft: 20 }}>
+                {/* Vertical Line */}
+                <View style={{
+                  position: 'absolute',
+                  left: 3.5,
+                  top: 5,
+                  bottom: 20,
+                  width: 2,
+                  backgroundColor: '#5B8FB9'
+                }} />
+                
+                {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
+                  <View key={idx} style={styles.itemContainer}>
+                    <View style={styles.itemWithBullet}>
+                      <View style={styles.blueBullet} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{project.projectTitle}</Text>
+                        <Text style={styles.itemDate}>
+                          {project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}
+                        </Text>
+                        {project.description && (
+                          <Text style={styles.itemDescription}>{project.description}</Text>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
           )}
 
@@ -443,27 +481,7 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
             </View>
           )}
 
-          {/* References */}
-          <View style={styles.contentSection}>
-            <View style={styles.contentSectionHeader}>
-              <Text style={styles.contentIcon}>📋</Text>
-              <Text style={styles.contentTitle}>References</Text>
-            </View>
-            <View style={styles.referencesGrid}>
-              <View style={styles.referenceItem}>
-                <Text style={styles.referenceName}>Harumi Kobayashi</Text>
-                <Text style={styles.referenceTitle}>Wardiere Inc. / CEO</Text>
-                <Text style={styles.referenceContact}>Phone: 123-456-7890</Text>
-                <Text style={styles.referenceContact}>Email: hello@reallygreatsite.com</Text>
-              </View>
-              <View style={styles.referenceItem}>
-                <Text style={styles.referenceName}>Bailey Dupont</Text>
-                <Text style={styles.referenceTitle}>Wardiere Inc. / CEO</Text>
-                <Text style={styles.referenceContact}>Phone: 123-456-7890</Text>
-                <Text style={styles.referenceContact}>Email: hello@reallygreatsite.com</Text>
-              </View>
-            </View>
-          </View>
+
         </View>
       </Page>
     </Document>
