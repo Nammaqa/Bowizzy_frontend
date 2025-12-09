@@ -153,7 +153,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             <section style={{ marginBottom: 18 }}>
               <h2 style={{ fontSize: 12, fontWeight: 700, color: '#2d3748', letterSpacing: '2px', marginBottom: 8 }}>EXPERIENCE</h2>
               {experience.workExperiences.filter(w => w.enabled).map((w, i) => (
-                <div key={i} style={{ marginBottom: 12, breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}>
+                <div key={i} className="avoid-break">
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#2d3748' }}>{w.jobTitle}</div>
                   <div style={{ fontSize: 11, color: '#4a5568', fontStyle: 'italic' }}>{w.companyName} • {w.startDate} - {w.currentlyWorking ? 'Present' : w.endDate}</div>
                   {w.description && <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify', whiteSpace: 'pre-wrap' }}>{htmlToText(w.description)}</p>}
@@ -167,7 +167,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             <section style={{ marginBottom: 18 }}>
               <h2 style={{ fontSize: 12, fontWeight: 700, color: '#2d3748', letterSpacing: '2px', marginBottom: 8 }}>PROJECTS</h2>
               {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
-                <div key={idx} style={{ marginBottom: 12, breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}>
+                    <div key={idx} className="avoid-break">
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#2d3748' }}>{project.projectTitle}</div>
                   <div style={{ fontSize: 11, color: '#4a5568' }}>{project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}</div>
                   {project.description && (
@@ -188,7 +188,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             <section style={{ marginBottom: 18 }}>
               <h2 style={{ fontSize: 12, fontWeight: 700, color: '#2d3748', letterSpacing: '2px', marginBottom: 8 }}>EDUCATION</h2>
               {education.higherEducation.map((edu, idx) => (
-                <div key={idx} style={{ marginBottom: 10, breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}>
+                 <div key={idx} className="avoid-break">
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{edu.instituteName}</div>
                   <div style={{ fontSize: 11, color: '#4a5568' }}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</div>
                 </div>
@@ -218,7 +218,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
                 const single = c.date;
                 const dateRange = start && end ? `${start} - ${end}` : (single ? single : '');
                 return (
-                  <div key={i} style={{ marginBottom: 10, breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}>
+                        <div key={i} className="avoid-break">
                     {c.certificateTitle ? (
                       <div style={{ fontSize: 11, fontWeight: 700, color: '#2d3748' }}>{c.certificateTitle}</div>
                     ) : null}

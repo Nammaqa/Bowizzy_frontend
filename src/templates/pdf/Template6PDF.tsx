@@ -106,7 +106,7 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
             <View style={styles.section}>
               <View style={styles.pillTitle}><Text style={styles.pillTitleText}>Additional Information</Text></View>
               <View style={{ marginTop: 6 }}>
-                {personal.languages && <Text style={styles.text}>Languages: {personal.languages}</Text>}
+                {/* {personal.languages && <Text style={styles.text}>Languages: {personal.languages}</Text>} */}
                 {certifications.filter(c => c.enabled).map((c, i) => (
                   <View key={i} style={{ marginTop: 4 }}>
                     {c.certificateTitle && <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{c.certificateTitle}</Text>}

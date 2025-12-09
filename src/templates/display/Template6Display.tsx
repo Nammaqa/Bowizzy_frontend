@@ -111,7 +111,7 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
         <section>
           <SectionTitle>Additional Information</SectionTitle>
           <div style={{ marginTop: 8, fontSize: 12 }}>
-            {personal.languages && <div style={{ marginBottom: 6 }}><strong>Languages:</strong> {personal.languages}</div>}
+            {/* {personal.languages && <div style={{ marginBottom: 6 }}><strong>Languages:</strong> {personal.languages}</div>} */}
             {certifications.length > 0 && (
               <div style={{ marginBottom: 6 }}>
                 <strong>Certifications:</strong>
