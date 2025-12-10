@@ -109,14 +109,15 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
         </View>
 
         <View style={styles.main}>
-          {/* Header: job role (top) and contact info (single clean line) */}
-          <View style={{ marginBottom: 8 }}>
-            <Text style={{ fontSize: 12, fontFamily: 'Times-Bold', color: '#0f766e' }}>{experience.jobRole}</Text>
-            <Text style={{ fontSize: 9, color: '#4a5568', marginTop: 4 }}>
-              {personal.mobileNumber ? `Tel: ${personal.mobileNumber}` : ''}
-              {personal.email ? `${personal.mobileNumber ? '  |  ' : ''}Email: ${personal.email}` : ''}
-              {skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile ? `${(personal.mobileNumber || personal.email) ? '  |  ' : ''}LinkedIn: ${skillsLinks.links.linkedinProfile}` : ''}
-              {personal.address ? `${(personal.mobileNumber || personal.email || (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile)) ? '  |  ' : ''}${personal.address.split(',')[0]}` : ''}
+          {/* Header: job role on its own line, contact items in a single formatted line */}
+          <View style={{ marginBottom: 10 }}>
+            <Text style={{ fontSize: 14, fontFamily: 'Times-Bold', color: '#0f766e', marginBottom: 6 }}>{experience.jobRole}</Text>
+            <Text style={{ fontSize: 9, color: '#4a5568', lineHeight: 1.4 }}>
+              {personal.mobileNumber && <Text>Tel: {personal.mobileNumber}</Text>}
+              {personal.mobileNumber && personal.email && <Text>     Email: </Text>}
+              {personal.email && <Text>{personal.email}</Text>}
+              {(personal.mobileNumber || personal.email) && (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) && <Text>     LinkedIn Profile</Text>}
+              {(personal.mobileNumber || personal.email || (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile)) && personal.address && <Text>     {personal.address.split(',')[0]}</Text>}
             </Text>
           </View>
 
@@ -175,9 +176,11 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
           {skillsLinks.skills.length > 0 && (
             <View style={{ marginBottom: 10 }}>
               <Text style={styles.sectionTitle}>SKILLS</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {skillsLinks.skills.filter(s => s.enabled && s.skillName).map((s, i) => (
-                  <Text key={i} style={{ fontSize: 9, color: '#4a5568', marginRight: 6 }}>{s.skillName}</Text>
+                  <View key={i} style={{ borderWidth: 1, borderColor: '#e6edf0', paddingLeft: 6, paddingRight: 6, paddingTop: 4, paddingBottom: 4, borderRadius: 2, marginBottom: 4 }}>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{s.skillName}</Text>
+                  </View>
                 ))}
               </View>
             </View>

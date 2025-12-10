@@ -14,43 +14,49 @@ const styles = StyleSheet.create({
   },
   // Header Section
   header: {
-    borderBottomWidth: 3,
-    borderBottomColor: "#4a5568",
-    paddingBottom: 18,
+    borderBottomWidth: 2,
+    borderBottomColor: "#6b7280",
+    paddingBottom: 16,
     marginBottom: 18,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   nameSection: {
     flexDirection: "column",
+    flex: 1,
   },
   name: {
-    fontSize: 30,
+    fontSize: 28,
     fontFamily: "Times-Bold",
-    color: "#2d3748",
-    letterSpacing: 1.5,
-    marginBottom: 4,
+    color: "#1f2937",
+    letterSpacing: 1,
+    marginBottom: 0,
   },
   nameDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
-    marginTop: 2,
-    marginBottom: 6,
-    width: "100%",
+    borderBottomWidth: 0,
+    width: 0,
   },
   jobTitle: {
-    fontSize: 12,
-    color: "#4a5568",
+    fontSize: 11,
+    color: "#4b5563",
     marginTop: 4,
+    letterSpacing: 0.5,
+  },
+  verticalSeparator: {
+    borderLeftWidth: 1,
+    borderLeftColor: "#d1d5db",
+    minHeight: 50,
   },
   contactSection: {
     flexDirection: "column",
     alignItems: "flex-end",
-    fontSize: 10,
-    color: "#4a5568",
+    fontSize: 9,
+    color: "#4b5563",
+    minWidth: 180,
   },
   contactItem: {
-    marginBottom: 4,
+    marginBottom: 3,
   },
   // Summary Section
   summary: {
@@ -257,7 +263,6 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
               {personal.firstName.toUpperCase()}{" "}
               {personal.lastName.toUpperCase()}
             </Text>
-            <View style={styles.nameDivider} />
             <Text style={styles.jobTitle}>
               {experience.jobRole || "Executive Secretary"}
             </Text>

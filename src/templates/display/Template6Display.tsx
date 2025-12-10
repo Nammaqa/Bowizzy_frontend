@@ -23,8 +23,8 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
   };
 
   const SectionTitle: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-    <div style={{ background: '#e6e6e6', borderRadius: 20, padding: '6px 12px', display: 'inline-block', marginBottom: 10 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{children}</div>
+    <div style={{ background: '#e6e6e6', padding: '8px 14px', marginBottom: 10, borderRadius: 4, display: 'block', width: '100%' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#222' }}>{children}</div>
     </div>
   );
 
@@ -37,10 +37,10 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
               <div style={{ fontSize: 34, fontWeight: 800 }}>{personal.firstName} {personal.lastName}</div>
               {experience.jobRole && <div style={{ fontSize: 14, fontStyle: 'italic', marginTop: 6 }}>{experience.jobRole}</div>}
             </div>
-            <div style={{ textAlign: 'right', minWidth: 180 }}>
-              {personal.email && <div style={{ fontSize: 12 }}>{personal.email}</div>}
-              {personal.mobileNumber && <div style={{ fontSize: 12 }}>{personal.mobileNumber}</div>}
-              {personal.address && <div style={{ fontSize: 12 }}>{personal.address.split(',')[0]}</div>}
+            <div style={{ fontSize: 11, color: '#555', textAlign: 'right', minWidth: 180 }}>
+              {personal.email && <div>{personal.email}</div>}
+              {personal.mobileNumber && <div>{personal.mobileNumber}</div>}
+              {personal.address && <div>{personal.address}</div>}
             </div>
           </div>
         </header>
@@ -53,13 +53,13 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
           </section>
         )}
 
-        {/* Technical skills / Key skills - multi column like the image */}
+        {/* Technical skills / Key skills - 3 column layout like the image */}
         {skillsLinks.skills.length > 0 && (
           <section style={{ marginBottom: 14 }}>
             <SectionTitle>Technical Skills</SectionTitle>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px 20px', marginTop: 8 }}>
               {skillsLinks.skills.filter(s => s.enabled && s.skillName).map((s, i) => (
-                <div key={i} style={{ flex: '1 1 30%', minWidth: 120, fontSize: 12 }}>{s.skillName}</div>
+                <div key={i} style={{ fontSize: 12 }}>{s.skillName}</div>
               ))}
             </div>
           </section>
@@ -110,16 +110,15 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
         {/* Additional information */}
         <section>
           <SectionTitle>Additional Information</SectionTitle>
-          <div style={{ marginTop: 8, fontSize: 12 }}>
-            {/* {personal.languages && <div style={{ marginBottom: 6 }}><strong>Languages:</strong> {personal.languages}</div>} */}
-            {certifications.length > 0 && (
-              <div style={{ marginBottom: 6 }}>
-                <strong>Certifications:</strong>
-                <div style={{ marginTop: 6 }}>
-                  {certifications.filter(c => c.enabled).map((c, i) => (
-                    <div key={i} style={{ marginBottom: 4 }}>{c.certificateTitle} {((c as any).startDate || (c as any).endDate) ? `• ${(c as any).startDate || ''} ${(c as any).endDate || ''}` : ''}</div>
-                  ))}
-                </div>
+          <div style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6 }}>
+            {personal.languagesKnown && personal.languagesKnown.length > 0 && (
+              <div style={{ marginBottom: 8 }}>
+                <strong>Languages:</strong> {personal.languagesKnown.join(', ')}
+              </div>
+            )}
+            {certifications.length > 0 && certifications.some(c => c.enabled) && (
+              <div style={{ marginBottom: 8 }}>
+                <strong>Certifications:</strong> {certifications.filter(c => c.enabled && c.certificateTitle).map(c => c.certificateTitle).join(', ')}
               </div>
             )}
           </div>

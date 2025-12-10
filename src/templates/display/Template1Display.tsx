@@ -15,40 +15,35 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
   return (
     <div className="w-[210mm] bg-white" style={{ minHeight: '297mm', fontFamily: 'Times New Roman, serif' }}>
       {/* Header Section */}
-      <div style={{ padding: '30px 40px 20px 40px', borderBottom: '3px solid #4a5568' }}>
-        <div className="flex justify-between items-start">
+      <div style={{ padding: '25px 40px 20px 40px', borderBottom: '2px solid #6b7280' }}>
+        <div className="flex items-start justify-between">
           {/* Left - Name and Title */}
           <div>
             <h1 style={{ 
-              fontSize: '36px', 
-              fontWeight: 'bold', 
-              color: '#2d3748',
-              letterSpacing: '2px',
-              marginBottom: '4px'
+              fontSize: '32px', 
+              fontWeight: '700', 
+              color: '#1f2937',
+              letterSpacing: '1px',
+              marginBottom: '2px',
+              lineHeight: '1'
             }}>
-              {personal.firstName.toUpperCase()} <span style={{ fontWeight: 'normal' }}>{personal.lastName.toUpperCase()}</span>
+              {personal.firstName.toUpperCase()} <span style={{ fontWeight: '600' }}>{personal.lastName.toUpperCase()}</span>
             </h1>
-            <div style={{ 
-              borderBottom: '1px solid #2d3748', 
-              width: '100%', 
-              marginTop: '4px',
-              marginBottom: '8px'
-            }}></div>
-            <p style={{ fontSize: '14px', color: '#4a5568', marginTop: '4px' }}>
+            <p style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', letterSpacing: '0.5px' }}>
               {experience.jobRole}
             </p>
           </div>
 
           {/* Right - Contact Info */}
-          <div className="text-right" style={{ fontSize: '11px', color: '#4a5568' }}>
-            <div className="flex items-center justify-end gap-2 mb-2">
-              <span>{personal.mobileNumber}</span>
+          <div style={{ fontSize: '10px', color: '#4b5563', textAlign: 'right', minWidth: '150px' }}>
+            <div style={{ marginBottom: '5px' }}>
+              {personal.mobileNumber}
             </div>
-            <div className="flex items-center justify-end gap-2 mb-2">
-              <span>{personal.email }</span>
+            <div style={{ marginBottom: '5px' }}>
+              {personal.email}
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <span>{personal.address}</span>
+            <div>
+              {personal.address}
             </div>
           </div>
         </div>

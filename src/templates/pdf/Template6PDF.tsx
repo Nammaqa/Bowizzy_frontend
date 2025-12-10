@@ -42,7 +42,7 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
             <View style={{ textAlign: 'right' }}>
               {personal.email && <Text style={styles.contact}>{personal.email}</Text>}
               {personal.mobileNumber && <Text style={styles.contact}>{personal.mobileNumber}</Text>}
-              {personal.address && <Text style={styles.contact}>{personal.address.split(',')[0]}</Text>}
+              {personal.address && <Text style={styles.contact}>{personal.address}</Text>}
             </View>
           </View>
 
@@ -56,9 +56,11 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
           {skillsLinks.skills.length > 0 && (
             <View style={styles.section}>
               <View style={styles.pillTitle}><Text style={styles.pillTitleText}>Technical Skills</Text></View>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, gap: 8 }}>
                 {skillsLinks.skills.filter(s => s.enabled && s.skillName).map((s, i) => (
-                  <Text key={i} style={{ marginRight: 8, fontSize: 10 }}>{s.skillName}</Text>
+                  <View key={i} style={{ width: '30%' }}>
+                    <Text style={{ fontSize: 10 }}>{s.skillName}</Text>
+                  </View>
                 ))}
               </View>
             </View>
@@ -106,14 +108,12 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
             <View style={styles.section}>
               <View style={styles.pillTitle}><Text style={styles.pillTitleText}>Additional Information</Text></View>
               <View style={{ marginTop: 6 }}>
-                {/* {personal.languages && <Text style={styles.text}>Languages: {personal.languages}</Text>} */}
-                {certifications.filter(c => c.enabled).map((c, i) => (
-                  <View key={i} style={{ marginTop: 4 }}>
-                    {c.certificateTitle && <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{c.certificateTitle}</Text>}
-                    {(c as any).startDate && <Text style={styles.smallMuted}>{(c as any).startDate} - {(c as any).endDate}</Text>}
-                    {c.description && <Text style={styles.text}>{htmlToText(c.description)}</Text>}
-                  </View>
-                ))}
+                {personal.languagesKnown && personal.languagesKnown.length > 0 && (
+                  <Text style={styles.text}><Text style={{ fontWeight: 'bold' }}>Languages: </Text>{personal.languagesKnown.join(', ')}</Text>
+                )}
+                {certifications.filter(c => c.enabled && c.certificateTitle).length > 0 && (
+                  <Text style={[styles.text, { marginTop: 4 }]}><Text style={{ fontWeight: 'bold' }}>Certifications: </Text>{certifications.filter(c => c.enabled && c.certificateTitle).map(c => c.certificateTitle).join(', ')}</Text>
+                )}
               </View>
             </View>
           )}

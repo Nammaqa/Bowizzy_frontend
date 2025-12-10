@@ -99,44 +99,17 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
 
         {/* Main Content */}
         <main style={{ flex: 1, background: '#ffffff', padding: '28px', boxSizing: 'border-box' }}>
-          {/* Header: job role on its own line, contact items on the line below */}
-          <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0f766e' }}>{experience.jobRole}</div>
+          {/* Header: job role on its own line, contact items in a single formatted line */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0f766e', marginBottom: 8 }}>
+              {experience.jobRole}
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <div style={{ display: 'flex', gap: 18, alignItems: 'center', fontSize: 12, color: '#4a5568', flexWrap: 'wrap' }}>
-                {personal.mobileNumber && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ opacity: 0.9 }}>📞</span>
-                    <span>{personal.mobileNumber}</span>
-                  </div>
-                )}
-
-                {personal.email && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ opacity: 0.9 }}>✉️</span>
-                    <span>{personal.email}</span>
-                  </div>
-                )}
-
-                {((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ opacity: 0.9 }}>🔗</span>
-                    <a href={(skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile} target="_blank" rel="noreferrer" style={{ color: '#4a5568', textDecoration: 'none' }}>
-                      LinkedIn
-                    </a>
-                  </div>
-                )}
-
-                {personal.address && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ opacity: 0.9 }}>📍</span>
-                    <span>{personal.address.split(',')[0]}</span>
-                  </div>
-                )}
-              </div>
+            <div style={{ fontSize: 12, color: '#4a5568', lineHeight: 1.6 }}>
+              {personal.mobileNumber && <span>Tel: {personal.mobileNumber}</span>}
+              {personal.mobileNumber && personal.email && <span>     Email: </span>}
+              {personal.email && <span>{personal.email}</span>}
+              {(personal.mobileNumber || personal.email) && ((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && <span>     LinkedIn Profile</span>}
+              {(personal.mobileNumber || personal.email || ((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile)) && personal.address && <span>     + {personal.address.split(',')[0]}</span>}
             </div>
           </div>
 
