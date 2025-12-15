@@ -126,3 +126,14 @@
     display: block !important;
   }
 }
+
+/* Utility: hide elements when printing (useful for UI placeholders) */
+.hide-on-print {
+  display: block;
+}
+
+@media print {
+  .hide-on-print {
+    display: none !important;
+  }
+}

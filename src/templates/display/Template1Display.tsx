@@ -5,11 +5,13 @@ import type { ResumeData } from '@/types/resume';
 interface Template1DisplayProps {
   data: ResumeData;
   showPageBreaks?: boolean;
+  supportsPhoto?: boolean;
 }
 
-export const Template1Display: React.FC<Template1DisplayProps> = ({ 
+export const Template1Display: React.FC<Template1DisplayProps> = ({
   data,
-  showPageBreaks = false 
+  showPageBreaks = false,
+  supportsPhoto = true,
 }) => {
   const { personal, education, experience, projects, skillsLinks, certifications } = data;
   const sortedHigherEducation = React.useMemo(() => {

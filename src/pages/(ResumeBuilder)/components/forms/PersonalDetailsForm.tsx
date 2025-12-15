@@ -20,6 +20,7 @@ interface PersonalDetailsFormProps {
   userId: string;
   token: string;
   personalDetailsId: string | null;
+  supportsPhoto?: boolean;
 }
 
 const countries = [
@@ -72,6 +73,7 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
   userId,
   token,
   personalDetailsId,
+  supportsPhoto = true,
 }) => {
   const [personalInfoCollapsed, setPersonalInfoCollapsed] = useState(false);
   const [languagesCollapsed, setLanguagesCollapsed] = useState(false);
@@ -575,6 +577,20 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
 
   return (
     <div className="flex flex-col gap-5">
+      {/* If the selected template does not support photos, show a notice in the form */}
+      {supportsPhoto === false && (
+        <div className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+          <div className="p-2 bg-gray-100 rounded-md">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M12 1a4 4 0 0 0-4 4v3H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V5a4 4 0 0 0-4-4z" stroke="#9CA3AF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-gray-800">This Template does not support photo upload</div>
+            <div className="text-xs text-gray-500">Select a template that supports photos to show your image</div>
+          </div>
+        </div>
+      )}
       <div className="bg-white border border-gray-200 rounded-xl overflow-visible">
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
           <span className="text-sm font-semibold text-gray-800">

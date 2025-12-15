@@ -473,6 +473,7 @@ export const ResumeEditor: React.FC = () => {
             userId={userId}
             token={token}
             personalDetailsId={personalDetailsId}
+            supportsPhoto={selectedTemplate?.supportsPhoto ?? false}
           />
         );
       case 1:
@@ -544,7 +545,12 @@ export const ResumeEditor: React.FC = () => {
     }
 
     const DisplayComponent = selectedTemplate.displayComponent || selectedTemplate.component;
-    return <DisplayComponent data={resumeData} />;
+    return (
+      <DisplayComponent
+        data={resumeData}
+        supportsPhoto={selectedTemplate.supportsPhoto ?? false}
+      />
+    );
   };
 
   return (

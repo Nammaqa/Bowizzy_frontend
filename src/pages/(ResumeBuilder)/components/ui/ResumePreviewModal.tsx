@@ -98,14 +98,24 @@ export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                   ref={previewContentRef}
                   className="resume-preview-content relative"
                 >
-                  {DisplayComponent && <DisplayComponent data={resumeData} />}
+                  {DisplayComponent && (
+                    <DisplayComponent
+                      data={resumeData}
+                      supportsPhoto={template?.supportsPhoto ?? false}
+                    />
+                  )}
                   {/* <PageBreakMarkers markers={markers} /> */}
                 </div>
               </div>
 
               {/* Hidden Print Version (no markers) */}
               <div className="print-version hidden">
-                {DisplayComponent && <DisplayComponent data={resumeData} />}
+                {DisplayComponent && (
+                  <DisplayComponent
+                    data={resumeData}
+                    supportsPhoto={template?.supportsPhoto ?? false}
+                  />
+                )}
               </div>
             </div>
           </div>

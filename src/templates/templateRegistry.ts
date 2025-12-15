@@ -28,6 +28,7 @@ export interface TemplateInfo {
   displayComponent: React.ComponentType<any>; 
   pdfComponent?: React.ComponentType<any>; 
   pageCount?: number;
+  supportsPhoto?: boolean;
 }
 
 // Template Registry
@@ -41,6 +42,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template1Display,
     pdfComponent: Template1PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template2',
@@ -50,6 +52,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template2Display,
     pdfComponent: Template2PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template3',
@@ -59,6 +62,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template3Display,
     pdfComponent: Template3PDF,
     pageCount: 1,
+    supportsPhoto: true,
   },
   {
     id: 'template4',
@@ -68,6 +72,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template4Display,
     pdfComponent: Template4PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template5',
@@ -77,6 +82,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template5Display,
     pdfComponent: Template5PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template6',
@@ -86,6 +92,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template6Display,
     pdfComponent: Template6PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template7',
@@ -95,6 +102,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template7Display,
     pdfComponent: Template7PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template8',
@@ -104,6 +112,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template8Display,
     pdfComponent: Template8PDF,
     pageCount: 1,
+    supportsPhoto: false,
   },
   {
     id: 'template9',
@@ -113,6 +122,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template9Display,
     pdfComponent: Template9PDF,
     pageCount: 1,
+    supportsPhoto: true,
   },
   {
     id: 'template10',
@@ -122,6 +132,7 @@ const TEMPLATE_REGISTRY: TemplateInfo[] = [
     displayComponent: Template10Display,
     pdfComponent: Template10PDF,
     pageCount: 1,
+    supportsPhoto: true,
   },
   // Add more templates here...
 ];
