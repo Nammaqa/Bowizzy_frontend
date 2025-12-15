@@ -12,6 +12,25 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
   showPageBreaks = false 
 }) => {
   const { personal, education, experience, projects, skillsLinks, certifications } = data;
+  const sortedHigherEducation = React.useMemo(() => {
+    const parseYearKey = (val: string) => {
+      if (!val) return -Infinity;
+      const parts = val.split('-');
+      const y = parseInt(parts[0], 10) || 0;
+      const m = parseInt(parts[1], 10) || 0;
+      return y * 100 + m;
+    };
+
+    return [...(education.higherEducation || [])].sort((a, b) => {
+      if (a.currentlyPursuing && !b.currentlyPursuing) return -1;
+      if (!a.currentlyPursuing && b.currentlyPursuing) return 1;
+
+      const aKey = parseYearKey(a.endYear || a.startYear || '');
+      const bKey = parseYearKey(b.endYear || b.startYear || '');
+
+      return bKey - aKey;
+    });
+  }, [education.higherEducation]);
 
   return (
     <div className="w-[210mm] bg-white" style={{ minHeight: '297mm', fontFamily: 'Times New Roman, serif' }}>
@@ -94,7 +113,7 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
               }}>
                 EDUCATION
               </h2>
-              {education.higherEducation.map((edu, idx) => (
+              {sortedHigherEducation.map((edu, idx) => (
                 <div key={idx} className="education-item" style={{ marginBottom: '14px' }}>
                   <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#2d3748', marginBottom: '2px' }}>
                     {edu.instituteName || 'Ginyard International Co. University'}
@@ -109,20 +128,6 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
               ))}
 
               {/* SSLC */}
-              {education.sslcEnabled && education.sslc.instituteName && (
-                <div className="education-item" style={{ marginBottom: '14px' }}>
-                  <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#2d3748', marginBottom: '2px' }}>
-                    {education.sslc.instituteName}
-                  </h3>
-                  <p style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>
-                    SSLC - {education.sslc.boardType}
-                  </p>
-                  <p style={{ fontSize: '9px', color: '#718096' }}>
-                    {education.sslc.yearOfPassing}
-                  </p>
-                </div>
-              )}
-
               {/* Pre-University */}
               {education.preUniversityEnabled && education.preUniversity.instituteName && (
                 <div className="education-item" style={{ marginBottom: '14px' }}>
@@ -134,6 +139,21 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                   </p>
                   <p style={{ fontSize: '9px', color: '#718096' }}>
                     {education.preUniversity.yearOfPassing}
+                  </p>
+                </div>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <div className="education-item" style={{ marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#2d3748', marginBottom: '2px' }}>
+                    {education.sslc.instituteName}
+                  </h3>
+                  <p style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>
+                    SSLC - {education.sslc.boardType}
+                  </p>
+                  <p style={{ fontSize: '9px', color: '#718096' }}>
+                    {education.sslc.yearOfPassing}
                   </p>
                 </div>
               )}
@@ -197,9 +217,12 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                     </p>
                   )}
                   {cert.description && (
-                    <p style={{ fontSize: '9px', color: '#718096', paddingLeft: '12px' }}>
-                      {cert.description}
-                    </p>
+                    <div style={{ paddingLeft: '12px' }}>
+                      <div
+                        style={{ fontSize: '9px', color: '#718096' }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cert.description || '') }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -234,22 +257,13 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                     {exp.companyName} | {exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate}
                   </p>
                   {exp.description && (
-                    <ul style={{ margin: '6px 0 0 0', padding: 0, listStyle: 'none' }}>
-                      {exp.description.split('\n').filter(line => line.trim()).map((line, i) => (
-                        <li key={i} style={{ 
-                          fontSize: '9px', 
-                          color: '#4a5568',
-                          marginBottom: '4px',
-                          paddingLeft: '12px',
-                          position: 'relative',
-                          lineHeight: '1.4',
-                          textAlign: 'justify'
-                        }}>
-                          <span style={{ position: 'absolute', left: '0', top: '0' }}>•</span>
-                          {line}
-                        </li>
-                      ))}
-                    </ul>
+                    <div style={{ margin: '6px 0 0 0', paddingLeft: '12px', lineHeight: '1.4' }}>
+                      {/* Render HTML (sanitized) so editor-generated tags like <div>, <ul>, etc. are interpreted correctly */}
+                      <div
+                        style={{ fontSize: '9px', color: '#4a5568', textAlign: 'justify' }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(exp.description || '') }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -279,14 +293,20 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                     {project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}
                   </p>
                   {project.description && (
-                    <p style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.4', marginTop: '4px', textAlign: 'justify' }}>
-                      {project.description}
-                    </p>
+                    <div style={{ marginTop: '4px' }}>
+                      <div
+                        style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.4', textAlign: 'justify' }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.description || '') }}
+                      />
+                    </div>
                   )}
                   {project.rolesResponsibilities && (
-                    <p style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.4', marginTop: '4px', textAlign: 'justify' }}>
-                      <strong>Roles & Responsibilities:</strong> {project.rolesResponsibilities}
-                    </p>
+                    <div style={{ marginTop: '4px' }}>
+                      <div
+                        style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.4', textAlign: 'justify' }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(`<strong>Roles & Responsibilities:</strong> ${project.rolesResponsibilities || ''}`) }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -308,9 +328,9 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
               }}>
                 TECHNICAL SUMMARY
               </h2>
-              <p style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.5', textAlign: 'justify' }}>
-                {skillsLinks.technicalSummary}
-              </p>
+              <div style={{ fontSize: '9px', color: '#4a5568', lineHeight: '1.5', textAlign: 'justify' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(skillsLinks.technicalSummary || '') }}
+              />
             </div>
           )}
         </div>
