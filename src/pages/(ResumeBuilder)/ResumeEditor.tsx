@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import ProfileStepper from "./components/ui/ProfileStepper";
 import PersonalDetailsForm from "./components/forms/PersonalDetailsForm";
 import EducationDetailsForm from "./components/forms/EducationDetailsForm";
@@ -24,6 +24,7 @@ import {
   getLinksByUserId,
   getTechnicalSummary,
 } from "@/services/skillsLinksService";
+import { getResumeTemplateById, uploadResume } from "@/services/resumeServices";
 
 // Import print styles
 import "@/styles/print.css";
@@ -275,9 +276,144 @@ export const ResumeEditor: React.FC = () => {
     null
   );
 
-  // Ref for preview content to calculate page markers
   const previewContentRef = useRef<HTMLDivElement>(null);
   const { markers, totalPages } = usePageMarkers(previewContentRef, [resumeData, selectedTemplate]);
+
+  const location = useLocation();
+
+  const applyImported = (imp: any) => {
+    if (!imp) return;
+    const newResume: any = { ...resumeData };
+
+    const firstName = imp.first_name || imp.firstName || imp.personal?.first_name || imp.personal?.firstName;
+    const lastName = imp.last_name || imp.lastName || imp.personal?.last_name || imp.personal?.lastName;
+    const email = imp.email || imp.personal?.email;
+    const mobile = imp.mobile_number || imp.personal?.mobileNumber || imp.personal?.mobile_number;
+    const about = imp.summary || imp.about || imp.personal?.about || imp.personal?.summary;
+    if (firstName || lastName || email || mobile || about) {
+      newResume.personal = {
+        ...newResume.personal,
+        firstName: firstName || newResume.personal.firstName,
+        lastName: lastName || newResume.personal.lastName,
+        email: email || newResume.personal.email,
+        mobileNumber: mobile || newResume.personal.mobileNumber,
+        aboutCareerObjective: about || newResume.personal.aboutCareerObjective,
+      };
+    }
+
+    if (Array.isArray(imp.experiences) && imp.experiences.length > 0) {
+      newResume.experience = {
+        ...newResume.experience,
+        workExperiences: imp.experiences.map((it: any, idx: number) => ({
+          id: `imp-${idx}`,
+          experience_id: it.experience_id || undefined,
+          companyName: it.company_name || it.employer || it.organization || "",
+          jobTitle: it.job_title || it.title || "",
+          employmentType: it.employment_type || "",
+          location: it.location || it.city || "",
+          workMode: it.work_mode || "",
+          startDate: it.start_date ? it.start_date.substring(0, 7) : "",
+          endDate: it.end_date ? it.end_date.substring(0, 7) : "",
+          currentlyWorking: it.currently_working_here || false,
+          description: it.description || it.responsibilities || "",
+          enabled: true,
+        })),
+        experienceEnabled: true,
+      };
+    }
+
+    if (Array.isArray(imp.education) && imp.education.length > 0) {
+      const higher = imp.education.map((it: any, idx: number) => ({
+        id: `imp-ed-${idx}`,
+        degree: it.degree || it.qualification || "",
+        fieldOfStudy: it.field_of_study || it.field || "",
+        instituteName: it.institution_name || it.institution || "",
+        universityBoard: it.university_name || "",
+        startYear: it.start_year || "",
+        endYear: it.end_year || it.year_of_passing || "",
+        resultFormat: it.result_format || "",
+        result: it.result || "",
+        currentlyPursuing: it.currently_pursuing || false,
+      }));
+      newResume.education = { ...newResume.education, higherEducation: higher, higherEducationEnabled: true };
+    }
+
+    if (Array.isArray(imp.projects) && imp.projects.length > 0) {
+      newResume.projects = imp.projects.map((it: any, idx: number) => ({
+        id: `imp-pr-${idx}`,
+        project_id: it.project_id || undefined,
+        projectTitle: it.project_title || it.title || "",
+        projectType: it.project_type || "",
+        startDate: it.start_date ? it.start_date.substring(0, 7) : "",
+        endDate: it.end_date ? it.end_date.substring(0, 7) : "",
+        currentlyWorking: it.currently_working || false,
+        description: it.description || "",
+        rolesResponsibilities: it.roles_responsibilities || "",
+        enabled: true,
+      }));
+    }
+
+    if (Array.isArray(imp.skills) && imp.skills.length > 0) {
+      newResume.skillsLinks = { ...newResume.skillsLinks, skills: imp.skills.map((s: any, idx: number) => ({ id: `imp-s-${idx}`, skill_id: s.skill_id, skillName: s.skill_name || s, skillLevel: s.level || s.skill_level || "", enabled: true })) };
+    }
+
+    setResumeData(newResume);
+  };
+
+  useEffect(() => {
+    const imported = (location && (location as any).state && (location as any).state.importedResume) || null;
+    const importedName = (location && (location as any).state && (location as any).state.resumeName) || null;
+    if (imported) applyImported(imported);
+  }, [location]);
+
+  // If navigated here from 'Edit' with a resumeTemplate in state, or with resumeTemplateId in query, auto-import and apply it
+  useEffect(() => {
+    const resumeTemplate = (location && (location as any).state && (location as any).state.resumeTemplate) || null;
+    const resumeTemplateId = searchParams.get("resumeTemplateId");
+
+    const doImport = async (tmpl: any) => {
+      if (!tmpl || !tmpl.pdfUrl) return;
+      if (!userId || !token) return;
+      try {
+        setLoading(true);
+        const resp = await fetch(tmpl.pdfUrl);
+        if (!resp.ok) throw new Error("Failed to download template PDF");
+        const blob = await resp.blob();
+        const file = new File([blob], `${tmpl.name || 'imported'}.pdf`, { type: 'application/pdf' });
+        const uploadRes = await uploadResume(userId, file, token);
+        if (uploadRes && (uploadRes.status === 200 || uploadRes.status === 201)) {
+          const imported = uploadRes.data;
+          applyImported(imported);
+        }
+      } catch (err) {
+        console.error("Failed to import template for editing:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (resumeTemplate && resumeTemplate.pdfUrl && userId && token) {
+      doImport(resumeTemplate);
+    } else if (resumeTemplateId && userId && token) {
+      (async () => {
+        try {
+          setLoading(true);
+          const userStr = localStorage.getItem("user");
+          if (!userStr) return;
+          const user = JSON.parse(userStr);
+          const res = await getResumeTemplateById(user.user_id, user.token, resumeTemplateId);
+          const tmpl = res?.data || null;
+          if (tmpl && tmpl.template_file_url) {
+            await doImport({ pdfUrl: tmpl.template_file_url, name: tmpl.template_name });
+          }
+        } catch (err) {
+          console.error("Failed to fetch template for import:", err);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [location, searchParams, userId, token]);
 
   // User and token check
   useEffect(() => {
@@ -638,6 +774,9 @@ export const ResumeEditor: React.FC = () => {
         onClose={() => setShowPreviewModal(false)}
         resumeData={resumeData}
         templateId={templateId}
+        userId={userId}
+        token={token}
+        resumeTemplateId={searchParams.get("resumeTemplateId")}
       />
     </div>
   );

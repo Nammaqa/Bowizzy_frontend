@@ -1,29 +1,39 @@
 import React, { useState, useRef } from "react";
-import { X, Download, Printer, Copy, Save } from "lucide-react"; // Added Copy and Save icons
+import { X, Download, Copy, Save } from "lucide-react"; // Added Copy and Save icons
 import type { ResumeData } from "@/types/resume";
 import { getTemplateById } from "@/templates/templateRegistry";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import PageBreakMarkers from "../PageBreakMarkers";
 import { usePageMarkers } from "@/hooks/usePageMarkers";
+import { uploadPdfToCloudinary } from "@/utils/uploadPdfToCloudinary";
+import { saveResumeTemplates, updateResumeTemplate } from "@/services/resumeServices";
 
 interface ResumePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   resumeData: ResumeData;
   templateId: string | null;
+  userId?: string;
+  token?: string;
+  resumeTemplateId?: number | string | null; // existing saved template id when editing
 }
 
-export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
+const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
   isOpen,
   onClose,
   resumeData,
   templateId,
+  userId,
+  token,
+  resumeTemplateId,
 }) => {
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [resumeName, setResumeName] = useState("");
   // Added state for loading status during PDF download (good practice)
   const [isDownloading, setIsDownloading] = useState(false); 
+  const [pendingAction, setPendingAction] = useState<null | "download" | "saveAndExit">(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const previewContentRef = useRef<HTMLDivElement>(null);
 
@@ -48,34 +58,91 @@ export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
   const handleDownloadClick = () => {
     // Show the name dialog first
+    setPendingAction("download");
     setShowNameDialog(true);
   };
 
-  const handlePrintClick = () => {
-    window.print();
+  const handleSaveAndExitClick = () => {
+    setPendingAction("saveAndExit");
+    setShowNameDialog(true);
   };
 
-  const handleNameSubmit = () => {
+  const handleNameSubmit = async () => {
     if (!resumeName.trim()) return;
-    // Close name dialog and open download dialog
-    setShowNameDialog(false);
-    setShowDownloadDialog(true);
+
+    // Normal download flow
+    if (pendingAction === "download") {
+      setShowNameDialog(false);
+      setShowDownloadDialog(true);
+      return;
+    }
+
+    // Save & Exit flow
+    if (pendingAction !== "saveAndExit") return;
+
+    setIsProcessing(true);
+    try {
+      if (!PDFComponent) throw new Error("No PDF template available to generate PDF.");
+      if (!templateId) throw new Error("No template selected.");
+
+      // Generate PDF blob using react-pdf utility
+      const doc = <PDFComponent data={resumeData} />;
+      const asPdf = pdf(doc);
+      const blob: Blob = await asPdf.toBlob();
+      const file = new File([blob], `${resumeName.trim() || "resume"}.pdf`, { type: "application/pdf" });
+
+      // Upload the PDF to Cloudinary (raw upload for PDFs)
+      const cloudRes = await uploadPdfToCloudinary(file);
+      if (!cloudRes?.url) throw new Error("Cloud upload failed");
+
+      // Build the single template payload expected by the API
+      const templatePayload = {
+        template_name: resumeName.trim(),
+        template_id: templateId,
+        thumbnail_url: STATIC_THUMBNAIL_URL || "",
+        template_file_url: cloudRes.url,
+      };
+
+      // Resolve credentials (prefer props, fallback to localStorage)
+      let finalUserId = userId;
+      let finalToken = token;
+      if (!finalUserId || !finalToken) {
+        try {
+          const userStr = localStorage.getItem("user");
+          if (userStr) {
+            const parsed = JSON.parse(userStr);
+            finalUserId = finalUserId || parsed.user_id;
+            finalToken = finalToken || parsed.token;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!finalUserId || !finalToken) throw new Error("Missing user credentials (userId/token)");
+
+      // If editing an existing saved resume template, update it instead of creating a new one
+      if (resumeTemplateId) {
+        await updateResumeTemplate(finalUserId, finalToken, resumeTemplateId, templatePayload);
+      } else {
+        const createPayload = { templates: [templatePayload] };
+        await saveResumeTemplates(finalUserId, finalToken, createPayload);
+      }
+
+      // Success — close modal and notify
+      setShowNameDialog(false);
+      alert(resumeTemplateId ? "Updated resume template successfully." : "Saved resume template successfully.");
+      onClose();
+    } catch (err) {
+      console.error("Save & Exit error:", err);
+      alert(err?.message || "Failed to save resume template.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
     <>
-      {/* ... (Existing Backdrop and Modal Container code remains the same) ... */}
-
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        style={{
-          left: "255px",
-          top: "83px",
-        }}
-        onClick={onClose}
-      />
-
       {/* Modal Container */}
       <div className="fixed right-0 top-0 bottom-0 z-50 flex items-center">
         {/* Resume Preview */}
@@ -134,14 +201,14 @@ export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
             </span>
           </button>
 
-          {/* Print Button */}
+          {/* Save & Exit Button */}
           <button
-            onClick={handlePrintClick}
+            onClick={handleSaveAndExitClick}
             className="flex items-center bg-white text-left py-3 px-4 rounded-full border-0 hover:bg-gray-50 transition-colors shadow-md cursor-pointer"
           >
-            <Printer className="w-5 h-5 mr-2 text-orange-500" />
+            <Save className="w-5 h-5 mr-2 text-orange-500" />
             <span className="text-black text-sm font-medium whitespace-nowrap">
-              Print / Save as PDF
+              Save & Exit
             </span>
           </button>
 
@@ -201,10 +268,17 @@ export const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                 </button>
                 <button
                   onClick={handleNameSubmit}
-                  disabled={!resumeName.trim()}
-                  className="px-6 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!resumeName.trim() || isProcessing}
+                  className="px-6 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Next
+                  {isProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Next"
+                  )}
                 </button>
               </div>
             </div>
