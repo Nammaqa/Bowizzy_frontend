@@ -546,6 +546,17 @@ export const ResumeEditor: React.FC = () => {
     }
   }, [userId, token, fetchAllData]);
 
+  useEffect(() => {
+    if (showPreviewModal) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev || "";
+      };
+    }
+    return;
+  }, [showPreviewModal]);
+
   const handleStepClick = (stepIndex: number) => {
     setCurrentStep(stepIndex);
   };
@@ -768,6 +779,14 @@ export const ResumeEditor: React.FC = () => {
           scrollbar-width: none;
         }
       `}</style>
+
+      {showPreviewModal && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setShowPreviewModal(false)}
+          aria-hidden="true"
+        />
+      )}
 
       <ResumePreviewModal
         isOpen={showPreviewModal}
