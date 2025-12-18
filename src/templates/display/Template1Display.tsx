@@ -137,7 +137,7 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                     {education.preUniversity.instituteName}
                   </h3>
                   <p style={{ fontSize: '10px', color: '#4a5568', marginBottom: '2px' }}>
-                    {education.preUniversity.subjectStream} - {education.preUniversity.boardType}
+                    Pre University  - {education.preUniversity.boardType}
                   </p>
                   <p style={{ fontSize: '9px', color: '#718096' }}>
                     {education.preUniversity.yearOfPassing}

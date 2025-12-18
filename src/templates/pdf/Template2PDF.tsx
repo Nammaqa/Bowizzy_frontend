@@ -241,8 +241,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 												{education.preUniversity.instituteName.toUpperCase()}
 											</Text>
 											<Text style={styles.educationSubtitle}>
-												{education.preUniversity.subjectStream} -{" "}
-												{education.preUniversity.boardType}
+												Pre University  - {education.preUniversity.boardType}
 											</Text>
 											<Text style={styles.educationDate}>
 												{education.preUniversity.yearOfPassing}

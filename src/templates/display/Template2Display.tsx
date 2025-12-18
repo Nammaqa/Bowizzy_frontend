@@ -129,8 +129,7 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 												marginBottom: "2px",
 											}}
 										>
-											{education.preUniversity.subjectStream} -{" "}
-											{education.preUniversity.boardType}
+											Pre University - {education.preUniversity.boardType}
 										</p>
 										<p style={{ fontSize: "9px", color: "#718096" }}>
 											{education.preUniversity.yearOfPassing}
