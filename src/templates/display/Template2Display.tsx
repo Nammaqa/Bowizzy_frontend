@@ -1,4 +1,5 @@
 import React from "react";
+import DOMPurify from 'dompurify';
 import type { ResumeData } from "@/types/resume";
 
 interface Template2DisplayProps {
@@ -226,12 +227,11 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 												{cert.date} - {cert.providedBy}
 											</p>
 											{cert.description && (
-												<p
-													className="mt-1 text-gray-600 leading-relaxed text-justify"
-													style={{ fontSize: "9px" }}
-												>
-													{cert.description}
-												</p>
+																								<p
+																									className="mt-1 text-gray-600 leading-relaxed text-justify"
+																									style={{ fontSize: "9px" }}
+																									dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cert.description || '', {FORBID_ATTR: ['style']}) }}
+																								/>
 											)}
 										</div>
 									))}
@@ -253,9 +253,8 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 							<p
 								className="text-gray-600 leading-relaxed text-justify"
 								style={{ fontSize: "10px" }}
-							>
-								{personal.aboutCareerObjective}
-							</p>
+								dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(personal.aboutCareerObjective || '', {FORBID_ATTR: ['style']}) }}
+							/>
 						</div>
 					)}
 
@@ -289,9 +288,8 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 											<p
 												className="mt-2 text-gray-600 leading-relaxed text-justify"
 												style={{ fontSize: "10px" }}
-											>
-												{exp.description}
-											</p>
+												dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(exp.description || '', {FORBID_ATTR: ['style']}) }}
+											/>
 										)}
 									</div>
 								))}
@@ -326,19 +324,15 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 												<p
 													className="mt-1 text-gray-600 leading-relaxed text-justify"
 													style={{ fontSize: "10px" }}
-												>
-                          <strong>Description:</strong>{" "}
-													{project.description}
-												</p>
+													dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.description || '', {FORBID_ATTR: ['style']}) }}
+												/>
 											)}
 											{project.rolesResponsibilities && (
 												<p
 													className="mt-1 text-gray-600 leading-relaxed text-justify"
 													style={{ fontSize: "10px" }}
-												>
-													<strong>Roles &amp; Responsibilities:</strong>{" "}
-													{project.rolesResponsibilities}
-												</p>
+													dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(project.rolesResponsibilities || '', {FORBID_ATTR: ['style']}) }}
+												/>
 											)}
 										</div>
 									))}

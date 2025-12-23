@@ -1,4 +1,5 @@
 import React from "react";
+import DOMPurify from 'dompurify';
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { ResumeData } from "@/types/resume";
 
@@ -96,6 +97,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     break: true,
     wrap: false,
+    // Ensure at least some space ahead before breaking a section to avoid orphaned headers
+    minPresenceAhead: 40,
   },
   sectionTitle: {
     fontSize: 13,
@@ -132,7 +135,14 @@ const styles = StyleSheet.create({
   skillsList: {
     paddingLeft: 0,
     break: true,
-    wrap: false,
+    wrap: true,
+  },
+  skillsText: {
+    fontSize: 9,
+    color: "#4a5568",
+    lineHeight: 1.3,
+    textAlign: "left",
+    paddingLeft: 10,
   },
   skillItem: {
     fontSize: 10,
@@ -253,6 +263,22 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
     certifications,
   } = data;
 
+  const htmlToPlainText = (html?: string) => {
+    if (!html) return '';
+    const sanitized = DOMPurify.sanitize(html || '');
+    const withBreaks = sanitized.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>|<\/li>/gi, '\n');
+    try {
+      if (typeof document !== 'undefined') {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = withBreaks;
+        return (tmp.textContent || tmp.innerText || '').trim();
+      }
+    } catch (e) {
+      return withBreaks.replace(/<[^>]+>/g, '').trim();
+    }
+    return withBreaks.replace(/<[^>]+>/g, '').trim();
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -284,9 +310,7 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
         {personal.aboutCareerObjective && (
           <View style={styles.summary}>
             <Text style={styles.summaryTitle}>SUMMARY</Text>
-            <Text style={styles.summaryText}>
-              {personal.aboutCareerObjective}
-            </Text>
+            <Text style={styles.summaryText}>{htmlToPlainText(personal.aboutCareerObjective)}</Text>
           </View>
         )}
 
@@ -300,8 +324,8 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>EDUCATION</Text>
 
-                  {/* Higher Education */}
-                  {education.higherEducation.map((edu, idx) => (
+                          {/* Higher Education */}
+                          {education.higherEducation.map((edu, idx) => (
                     <View key={idx} style={styles.educationItem}>
                       <Text style={styles.itemTitle}>{edu.instituteName}</Text>
                       <Text style={styles.itemSubtitle}>{edu.degree}</Text>
@@ -311,58 +335,43 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                       </Text>
                     </View>
                   ))}
+                          {/* Pre-University (show consistent label and same order as display) */}
+                          {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                            <View style={styles.educationItem}>
+                              <Text style={styles.itemTitle}>Pre University</Text>
+                              <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
+                              <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                            </View>
+                          )}
 
-                  {/* SSLC */}
-                  {education.sslcEnabled && education.sslc.instituteName && (
-                    <View style={styles.educationItem}>
-                      <Text style={styles.itemTitle}>
-                        {education.sslc.instituteName}
-                      </Text>
-                      <Text style={styles.itemSubtitle}>
-                        SSLC - {education.sslc.boardType}
-                      </Text>
-                      <Text style={styles.itemDate}>
-                        {education.sslc.yearOfPassing}
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Pre-University */}
-                  {education.preUniversityEnabled &&
-                    education.preUniversity.instituteName && (
-                      <View style={styles.educationItem}>
-                        <Text style={styles.itemTitle}>
-                          {education.preUniversity.instituteName}
-                        </Text>
-                        <Text style={styles.itemSubtitle}>
-                          {education.preUniversity.subjectStream} -{" "}
-                          {education.preUniversity.boardType}
-                        </Text>
-                        <Text style={styles.itemDate}>
-                          {education.preUniversity.yearOfPassing}
-                        </Text>
-                      </View>
-                    )}
+                          {/* SSLC */}
+                          {education.sslcEnabled && education.sslc.instituteName && (
+                            <View style={styles.educationItem}>
+                              <Text style={styles.itemTitle}>SSLC</Text>
+                              <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
+                              <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                            </View>
+                          )}
                 </View>
               )}
 
-            {/* Skills */}
+            {/* Skills (render directly below Education) */}
             {skillsLinks.skills.length > 0 &&
               skillsLinks.skills.some((s) => s.enabled && s.skillName) && (
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>SKILLS</Text>
                   <View style={styles.skillsList}>
-                    {skillsLinks.skills
-                      .filter((s) => s.enabled && s.skillName)
-                      .map((skill, idx) => (
-                        <View key={idx} style={styles.skillItem} break>
-                          <Text style={styles.bullet}>•</Text>
-                          <Text>{skill.skillName}</Text>
-                        </View>
-                      ))}
+                    <Text style={styles.skillsText}>
+                      {skillsLinks.skills
+                        .filter((s) => s.enabled && s.skillName)
+                        .map((skill) => `• ${skill.skillName}`)
+                        .join("\n")}
+                    </Text>
                   </View>
                 </View>
               )}
+
+            {/* Skills (moved to right column) */}
 
             {/* Certifications */}
             {certifications.length > 0 &&
@@ -412,7 +421,7 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                         </Text>
                         {exp.description && (
                           <View style={styles.workDescription}>
-                            {exp.description
+                            {htmlToPlainText(exp.description)
                               .split("\n")
                               .filter((line) => line.trim())
                               .map((line, i) => (
@@ -447,19 +456,14 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                             : project.endDate}
                         </Text>
                         {project.description && (
-                          <Text style={styles.projectDescription}>
-                            {project.description}
+                          <Text style={styles.projectDescription}>{htmlToPlainText(project.description)}</Text>
+                        )}
+                        {project.rolesResponsibilities && project.rolesResponsibilities.trim() !== "" && (
+                          <Text style={styles.projectRolesResponsibilities}>
+                            <Text style={{ fontFamily: "Times-Bold" }}>Roles & Responsibilities:</Text>{" "}
+                            {htmlToPlainText(project.rolesResponsibilities)}
                           </Text>
                         )}
-                        {project.rolesResponsibilities &&
-                          project.rolesResponsibilities.trim() !== "" && (
-                            <Text style={styles.projectRolesResponsibilities}>
-                              <Text style={{ fontFamily: "Times-Bold" }}>
-                                Roles & Responsibilities:
-                              </Text>{" "}
-                              {project.rolesResponsibilities}
-                            </Text>
-                          )}
                       </View>
                     ))}
                 </View>
@@ -470,9 +474,7 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
               skillsLinks.technicalSummary && (
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>TECHNICAL SUMMARY</Text>
-                  <Text style={styles.technicalText}>
-                    {skillsLinks.technicalSummary}
-                  </Text>
+                  <Text style={styles.technicalText}>{htmlToPlainText(skillsLinks.technicalSummary)}</Text>
                 </View>
               )}
           </View>

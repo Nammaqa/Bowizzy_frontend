@@ -264,6 +264,7 @@ export const ResumeEditor: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchTimedOut, setFetchTimedOut] = useState(false);
 
   const [userId, setUserId] = useState<string>("");
   const [token, setToken] = useState<string>("");
@@ -279,7 +280,10 @@ export const ResumeEditor: React.FC = () => {
   const previewContentRef = useRef<HTMLDivElement>(null);
   const { markers, totalPages } = usePageMarkers(previewContentRef, [resumeData, selectedTemplate]);
   const DisplayComponent = selectedTemplate?.displayComponent || selectedTemplate?.component;
-  const [paginatePreview, setPaginatePreview] = useState<boolean>(true);
+  // Pagination UI disabled by default to avoid triggering heavy rendering.
+  // To re-enable pagination, set the initial state to `true` and uncomment
+  // the Paginate toggle in the preview pane below.
+  const [paginatePreview, setPaginatePreview] = useState<boolean>(false);
   const [previewPageCount, setPreviewPageCount] = useState<number>(1);
   const [previewCurrentPage, setPreviewCurrentPage] = useState<number>(1);
   const paginatedRef = useRef<{ goTo: (i: number) => void; next: () => void; prev: () => void } | null>(null);
@@ -449,12 +453,24 @@ export const ResumeEditor: React.FC = () => {
   const fetchAllData = useCallback(
     async (currentUserId: string, currentToken: string) => {
       if (!currentUserId || !currentToken) return;
-
       setLoading(true);
+
+      // Overall timeout guard: ensure fetchAllData cannot hang forever if an
+      // API call stalls. After TIMEOUT_MS we mark the op cancelled and clear
+      // the loading UI so users aren't stuck on the spinner.
+      const TIMEOUT_MS = 7000;
+      let cancelled = false;
+      const timeoutId = setTimeout(() => {
+        cancelled = true;
+        console.warn('[ResumeEditor] fetchAllData timed out');
+        setLoading(false);
+        setFetchTimedOut(true);
+      }, TIMEOUT_MS);
 
       try {
         // Personal Details
         const personalResponse = await getPersonalDetailsByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         if (personalResponse) {
           const personalData = {
             profilePhotoUrl: personalResponse.profile_photo_url || "",
@@ -483,6 +499,7 @@ export const ResumeEditor: React.FC = () => {
 
         // Education Details
         const educationResponse = await getEducationByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         if (educationResponse && educationResponse.length > 0) {
           const { educationData, idMap } = mapEducationApiToLocal(educationResponse);
           setResumeData((prev) => ({ ...prev, education: educationData }));
@@ -491,6 +508,7 @@ export const ResumeEditor: React.FC = () => {
 
         // Experience Details
         const experienceResponse = await getExperienceByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         if (experienceResponse && experienceResponse.experiences) {
           const { experienceData, idMap } = mapExperienceApiToLocal(experienceResponse);
           setResumeData((prev) => ({ ...prev, experience: experienceData }));
@@ -499,11 +517,13 @@ export const ResumeEditor: React.FC = () => {
 
         // Projects
         const projectsResponse = await getProjectsByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         const projectsData = mapProjectsApiToLocal(projectsResponse);
         setResumeData((prev) => ({ ...prev, projects: projectsData }));
 
         // Skills
         const skillsResponse = await getSkillsByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         const skillsData = mapSkillsApiToLocal(skillsResponse);
         setResumeData((prev) => ({
           ...prev,
@@ -512,6 +532,7 @@ export const ResumeEditor: React.FC = () => {
 
         // Links
         const linksResponse = await getLinksByUserId(currentUserId, currentToken);
+        if (cancelled) return;
         const linksData = mapLinksApiToLocal(linksResponse);
         setResumeData((prev) => ({
           ...prev,
@@ -521,6 +542,7 @@ export const ResumeEditor: React.FC = () => {
         // Technical Summary
         try {
           const summaryResponse = await getTechnicalSummary(currentUserId, currentToken);
+          if (cancelled) return;
           if (summaryResponse && typeof summaryResponse.summary === "string") {
             setResumeData((prev) => ({
               ...prev,
@@ -549,6 +571,7 @@ export const ResumeEditor: React.FC = () => {
 
         try {
           const certificatesResponse = await getCertificatesByUserId(currentUserId, currentToken);
+          if (cancelled) return;
           const certificatesData = mapCertificatesApiToLocal(certificatesResponse);
           setResumeData((prev) => ({ ...prev, certifications: certificatesData }));
         } catch (err) {
@@ -557,11 +580,21 @@ export const ResumeEditor: React.FC = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false);
+        clearTimeout(timeoutId);
+        if (!cancelled) {
+          setLoading(false);
+          setFetchTimedOut(false);
+        }
       }
     },
     []
   );
+
+  const retryFetch = () => {
+    if (!userId || !token) return;
+    setFetchTimedOut(false);
+    fetchAllData(userId, token);
+  };
 
   useEffect(() => {
     if (userId && token) {
@@ -624,6 +657,20 @@ export const ResumeEditor: React.FC = () => {
 
   const renderCurrentForm = () => {
     if (loading) {
+      if (fetchTimedOut) {
+        return (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="mb-4 text-red-600">Fetching your details is taking longer than expected.</p>
+              <div className="flex gap-3 justify-center">
+                <button className="btn btn-primary" onClick={retryFetch}>Retry</button>
+                <button className="btn" onClick={() => setFetchTimedOut(false)}>Dismiss</button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
@@ -787,13 +834,8 @@ export const ResumeEditor: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Paginate toggle */}
-                      <div className="absolute top-2 left-4 z-10">
-                        <label className="inline-flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm text-sm">
-                          <input type="checkbox" checked={paginatePreview} onChange={(e) => setPaginatePreview(e.target.checked)} />
-                          <span>Paginate</span>
-                        </label>
-                      </div>
+                      {/* Paginate toggle disabled while we stabilize pagination behavior.
+                          To re-enable, uncomment this block and set paginatePreview default to true. */}
                     </>
                   )}
 
@@ -804,7 +846,8 @@ export const ResumeEditor: React.FC = () => {
                         <DisplayComponent
                           data={resumeData}
                           supportsPhoto={selectedTemplate.supportsPhoto ?? false}
-                          showPageBreaks={paginatePreview}
+                          // avoid running the heavy pagination while initial data is still loading
+                          showPageBreaks={paginatePreview && !loading}
                             onPageCountChange={(n: number) => setPreviewPageCount(n)}
                             onPageChange={(i: number) => setPreviewCurrentPage(i)}
                             pageControllerRef={paginatedRef}

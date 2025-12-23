@@ -1,5 +1,6 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import DOMPurify from 'dompurify';
+import { Document, Page, Text, View, StyleSheet, Svg, Path } from "@react-pdf/renderer";
 import type { ResumeData } from "@/types/resume";
 
 const styles = StyleSheet.create({
@@ -184,6 +185,22 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 		certifications,
 	} = data;
 
+	const htmlToPlainText = (html?: string) => {
+		if (!html) return '';
+		const sanitized = DOMPurify.sanitize(html || '');
+		const withBreaks = sanitized.replace(/<br\s*\/?/gi, '\n').replace(/<\/p>|<\/li>/gi, '\n');
+		try {
+			if (typeof document !== 'undefined') {
+				const tmp = document.createElement('div');
+				tmp.innerHTML = withBreaks;
+				return (tmp.textContent || tmp.innerText || '').trim();
+			}
+		} catch (e) {
+			return withBreaks.replace(/<[^>]+>/g, '').trim();
+		}
+		return withBreaks.replace(/<[^>]+>/g, '').trim();
+	};
+
 	return (
 		<Document>
 			<Page size="A4" style={styles.page}>
@@ -271,7 +288,9 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 									.filter((s) => s.enabled && s.skillName)
 									.map((skill, idx) => (
 										<View key={idx} style={styles.skillItem}>
-											<Text style={styles.skillArrow}>➔</Text>
+											<Svg width={10} height={10} viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+												<Path d="M8 5 L16 12 L8 19" stroke="#666666" strokeWidth={1.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+											</Svg>
 											<Text>{skill.skillName}</Text>
 										</View>
 									))}
@@ -309,7 +328,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 							<View style={styles.section}>
 								<Text style={styles.sectionTitle}>ABOUT ME</Text>
 								<Text style={styles.aboutText}>
-									{personal.aboutCareerObjective}
+									{htmlToPlainText(personal.aboutCareerObjective)}
 								</Text>
 							</View>
 						)}
@@ -330,7 +349,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 											</Text>
 											{exp.description && (
 												<Text style={styles.workDescription}>
-													{exp.description}
+													{htmlToPlainText(exp.description)}
 												</Text>
 											)}
 										</View>
@@ -361,7 +380,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 															Description:
 														</Text>
 														<Text style={styles.projectDescription}>
-															{project.description}
+															{htmlToPlainText(project.description)}
 														</Text>
 													</View>
 												)}
@@ -371,7 +390,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 															Roles & Responsibilities:
 														</Text>
 														<Text style={styles.projectDescription}>
-															{project.rolesResponsibilities}
+															{htmlToPlainText(project.rolesResponsibilities)}
 														</Text>
 													</View>
 												)}

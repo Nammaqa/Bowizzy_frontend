@@ -40,11 +40,12 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
     });
   }, [education.higherEducation]);
 
-  // If page breaks are requested, render paginated version which measures and
-  // splits content into A4-sized pages dynamically.
-  if (showPageBreaks) {
-    return <PaginatedResume data={data} supportsPhoto={supportsPhoto} onPageChange={onPageChange} onPageCountChange={onPageCountChange} controllerRef={pageControllerRef} />;
-  }
+  // Pagination disabled: commenting out the paginated renderer to avoid
+  // heavy synchronous measurement and potential browser crashes while
+  // debugging. To re-enable pagination, restore the PaginatedResume return.
+  // if (showPageBreaks) {
+  //   return <PaginatedResume data={data} supportsPhoto={supportsPhoto} onPageChange={onPageChange} onPageCountChange={onPageCountChange} controllerRef={pageControllerRef} />;
+  // }
 
   return (
     <div className="w-[210mm] bg-white" style={{ minHeight: '297mm', fontFamily: 'Times New Roman, serif' }}>
@@ -394,11 +395,23 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
   const measureRef = useRef<HTMLDivElement | null>(null);
   const [pages, setPages] = useState<Array<{ headerHtml?: string; leftHtml: string; rightHtml: string }>>([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const PRINT_PAGE_RENDER_LIMIT = 10; // don't auto-render hidden printable pages beyond this
+  const [allowPrintRender, setAllowPrintRender] = useState(false);
 
   useEffect(() => {
     if (!measureRef.current) return;
     const measure = measureRef.current;
     measure.innerHTML = '';
+    // Safety/timeboxing to avoid long synchronous work crashing the browser
+    const START_TIME = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const TIMEOUT_MS = 900; // if pagination takes longer than this, bail out to fallback
+    const checkTimeout = () => {
+      if ((typeof performance !== 'undefined' ? performance.now() : Date.now()) - START_TIME > TIMEOUT_MS) {
+        const e: any = new Error('paginate-timeout');
+        e.code = 'PAGINATE_TIMEOUT';
+        throw e;
+      }
+    };
 
     // Header
     const header = document.createElement('div');
@@ -410,6 +423,15 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
             <h1 style="font-size:32px;font-weight:700;color:#1f2937;letter-spacing:1px;margin-bottom:2px;line-height:1">${escapeHtml((personal.firstName || '').toUpperCase())} <span style='font-weight:600'>${escapeHtml((personal.lastName || '').toUpperCase())}</span></h1>
             <p style="font-size:13px;color:#4b5563;margin-top:6px;letter-spacing:0.5px">${escapeHtml(experience.jobRole || '')}</p>
           </div>
+              {/* When there are too many pages, avoid creating the large hidden DOM automatically
+                  as it can crash some browsers (heavy DOM insertion). Offer a button to render
+                  the printable pages on demand. */}
+              {pages.length > PRINT_PAGE_RENDER_LIMIT && !allowPrintRender && (
+                <div style={{ margin: '8px 0', padding: '6px 10px', background: '#fff3f2', color: '#991b1b', borderRadius: 6 }}>
+                  Printable pages suppressed ({pages.length} pages). Rendering all pages can be heavy and may crash the browser.
+                  <button style={{ marginLeft: 8, padding: '4px 8px' }} onClick={() => setAllowPrintRender(true)}>Render printable pages</button>
+                </div>
+              )}
           <div style="font-size:10px;color:#4b5563;text-align:right;min-width:150px">
             <div style="margin-bottom:5px">${escapeHtml(personal.mobileNumber || '')}</div>
             <div style="margin-bottom:5px">${escapeHtml(personal.email || '')}</div>
@@ -587,11 +609,18 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
     const splitTextToFit = (text: string, limit: number, wrapperTag = 'div', column: 'left' | 'right' | 'full' = 'full') => {
       const parts: string[] = [];
       let remaining = text.trim();
+      const MAX_CHUNKS = 400; // defensive cap to avoid pathological splits
       while (remaining.length > 0) {
+        // keep algorithm bounded for pathological inputs
+        if (parts.length > MAX_CHUNKS) {
+          parts.push(`<${wrapperTag}>${escapeHtml(remaining)}</${wrapperTag}>`);
+          break;
+        }
         let lo = 0;
         let hi = remaining.length;
         let fit = '';
         while (lo < hi) {
+          checkTimeout();
           const mid = Math.ceil((lo + hi) / 2);
           const testStr = remaining.slice(0, mid);
           const wrapper = document.createElement(wrapperTag);
@@ -625,6 +654,7 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
       if (paras.length > 1) {
         let chunk = document.createElement('div');
         while (paras.length) {
+          checkTimeout();
           const node = paras.shift()!;
           chunk.appendChild(node.cloneNode(true));
           measure.appendChild(chunk);
@@ -657,23 +687,47 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
     };
 
     const leftQueue: { html: string; h: number }[] = [];
-    for (const b of leftBlocks) {
-      const hMeasured = Math.ceil(measureHtml(b.outerHTML, 'left') * MEASURE_SAFETY_FACTOR);
-      if (hMeasured <= PAGE_HEIGHT - PAGE_EPSILON) leftQueue.push({ html: b.outerHTML, h: hMeasured });
-      else {
-        const parts = splitHtmlToFit(b.outerHTML, PAGE_HEIGHT - PAGE_EPSILON, 'left');
-        for (const p of parts) leftQueue.push({ html: p, h: Math.ceil(measureHtml(p, 'left') * MEASURE_SAFETY_FACTOR) });
+    try {
+      for (const b of leftBlocks) {
+        checkTimeout();
+        const hMeasured = Math.ceil(measureHtml(b.outerHTML, 'left') * MEASURE_SAFETY_FACTOR);
+        if (hMeasured <= PAGE_HEIGHT - PAGE_EPSILON) leftQueue.push({ html: b.outerHTML, h: hMeasured });
+        else {
+          const parts = splitHtmlToFit(b.outerHTML, PAGE_HEIGHT - PAGE_EPSILON, 'left');
+          for (const p of parts) leftQueue.push({ html: p, h: Math.ceil(measureHtml(p, 'left') * MEASURE_SAFETY_FACTOR) });
+        }
       }
+    } catch (e: any) {
+      if (e && e.code === 'PAGINATE_TIMEOUT') {
+        console.warn('[Paginate] timeout during left column build, falling back to single page');
+        const fallback = [{ headerHtml: header.outerHTML + (summary.innerHTML ? summary.outerHTML : ''), leftHtml: leftBlocks.map(b => b.outerHTML).join(''), rightHtml: rightBlocks.map(b => b.outerHTML).join('') }];
+        setPages(fallback);
+        onPageCountChange?.(fallback.length);
+        return;
+      }
+      throw e;
     }
 
     const rightQueue: { html: string; h: number }[] = [];
-    for (const b of rightBlocks) {
-      const hMeasured = Math.ceil(measureHtml(b.outerHTML, 'right') * MEASURE_SAFETY_FACTOR);
-      if (hMeasured <= PAGE_HEIGHT - PAGE_EPSILON) rightQueue.push({ html: b.outerHTML, h: hMeasured });
-      else {
-        const parts = splitHtmlToFit(b.outerHTML, PAGE_HEIGHT - PAGE_EPSILON, 'right');
-        for (const p of parts) rightQueue.push({ html: p, h: Math.ceil(measureHtml(p, 'right') * MEASURE_SAFETY_FACTOR) });
+    try {
+      for (const b of rightBlocks) {
+        checkTimeout();
+        const hMeasured = Math.ceil(measureHtml(b.outerHTML, 'right') * MEASURE_SAFETY_FACTOR);
+        if (hMeasured <= PAGE_HEIGHT - PAGE_EPSILON) rightQueue.push({ html: b.outerHTML, h: hMeasured });
+        else {
+          const parts = splitHtmlToFit(b.outerHTML, PAGE_HEIGHT - PAGE_EPSILON, 'right');
+          for (const p of parts) rightQueue.push({ html: p, h: Math.ceil(measureHtml(p, 'right') * MEASURE_SAFETY_FACTOR) });
+        }
       }
+    } catch (e: any) {
+      if (e && e.code === 'PAGINATE_TIMEOUT') {
+        console.warn('[Paginate] timeout during right column build, falling back to single page');
+        const fallback = [{ headerHtml: header.outerHTML + (summary.innerHTML ? summary.outerHTML : ''), leftHtml: leftBlocks.map(b => b.outerHTML).join(''), rightHtml: rightBlocks.map(b => b.outerHTML).join('') }];
+        setPages(fallback);
+        onPageCountChange?.(fallback.length);
+        return;
+      }
+      throw e;
     }
 
     // Build pages while keeping arrays of blocks per column so we can rebalance later
@@ -1001,11 +1055,13 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
 
       <div ref={measureRef} style={measureStyle} aria-hidden />
       {/* Hidden printable pages (used for generating pixel-perfect PDFs). Not display:none because html2canvas needs to render it. */}
-      <div className="pdf-print-pages" style={{ position: 'absolute', left: -9999, top: 0 }} aria-hidden>
-        {pages.map((pg, idx) => (
-          <div key={`pdf-${idx}`} className="page pdf-print-page" style={pageStyle} dangerouslySetInnerHTML={{ __html: (pg.headerHtml || '') + `<div style="display:flex;gap:40px"><div style="width:48%">${pg.leftHtml}</div><div style="width:48%">${pg.rightHtml}</div></div>` }} />
-        ))}
-      </div>
+      {(allowPrintRender || pages.length <= PRINT_PAGE_RENDER_LIMIT) ? (
+        <div className="pdf-print-pages" style={{ position: 'absolute', left: -9999, top: 0 }} aria-hidden>
+          {pages.map((pg, idx) => (
+            <div key={`pdf-${idx}`} className="page pdf-print-page" style={pageStyle} dangerouslySetInnerHTML={{ __html: (pg.headerHtml || '') + `<div style="display:flex;gap:40px"><div style="width:48%">${pg.leftHtml}</div><div style="width:48%">${pg.rightHtml}</div></div>` }} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 };
