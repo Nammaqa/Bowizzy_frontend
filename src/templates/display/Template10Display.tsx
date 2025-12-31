@@ -76,6 +76,23 @@ const Template10Display: React.FC<Template10DisplayProps> = ({ data }) => {
                     <div style={{ color: '#999', fontSize: 8 }}>{edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</div>
                   </div>
                 ))}
+                {/* Pre University */}
+                {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, color: '#222', fontSize: 10 }}>Pre University</div>
+                    <div style={{ color: '#666', fontSize: 8.5 }}>{education.preUniversity.instituteName}</div>
+                    <div style={{ color: '#999', fontSize: 8 }}>{education.preUniversity.yearOfPassing}</div>
+                  </div>
+                )}
+
+                {/* SSLC */}
+                {education.sslcEnabled && education.sslc.instituteName && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, color: '#222', fontSize: 10 }}>SSLC</div>
+                    <div style={{ color: '#666', fontSize: 8.5 }}>{education.sslc.instituteName}</div>
+                    <div style={{ color: '#999', fontSize: 8 }}>{education.sslc.yearOfPassing}</div>
+                  </div>
+                )}
               </div>
             </div>
           )}

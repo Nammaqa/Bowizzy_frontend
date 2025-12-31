@@ -108,6 +108,27 @@ const Template8Display: React.FC<Template8DisplayProps> = ({ data }) => {
                   )}
                 </div>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#222' }}>{education.preUniversity.boardType ? 'Pre University' : 'Pre University'}</div>
+                    <div style={{ fontSize: 9, color: '#666' }}>{education.preUniversity.yearOfPassing}</div>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#444' }}>{education.preUniversity.instituteName}</div>
+                </div>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#222' }}>SSLC</div>
+                    <div style={{ fontSize: 9, color: '#666' }}>{education.sslc.yearOfPassing}</div>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#444' }}>{education.sslc.instituteName}</div>
+                </div>
+              )}
             </div>
           </section>
         )}

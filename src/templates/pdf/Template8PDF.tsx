@@ -179,6 +179,27 @@ const Template8PDF: React.FC<Template8PDFProps> = ({ data }) => {
                   {edu.fieldOfStudy && <Text style={styles.listItem}>• {edu.fieldOfStudy}</Text>}
                 </View>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <View style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.itemTitle}>Pre University</Text>
+                    <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                  </View>
+                  <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
+                </View>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <View style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.itemTitle}>SSLC</Text>
+                    <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                  </View>
+                  <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
+                </View>
+              )}
             </View>
           </View>
         )}

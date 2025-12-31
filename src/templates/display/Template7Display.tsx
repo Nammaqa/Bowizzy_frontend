@@ -66,6 +66,23 @@ const Template7Display: React.FC<Template7DisplayProps> = ({ data }) => {
                   )}
                 </div>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#222' }}>{education.preUniversity.instituteName}</div>
+                  <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>Pre University - {education.preUniversity.boardType}</div>
+                  <div style={{ fontSize: 9, color: '#999', marginTop: 2 }}>{education.preUniversity.yearOfPassing}</div>
+                </div>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#222' }}>{education.sslc.instituteName}</div>
+                  <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>SSLC - {education.sslc.boardType}</div>
+                  <div style={{ fontSize: 9, color: '#999', marginTop: 2 }}>{education.sslc.yearOfPassing}</div>
+                </div>
+              )}
             </section>
           )}
 

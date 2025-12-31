@@ -100,6 +100,21 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
                     <Text style={styles.text}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</Text>
                   </View>
                 ))}
+                {/* Pre University */}
+                {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{education.preUniversity.instituteName}</Text>
+                    <Text style={styles.text}>Pre University - {education.preUniversity.boardType} • {education.preUniversity.yearOfPassing}</Text>
+                  </View>
+                )}
+
+                {/* SSLC */}
+                {education.sslcEnabled && education.sslc.instituteName && (
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{education.sslc.instituteName}</Text>
+                    <Text style={styles.text}>SSLC - {education.sslc.boardType} • {education.sslc.yearOfPassing}</Text>
+                  </View>
+                )}
               </View>
             </View>
           )}

@@ -105,6 +105,27 @@ const Template9Display: React.FC<Template9DisplayProps> = ({ data }) => {
                   {edu.fieldOfStudy && <div style={{ fontSize: 10, color: '#666', marginTop: 4 }}>• {edu.fieldOfStudy}</div>}
                 </div>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <div style={{ marginTop: 8, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700 }}>Pre University</div>
+                    <div style={{ fontSize: 10, color: '#666' }}>{education.preUniversity.yearOfPassing}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#444' }}>{education.preUniversity.instituteName}</div>
+                </div>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <div style={{ marginTop: 8, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700 }}>SSLC</div>
+                    <div style={{ fontSize: 10, color: '#666' }}>{education.sslc.yearOfPassing}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#444' }}>{education.sslc.instituteName}</div>
+                </div>
+              )}
             </section>
           )}
 

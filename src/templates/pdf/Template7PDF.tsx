@@ -172,6 +172,23 @@ const Template7PDF: React.FC<Template7PDFProps> = ({ data }) => {
                   )}
                 </View>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <View style={styles.educationItem}>
+                  <Text style={styles.itemTitle}>{education.preUniversity.instituteName}</Text>
+                  <Text style={styles.itemSubtitle}>Pre University - {education.preUniversity.boardType}</Text>
+                  <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                </View>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <View style={styles.educationItem}>
+                  <Text style={styles.itemTitle}>{education.sslc.instituteName}</Text>
+                  <Text style={styles.itemSubtitle}>SSLC - {education.sslc.boardType}</Text>
+                  <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                </View>
+              )}
             </View>
           )}
 

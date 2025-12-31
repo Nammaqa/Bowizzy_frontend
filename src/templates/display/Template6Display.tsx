@@ -103,6 +103,21 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
                   <div style={{ fontSize: 12, color: '#555' }}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</div>
                 </div>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{education.preUniversity.instituteName}</div>
+                  <div style={{ fontSize: 12, color: '#555' }}>Pre University - {education.preUniversity.boardType} • {education.preUniversity.yearOfPassing}</div>
+                </div>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{education.sslc.instituteName}</div>
+                  <div style={{ fontSize: 12, color: '#555' }}>SSLC - {education.sslc.boardType} • {education.sslc.yearOfPassing}</div>
+                </div>
+              )}
             </div>
           </section>
         )}

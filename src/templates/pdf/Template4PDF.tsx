@@ -170,6 +170,21 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
                   <Text style={{ fontSize: 9, color: '#4a5568' }}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</Text>
                 </View>
               ))}
+              {/* Pre University */}
+              {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{education.preUniversity.instituteName}</Text>
+                  <Text style={{ fontSize: 9, color: '#4a5568' }}>Pre University - {education.preUniversity.boardType} • {education.preUniversity.yearOfPassing}</Text>
+                </View>
+              )}
+
+              {/* SSLC */}
+              {education.sslcEnabled && education.sslc.instituteName && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{education.sslc.instituteName}</Text>
+                  <Text style={{ fontSize: 9, color: '#4a5568' }}>SSLC - {education.sslc.boardType} • {education.sslc.yearOfPassing}</Text>
+                </View>
+              )}
             </View>
           )}
 

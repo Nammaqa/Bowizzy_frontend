@@ -166,6 +166,23 @@ const Template10PDF: React.FC<Template10PDFProps> = ({ data }) => {
                     <Text style={styles.subtext}>{edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</Text>
                   </View>
                 ))}
+                {/* Pre University */}
+                {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={styles.heading}>Pre University</Text>
+                    <Text style={styles.subtext}>{education.preUniversity.instituteName}</Text>
+                    <Text style={styles.subtext}>{education.preUniversity.yearOfPassing}</Text>
+                  </View>
+                )}
+
+                {/* SSLC */}
+                {education.sslcEnabled && education.sslc.instituteName && (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={styles.heading}>SSLC</Text>
+                    <Text style={styles.subtext}>{education.sslc.instituteName}</Text>
+                    <Text style={styles.subtext}>{education.sslc.yearOfPassing}</Text>
+                  </View>
+                )}
               </View>
             )}
 

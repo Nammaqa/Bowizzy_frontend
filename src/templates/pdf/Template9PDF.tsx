@@ -117,6 +117,23 @@ const Template9PDF: React.FC<Template9PDFProps> = ({ data }) => {
                     <Text style={styles.text}>{edu.instituteName}</Text>
                   </View>
                 ))}
+                {/* Pre University */}
+                {education.preUniversityEnabled && education.preUniversity.instituteName && (
+                  <View style={{marginBottom:6}}>
+                    <Text style={{fontSize:10,fontWeight:'bold'}}>Pre University</Text>
+                    <Text style={{fontSize:9,color:'#666'}}>{education.preUniversity.yearOfPassing}</Text>
+                    <Text style={styles.text}>{education.preUniversity.instituteName}</Text>
+                  </View>
+                )}
+
+                {/* SSLC */}
+                {education.sslcEnabled && education.sslc.instituteName && (
+                  <View style={{marginBottom:6}}>
+                    <Text style={{fontSize:10,fontWeight:'bold'}}>SSLC</Text>
+                    <Text style={{fontSize:9,color:'#666'}}>{education.sslc.yearOfPassing}</Text>
+                    <Text style={styles.text}>{education.sslc.instituteName}</Text>
+                  </View>
+                )}
               </View>
             )}
 
