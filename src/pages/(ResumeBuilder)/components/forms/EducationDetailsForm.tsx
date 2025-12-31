@@ -214,7 +214,8 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       }
 
       if (format === "Grade") {
-        if (!/^[A-F]\+$|^Pass$|^Fail$/i.test(val)) return "Enter valid grade (A+, B+, Pass, Fail)";
+        // Allow letter grades optionally with + but disallow negative '-' suffixes
+        if (!/^[A-F]\+?$|^Pass$|^Fail$/i.test(val)) return "Enter valid grade (A, B+, Pass, Fail)";
       }
 
       return "";

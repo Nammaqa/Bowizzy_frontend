@@ -261,8 +261,9 @@ export default function EducationDetailsForm({
         if (cgpa < 0 || cgpa > 10) return "Must be between 0-10";
         break;
       case "Grade":
-        if (!/^[A-F][+-]?$|^Pass$|^Fail$/i.test(value))
-          return "Enter valid grade (A, B+, C-, Pass, Fail)";
+        // Disallow negative grades like A- or B-; allow A, A+, B, B+, Pass, Fail
+        if (!/^[A-F]\+?$|^Pass$|^Fail$/i.test(value))
+          return "Enter valid grade (A, B+, Pass, Fail)";
         break;
     }
     return "";

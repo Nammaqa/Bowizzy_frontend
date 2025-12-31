@@ -124,6 +124,20 @@ export default function ProjectDetailsForm({
     return "";
   };
 
+  const stripHtml = (val?: string) => {
+    if (!val) return "";
+    return val.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+  };
+
+  const validateNotNumericOnly = (value: string) => {
+    const text = stripHtml(value);
+    if (!text) return "";
+    if (/^\d+$/.test(text)) {
+      return "This field cannot be numbers only; include letters or punctuation.";
+    }
+    return "";
+  };
+
   const validateDateRange = (startDate: string, endDate: string) => {
     if (startDate && endDate) {
       if (endDate < startDate) {
@@ -188,6 +202,12 @@ export default function ProjectDetailsForm({
         ...prev,
         [`project-${index}-projectTitle`]: error,
       }));
+    } else if (field === "description" && typeof value === "string") {
+      const err = validateNotNumericOnly(value);
+      setErrors((prev) => ({ ...prev, [`project-${index}-description`]: err }));
+    } else if (field === "rolesAndResponsibilities" && typeof value === "string") {
+      const err = validateNotNumericOnly(value);
+      setErrors((prev) => ({ ...prev, [`project-${index}-rolesAndResponsibilities`]: err }));
     } else if (field === "startDate" && typeof value === "string") {
       const fmtError = validateMonthFormat(value);
       if (fmtError) {
@@ -260,6 +280,30 @@ export default function ProjectDetailsForm({
                 delete updated[project.id];
                 return updated;
               }),
+            3000
+          );
+          return;
+        }
+
+        // Validate description / roles are not numeric-only
+        const descError = validateNotNumericOnly(project.description);
+        const rolesError = validateNotNumericOnly(project.rolesAndResponsibilities);
+        if (descError || rolesError) {
+          setErrors((prev) => ({
+            ...prev,
+            [`project-${index}-description`]: descError,
+            [`project-${index}-rolesAndResponsibilities`]: rolesError,
+          }));
+          setProjectFeedback((prev) => ({
+            ...prev,
+            [project.id]: "Please correct highlighted errors before saving.",
+          }));
+          setTimeout(() =>
+            setProjectFeedback((prev) => {
+              const updated = { ...prev };
+              delete updated[project.id];
+              return updated;
+            }),
             3000
           );
           return;
@@ -359,6 +403,30 @@ export default function ProjectDetailsForm({
           minimalPayload.end_date = null;
         } else if (minimalPayload.currently_working === false) {
           minimalPayload.end_date = normalizeMonthToDate(project.endDate);
+        }
+
+        // Validate description / roles are not numeric-only before updating
+        const descError = validateNotNumericOnly(project.description);
+        const rolesError = validateNotNumericOnly(project.rolesAndResponsibilities);
+        if (descError || rolesError) {
+          setErrors((prev) => ({
+            ...prev,
+            [`project-${index}-description`]: descError,
+            [`project-${index}-rolesAndResponsibilities`]: rolesError,
+          }));
+          setProjectFeedback((prev) => ({
+            ...prev,
+            [project.id]: "Please correct highlighted errors before saving.",
+          }));
+          setTimeout(() =>
+            setProjectFeedback((prev) => {
+              const updated = { ...prev };
+              delete updated[project.id];
+              return updated;
+            }),
+            3000
+          );
+          return;
         }
 
         await updateProjectDetails(
@@ -796,6 +864,11 @@ export default function ProjectDetailsForm({
                   placeholder="Provide Description of your project.."
                   rows={6}
                 />
+                {errors[`project-${index}-description`] && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors[`project-${index}-description`]}
+                  </p>
+                )}
               </div>
 
               {/* Roles & Responsibilities */}
@@ -815,6 +888,11 @@ export default function ProjectDetailsForm({
                   placeholder="Provide your roles & responsibilities in the project.."
                   rows={6}
                 />
+                {errors[`project-${index}-rolesAndResponsibilities`] && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors[`project-${index}-rolesAndResponsibilities`]}
+                  </p>
+                )}
               </div>
             </div>
           </div>
