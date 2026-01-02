@@ -26,6 +26,11 @@ export default function Login() {
 
     try {
       const data = await loginUser(email, password);
+      if (data?.user_type && String(data.user_type).toLowerCase() === "admin") {
+        setError("Access denied. Please log in using the Admin portal.");
+        setLoading(false);
+        return;
+      }
 
       localStorage.setItem(
         "user",
