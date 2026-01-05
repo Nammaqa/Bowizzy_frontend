@@ -54,6 +54,7 @@ import InterviewComplete from "./pages/(InterviewPrep)/VideoPractise/Components/
 import InterviewReview from "./pages/(InterviewPrep)/VideoPractise/Components/InterviewReview";
 import TemplateSelection from "./pages/(ResumeBuilder)/TemplateSelection";
 import ResumeEditor from "./pages/(ResumeBuilder)/ResumeEditor";
+import Premium from "./pages/Premium";
 
 const isAuthenticated = () => {
   const raw = localStorage.getItem("user");
@@ -462,6 +463,16 @@ function App() {
         <ProtectedRoute>
           <LayoutWrapper>
             <ResumeEditor />
+          </LayoutWrapper>
+        </ProtectedRoute>
+      )
+    },
+    {
+      path: "premium",
+      Component: () => (
+        <ProtectedRoute>
+          <LayoutWrapper>
+            <Premium />
           </LayoutWrapper>
         </ProtectedRoute>
       )
