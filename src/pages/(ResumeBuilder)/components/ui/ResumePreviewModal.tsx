@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { X, Download, Eye, Save } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { getTemplateById } from "@/templates/templateRegistry";
@@ -6,6 +6,8 @@ import { pdf } from "@react-pdf/renderer";
 import { usePageMarkers } from "@/hooks/usePageMarkers";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import api from "@/api";
 
 interface ResumePreviewModalProps {
   isOpen: boolean;
@@ -13,6 +15,13 @@ interface ResumePreviewModalProps {
   resumeData: ResumeData;
   templateId: string | null;
   editorPaginatePreview?: boolean;
+  autoGeneratePreview?: boolean;
+  autoShowPdfPreview?: boolean;
+  onPreviewComplete?: () => void;
+  onSaveAndExit?: () => Promise<void>;
+  userId?: string;
+  token?: string;
+  resumeTemplateId?: string | null;
 }
 
 const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
@@ -21,6 +30,13 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
   resumeData,
   templateId,
   editorPaginatePreview,
+  autoGeneratePreview = false,
+  autoShowPdfPreview = false,
+  onPreviewComplete,
+  onSaveAndExit,
+  userId,
+  token,
+  resumeTemplateId,
 }) => {
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false); 
@@ -28,6 +44,9 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [resumeName, setResumeName] = useState('resume');
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [saveMode, setSaveMode] = useState<'download' | 'template' | null>(null);
 
   const previewContentRef = useRef<HTMLDivElement>(null);
   const [modalPaginatePageCount, setModalPaginatePageCount] = useState<number | null>(null);
@@ -45,10 +64,128 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
     resumeData,
   ]);
 
+  // Auto-generate preview when modal opens
+  useEffect(() => {
+    if (!isOpen || !autoGeneratePreview || !PDFComponent) return;
+
+    const generatePreview = async () => {
+      setIsDownloading(true);
+      try {
+        const waitForPages = async () => {
+          for (let i = 0; i < 20; i++) {
+            const container = pdfPagesRef.current;
+            const printableNow = container ? container.querySelectorAll('.pdf-print-page') : document.querySelectorAll('.pdf-print-page');
+            if (printableNow && printableNow.length > 0 && (modalPaginatePageCount === null || printableNow.length === modalPaginatePageCount)) {
+              return printableNow;
+            }
+            await new Promise((r) => setTimeout(r, 100));
+          }
+          const container = pdfPagesRef.current;
+          return container ? container.querySelectorAll('.pdf-print-page') : document.querySelectorAll('.pdf-print-page');
+        };
+
+        let generatedBlob: Blob | null = null;
+
+        const printable = await waitForPages();
+        if (printable && printable.length > 0) {
+          const pdfDoc = new jsPDF('p', 'pt', 'a4');
+          const pdfWidth = pdfDoc.internal.pageSize.getWidth();
+          const pdfHeight = pdfDoc.internal.pageSize.getHeight();
+
+          for (let i = 0; i < printable.length; i++) {
+            const canvas = await html2canvas(printable[i] as HTMLElement, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL('image/png');
+            if (i > 0) pdfDoc.addPage();
+            pdfDoc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          }
+
+          generatedBlob = pdfDoc.output('blob') as Blob;
+        } else {
+          const preparedData = await embedProfilePhoto(resumeData);
+          const doc = <PDFComponent data={preparedData} />;
+          const asPdf = pdf(doc);
+          generatedBlob = await asPdf.toBlob();
+        }
+
+        if (generatedBlob) {
+          setPdfBlob(generatedBlob);
+          const url = URL.createObjectURL(generatedBlob);
+          setPdfUrl(url);
+          // Auto-show PDF preview if requested
+          if (autoShowPdfPreview) {
+            setShowDownloadDialog(true);
+            onPreviewComplete?.();
+          }
+        }
+      } catch (err) {
+        console.error('PDF generation error:', err);
+      } finally {
+        setIsDownloading(false);
+      }
+    };
+
+    generatePreview();
+  }, [isOpen, autoGeneratePreview, autoShowPdfPreview, PDFComponent, resumeData]);
+
   if (!isOpen) return null;
 
+  const uploadPdfToCloudinary = async (blob: Blob): Promise<string | null> => {
+    try {
+      // Convert Blob to File
+      const file = new File([blob], `${resumeName.trim()}.pdf`, { type: 'application/pdf' });
+      
+      const result = await uploadToCloudinary(file);
+      return result?.url || null;
+    } catch (error) {
+      console.error('Cloudinary PDF upload error:', error);
+      return null;
+    }
+  };
+
+  const saveResumeTemplate = async (templateFileUrl: string) => {
+    if (!userId || !token) return;
+
+    try {
+      const templatePayload = {
+        template_name: resumeName.trim(),
+        template_id: templateId,
+        template_file_url: templateFileUrl,
+        thumbnail_url: 'IMAGE_URL_FOR_RESUME_THUMBNAIL',
+      };
+
+      const payload = {
+        templates: [templatePayload],
+      };
+
+      const endpoint = resumeTemplateId
+        ? `/users/${userId}/resume-templates/${resumeTemplateId}`
+        : `/users/${userId}/resume-templates`;
+
+      const method = resumeTemplateId ? 'put' : 'post';
+
+      const response = await api[method](endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error saving template:', error);
+      throw error;
+    }
+  };
+
   const handleSaveAndExitClick = () => {
-    // Handle save and exit logic here if needed
+    setSaveMode('template');
+    setShowDownloadDialog(false);
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+    }
+    setPdfUrl(null);
+    setPdfBlob(null);
+    setResumeName('resume');
+    setShowNameDialog(true);
   };
 
   // Try to fetch remote profile photo and convert to data URL so react-pdf can embed it reliably
@@ -86,7 +223,8 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
   return (
     <>
-      {/* Modal Container */}
+      {/* Modal Container - Hidden when auto-showing PDF preview */}
+      {!autoShowPdfPreview && (
       <div className="fixed right-0 top-0 bottom-0 z-50 flex items-center">
         {/* Resume Preview */}
         <div
@@ -282,6 +420,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
               )}
         </div>
       </div>
+      )}
 
       {/* Resume Name Dialog - Appears when Download PDF is clicked */}
       {showNameDialog && (
@@ -334,15 +473,15 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowNameDialog(false)}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  disabled={isDownloadingPdf}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={async () => {
                     if (!resumeName.trim()) return;
-                    setIsDownloading(true);
-                    setShowNameDialog(false);
+                    setIsDownloadingPdf(true);
                     try {
                       const waitForPages = async () => {
                         for (let i = 0; i < 20; i++) {
@@ -357,6 +496,8 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                         return container ? container.querySelectorAll('.pdf-print-page') : document.querySelectorAll('.pdf-print-page');
                       };
 
+                      let finalBlob: Blob | null = null;
+
                       const printable = await waitForPages();
                       if (printable && printable.length > 0) {
                         const pdfDoc = new jsPDF('p', 'pt', 'a4');
@@ -370,13 +511,27 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                           pdfDoc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                         }
 
-                        pdfDoc.save(`${resumeName.trim()}.pdf`);
+                        finalBlob = pdfDoc.output('blob') as Blob;
                       } else {
                         const preparedData = await embedProfilePhoto(resumeData);
                         const doc = <PDFComponent data={preparedData} />;
                         const asPdf = pdf(doc);
-                        const blob: Blob = await asPdf.toBlob();
-                        const url = URL.createObjectURL(blob);
+                        finalBlob = await asPdf.toBlob();
+                      }
+
+                      // If saving template, upload to Cloudinary and save to API
+                      if (saveMode === 'template') {
+                        const cloudinaryUrl = await uploadPdfToCloudinary(finalBlob);
+                        if (cloudinaryUrl) {
+                          await saveResumeTemplate(cloudinaryUrl);
+                          setShowNameDialog(false);
+                          onClose();
+                        } else {
+                          alert('Failed to upload PDF to Cloudinary');
+                        }
+                      } else {
+                        // Regular download
+                        const url = URL.createObjectURL(finalBlob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = `${resumeName.trim()}.pdf`;
@@ -384,19 +539,27 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                         a.click();
                         a.remove();
                         URL.revokeObjectURL(url);
+                        setShowNameDialog(false);
                       }
                     } catch (err) {
-                      console.error('PDF download error:', err);
-                      alert('Failed to download PDF. See console for details.');
+                      console.error('Error:', err);
+                      alert('Failed to process PDF. See console for details.');
                     } finally {
-                      setIsDownloading(false);
+                      setIsDownloadingPdf(false);
+                      setSaveMode(null);
                     }
                   }}
-                  disabled={!resumeName.trim() || isDownloading}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  data-download-trigger
+                  disabled={!resumeName.trim() || isDownloadingPdf}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
-                  {isDownloading ? 'Processing...' : 'Download'}
+                  {isDownloadingPdf ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      {saveMode === 'template' ? 'Saving...' : 'Downloading...'}
+                    </>
+                  ) : (
+                    saveMode === 'template' ? 'Save' : 'Download'
+                  )}
                 </button>
               </div>
             </div>
@@ -416,7 +579,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
           {/* Dialog Box */}
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
             <div
-              className="bg-white rounded-2xl shadow-2xl w-[90%] h-[90vh] max-w-5xl p-6 relative flex flex-col"
+              className="bg-white rounded-2xl shadow-2xl w-[95%] h-[95vh] max-w-7xl p-8 relative flex flex-col"
             >
               {/* Close Button */}
               <button
@@ -483,8 +646,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
                                   for (let i = 0; i < printable.length; i++) {
                                     // html2canvas each page
-                                    // @ts-expect-error html2canvas has incomplete types
-                                    const canvas = await html2canvas(printable[i] as HTMLElement, { scale: 2, useCORS: true });
+                                    const canvas = await (html2canvas as any)(printable[i] as HTMLElement, { scale: 2, useCORS: true });
                                     const imgData = canvas.toDataURL('image/png');
                                     if (i > 0) pdfDoc.addPage();
                                     pdfDoc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
@@ -551,8 +713,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
                                   for (let i = 0; i < printable.length; i++) {
                                     // html2canvas each page
-                                    // @ts-expect-error html2canvas has incomplete types
-                                    const canvas = await html2canvas(printable[i] as HTMLElement, { scale: 2, useCORS: true });
+                                    const canvas = await (html2canvas as any)(printable[i] as HTMLElement, { scale: 2, useCORS: true });
                                     const imgData = canvas.toDataURL('image/png');
                                     if (i > 0) pdfDoc.addPage();
                                     pdfDoc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
@@ -619,51 +780,53 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                   {/* PDF Viewer */}
                   <div className="flex-1 overflow-auto bg-gray-100 rounded-lg mb-4">
                     <iframe
-                      src={pdfUrl}
+                      src={pdfUrl ? `${pdfUrl}#toolbar=0` : ''}
                       className="w-full h-full border-none"
                       title="Resume PDF Preview"
                     />
                   </div>
 
                   {/* Footer Buttons */}
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      onClick={() => {
-                        if (pdfUrl) {
-                          URL.revokeObjectURL(pdfUrl);
-                        }
-                        setPdfUrl(null);
-                        setPdfBlob(null);
-                      }}
-                      className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (pdfBlob) {
-                          const url = URL.createObjectURL(pdfBlob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = 'resume.pdf';
-                          document.body.appendChild(a);
-                          a.click();
-                          a.remove();
-                          URL.revokeObjectURL(url);
-                          
-                          // Close the dialog
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          onClose();
                           setShowDownloadDialog(false);
                           if (pdfUrl) {
                             URL.revokeObjectURL(pdfUrl);
                           }
                           setPdfUrl(null);
                           setPdfBlob(null);
+                        }}
+                        className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Back to Edit
+                      </button>
+                      <button
+                        onClick={handleSaveAndExitClick}
+                        className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      >
+                        <Save className="w-4 h-4 text-orange-500" />
+                        Save & Exit
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowDownloadDialog(false);
+                        if (pdfUrl) {
+                          URL.revokeObjectURL(pdfUrl);
                         }
+                        setPdfUrl(null);
+                        setPdfBlob(null);
+                        setResumeName('resume');
+                        setShowNameDialog(true);
                       }}
                       className="px-6 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      Download
+                      Download PDF
                     </button>
                   </div>
                 </div>

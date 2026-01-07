@@ -21,6 +21,8 @@ interface Interview {
     email?: string;
     phone?: string;
     resumeUrl?: string;
+    avatar?: string;
+    title?: string;
   };
   job_role?: string;
   skills?: string[];

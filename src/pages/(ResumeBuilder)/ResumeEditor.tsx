@@ -263,6 +263,7 @@ export const ResumeEditor: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: boolean }>({});
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchTimedOut, setFetchTimedOut] = useState(false);
 
@@ -621,6 +622,7 @@ export const ResumeEditor: React.FC = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      setPreviewLoading(true);
       setShowPreviewModal(true);
     }
   };
@@ -628,6 +630,16 @@ export const ResumeEditor: React.FC = () => {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    try {
+      if (resumeData && userId && token) {
+        await uploadResume(userId, new Blob([JSON.stringify(resumeData)]), token);
+      }
+    } catch (error) {
+      console.error("Error saving resume:", error);
     }
   };
 
@@ -807,10 +819,17 @@ export const ResumeEditor: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="px-6 py-2.5 text-sm font-medium text-white bg-orange-400 rounded-full hover:bg-orange-500 transition-colors cursor-pointer"
-                    disabled={loading}
+                    className="px-6 py-2.5 text-sm font-medium text-white bg-orange-400 rounded-full hover:bg-orange-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    disabled={loading || (currentStep === steps.length - 1 && previewLoading)}
                   >
-                    {loading ? "Loading..." : nextButtonLabels[currentStep]}
+                    {currentStep === steps.length - 1 && previewLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      nextButtonLabels[currentStep]
+                    )}
                   </button>
                 </div>
               </div>
@@ -873,14 +892,6 @@ export const ResumeEditor: React.FC = () => {
         }
       `}</style>
 
-      {showPreviewModal && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity"
-          onClick={() => setShowPreviewModal(false)}
-          aria-hidden="true"
-        />
-      )}
-
       <ResumePreviewModal
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
@@ -890,6 +901,10 @@ export const ResumeEditor: React.FC = () => {
         token={token}
         resumeTemplateId={searchParams.get("resumeTemplateId")}
         editorPaginatePreview={paginatePreview}
+        autoGeneratePreview={true}
+        autoShowPdfPreview={true}
+        onPreviewComplete={() => setPreviewLoading(false)}
+        onSaveAndExit={handleSaveAndExit}
       />
     </div>
   );
