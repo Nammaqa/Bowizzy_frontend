@@ -35,7 +35,7 @@ const Template7Display: React.FC<Template7DisplayProps> = ({ data }) => {
       {/* Header - Full Width */}
       <header style={{ padding: '40px 40px 20px 40px' }}>
         <h1 style={{ fontSize: 32, fontWeight: 900, color: '#004b87', margin: '0 0 4px 0', letterSpacing: '1px' }}>
-          {personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+          {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
         </h1>
         <p style={{ fontSize: 14, color: '#444', margin: '0', letterSpacing: '0.5px', fontWeight: 500 }}>
           {experience.jobRole}

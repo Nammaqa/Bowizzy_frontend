@@ -302,7 +302,7 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
           <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
             <View style={styles.nameSection}>
               <Text style={styles.name}>
-                {personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+                {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
               </Text>
               <View style={styles.nameDivider} />
               <Text style={styles.jobTitle}>{experience.jobRole || "Executive Secretary"}</Text>

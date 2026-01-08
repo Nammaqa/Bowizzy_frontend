@@ -40,7 +40,7 @@ const Template9Display: React.FC<Template9DisplayProps> = ({ data }) => {
             {personal.profilePhotoUrl && (
               <img src={personal.profilePhotoUrl} alt="photo" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: '9999px', border: '6px solid rgba(0,0,0,0.03)' }} />
             )}
-            <h1 style={{ fontSize: 18, margin: '12px 0 4px 0', color: '#004b87', lineHeight: 1, textTransform: 'uppercase' }}>{(personal.firstName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}</h1>
+            <h1 style={{ fontSize: 18, margin: '12px 0 4px 0', color: '#004b87', lineHeight: 1, textTransform: 'uppercase' }}>{(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}</h1>
             <div style={{ fontSize: 12, color: '#666' }}>{experience.jobRole || ''}</div>
           </div>
 

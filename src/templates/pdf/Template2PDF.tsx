@@ -206,7 +206,7 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 			<Page size="A4" style={styles.page}>
 				<View style={styles.header}>
 					<Text style={styles.name}>
-						{personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+					{(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
 					</Text>
 				</View>
 

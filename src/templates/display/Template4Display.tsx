@@ -47,7 +47,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
         <aside style={{ width: '78mm', background: SidebarColor, color: '#ffffff', padding: '28px', boxSizing: 'border-box' }}>
           <div style={{ marginBottom: '18px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, letterSpacing: '1px' }}>
-              {personal.firstName} {personal.lastName}
+              {personal.firstName} {(personal.middleName || '')} {personal.lastName}
             </h1>
             <div style={{ height: '6px' }} />
             <p style={{ fontSize: '12px', opacity: 0.95 }}>{experience.jobRole}</p>

@@ -41,7 +41,7 @@ const Template5Display: React.FC<Template5DisplayProps> = ({ data }) => {
       <div style={{ padding: 28 }}>
         {/* Header */}
         <header style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 36, fontWeight: 700, color: '#6b2720', fontFamily: 'Times New Roman, serif' }}>{personal.firstName} {personal.lastName}</div>
+          <div style={{ fontSize: 36, fontWeight: 700, color: '#6b2720', fontFamily: 'Times New Roman, serif' }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</div>
           <div style={{ fontSize: 16, fontStyle: 'italic', color: '#6b2720', marginTop: 6 }}>{experience.jobRole}</div>
 
           <div style={{ marginTop: 12, border: '1px solid #ddd6cf', padding: '8px 10px', display: 'flex', gap: 18, alignItems: 'center', maxWidth: 760 }}>

@@ -46,7 +46,7 @@ const Template6PDF: React.FC<Template6PDFProps> = ({ data }) => {
         <View>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.name}>{personal.firstName} {personal.lastName}</Text>
+              <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
               {experience.jobRole && <Text style={styles.role}>{experience.jobRole}</Text>}
             </View>
             <View style={{ textAlign: 'right' }}>

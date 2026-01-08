@@ -122,7 +122,7 @@ const Template10Display: React.FC<Template10DisplayProps> = ({ data }) => {
         {/* Right Content - Name + Job + Work Experience + References */}
         <main style={{ width: '65%', boxSizing: 'border-box', padding: '36px 32px' }}>
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 32, margin: '0', color: '#222', lineHeight: 1.1, fontWeight: 700 }}>{personal.firstName}</h1>
+            <h1 style={{ fontSize: 32, margin: '0', color: '#222', lineHeight: 1.1, fontWeight: 700 }}>{personal.firstName}{personal.middleName ? ' ' + personal.middleName : ''}</h1>
             <h1 style={{ fontSize: 32, margin: '2px 0 10px 0', color: '#222', lineHeight: 1.1, fontWeight: 700 }}>{personal.lastName}</h1>
             <div style={{ fontSize: 12, color: '#666', fontWeight: 400 }}>{experience.jobRole || ''}</div>
           </div>

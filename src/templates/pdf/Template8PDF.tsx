@@ -115,7 +115,7 @@ const Template8PDF: React.FC<Template8PDFProps> = ({ data }) => {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.name}>{(personal.firstName || '') .toUpperCase()} {(personal.lastName || '').toUpperCase()}</Text>
+          <Text style={styles.name}>{(personal.firstName || '') .toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}</Text>
           <View style={styles.contactRow}>
             {personal.mobileNumber && <Text style={{ marginRight: 8 }}>{personal.mobileNumber}</Text>}
             {personal.email && <Text style={{ marginRight: 8 }}>{personal.email}</Text>}

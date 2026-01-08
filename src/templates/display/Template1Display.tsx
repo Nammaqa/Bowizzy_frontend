@@ -65,7 +65,7 @@ export const Template1Display: React.FC<Template1DisplayProps> = ({
                 fontFamily: 'Georgia, serif',
                 display: 'inline-block'
               }}>
-                {personal.firstName.toUpperCase()} <span style={{ fontWeight: 900 }}>{personal.lastName.toUpperCase()}</span>
+                {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} <span style={{ fontWeight: 900 }}>{(personal.lastName || '').toUpperCase()}</span>
               </h1>
               {/* Decorative short underline matching name width (dark rgb) */}
               <div style={{ display: 'inline-block', width: '100%', height: '3px', maxWidth: '360px', background: 'rgb(26, 23, 23)', marginTop: '4px', marginBottom: '8px' }} />
@@ -430,7 +430,7 @@ const PaginatedResume: React.FC<{ data: ResumeData; supportsPhoto?: boolean; onP
       <div style="padding:25px 40px 20px 40px;border-bottom:2px solid #6b7280;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <div>
-            <h1 style="font-size:32px;font-weight:700;color:#1f2937;letter-spacing:1px;margin-bottom:2px;line-height:1">${escapeHtml((personal.firstName || '').toUpperCase())} <span style='font-weight:600'>${escapeHtml((personal.lastName || '').toUpperCase())}</span></h1>
+            <h1 style="font-size:32px;font-weight:700;color:#1f2937;letter-spacing:1px;margin-bottom:2px;line-height:1">${escapeHtml((personal.firstName || '').toUpperCase())} ${escapeHtml((personal.middleName || '').toUpperCase())} <span style='font-weight:600'>${escapeHtml((personal.lastName || '').toUpperCase())}</span></h1>
             <p style="font-size:13px;color:#4b5563;margin-top:6px;letter-spacing:0.5px">${escapeHtml(experience.jobRole || '')}</p>
           </div>
               {/* When there are too many pages, avoid creating the large hidden DOM automatically

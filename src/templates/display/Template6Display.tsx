@@ -42,7 +42,7 @@ const Template6Display: React.FC<Template6DisplayProps> = ({ data }) => {
         <header style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 34, fontWeight: 800 }}>{personal.firstName} {personal.lastName}</div>
+              <div style={{ fontSize: 34, fontWeight: 800 }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</div>
               {experience.jobRole && <div style={{ fontSize: 14, fontStyle: 'italic', marginTop: 6 }}>{experience.jobRole}</div>}
             </div>
             <div style={{ fontSize: 11, color: '#555', textAlign: 'right', minWidth: 180 }}>

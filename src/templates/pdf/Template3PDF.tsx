@@ -320,7 +320,7 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
 
             {/* Name */}
             <View style={styles.nameSection}>
-              <Text style={styles.firstName}>{personal.firstName}</Text>
+              <Text style={styles.firstName}>{personal.firstName}{personal.middleName ? ' ' + personal.middleName : ''}</Text>
               <Text style={styles.lastName}>{personal.lastName}</Text>
               <Text style={styles.jobTitle}>{experience.jobRole || 'Backend Developer'}</Text>
             </View>

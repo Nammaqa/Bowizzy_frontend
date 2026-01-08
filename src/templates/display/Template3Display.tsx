@@ -104,7 +104,7 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
               margin: '0',
               lineHeight: '1.2'
             }}>
-              {personal.firstName || 'Lorna'}
+              {(personal.firstName || 'Lorna')}{personal.middleName ? ' ' + personal.middleName : ''}
             </h1>
             <h1 style={{ 
               fontSize: '32px', 
@@ -683,7 +683,7 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
               {personal.verificationText || 'I hereby declare that the information provided above is true to the best of my knowledge.'}
             </p>
             <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: darkTextColor }}>{personal.firstName} {personal.lastName}</div>
+              <div style={{ fontSize: '11px', color: darkTextColor }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</div>
               <div style={{ fontSize: '11px', color: lightTextColor }}>{personal.verificationDate ? personal.verificationDate : new Date().toLocaleDateString()}</div>
             </div>
           </div>

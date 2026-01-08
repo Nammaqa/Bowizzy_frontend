@@ -34,7 +34,7 @@ export const Template2Display: React.FC<Template2DisplayProps> = ({
 					className="text-4xl font-bold text-gray-800 tracking-wider"
 					style={{ fontSize: "36px", letterSpacing: "4px" }}
 				>
-					{personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+					{(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
 				</h1>
 			</div>
 

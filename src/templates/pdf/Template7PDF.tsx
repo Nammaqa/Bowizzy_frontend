@@ -147,7 +147,7 @@ const Template7PDF: React.FC<Template7PDFProps> = ({ data }) => {
         {/* Header - Full Width */}
         <View style={styles.header}>
           <Text style={styles.name}>
-            {personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+            {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
           </Text>
           <Text style={styles.jobTitle}>{experience.jobRole}</Text>
         </View>

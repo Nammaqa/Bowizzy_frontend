@@ -61,7 +61,7 @@ const Template5PDF: React.FC<Template5PDFProps> = ({ data }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <View>
-          <Text style={styles.headerName}>{personal.firstName} {personal.lastName}</Text>
+          <Text style={styles.headerName}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           <Text style={styles.headerRole}>{experience.jobRole}</Text>
 
           <View style={styles.contactBox}>

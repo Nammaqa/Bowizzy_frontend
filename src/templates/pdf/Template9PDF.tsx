@@ -80,10 +80,10 @@ const Template9PDF: React.FC<Template9PDFProps> = ({ data }) => {
               <Image src={personal.profilePhotoUrl} style={styles.photo} />
             ) : (
               <View style={[styles.photo, { backgroundColor: '#f0f0f0', alignItems: 'center', justifyContent: 'center' }]}>
-                <Text style={{ fontSize: 20, color: '#004b87', fontWeight: 'bold' }}>{((personal.firstName||'')[0] || '') + ((personal.lastName||'')[0] || '')}</Text>
+                <Text style={{ fontSize: 20, color: '#004b87', fontWeight: 'bold' }}>{((personal.firstName||'')[0] || '') + ((personal.middleName||'')[0] || '') + ((personal.lastName||'')[0] || '')}</Text>
               </View>
             )}
-            <Text style={styles.name}>{(personal.firstName||'').toUpperCase()} {(personal.lastName||'').toUpperCase()}</Text>
+            <Text style={styles.name}>{(personal.firstName||'').toUpperCase()} {(personal.middleName||'').toUpperCase()} {(personal.lastName||'').toUpperCase()}</Text>
             {experience.jobRole && <Text style={styles.text}>{experience.jobRole}</Text>}
 
             <View style={styles.section}>

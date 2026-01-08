@@ -75,7 +75,7 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.sidebar}>
-          <Text style={styles.name}>{personal.firstName} {personal.lastName}</Text>
+          <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           <Text style={styles.jobTitle}>{experience.jobRole}</Text>
 
           <View style={{ marginTop: 10 }}>

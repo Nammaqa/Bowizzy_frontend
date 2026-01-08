@@ -36,7 +36,7 @@ const Template8Display: React.FC<Template8DisplayProps> = ({ data }) => {
         {/* Header */}
         <header style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '2px solid #222' }}>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#004b87', margin: '0 0 6px 0', letterSpacing: '0.5px' }}>
-            {personal.firstName.toUpperCase()} {personal.lastName.toUpperCase()}
+            {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
           </h1>
           <div style={{ fontSize: 11, color: '#666', margin: 0, display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
             {personal.mobileNumber && <span>{personal.mobileNumber}</span>}

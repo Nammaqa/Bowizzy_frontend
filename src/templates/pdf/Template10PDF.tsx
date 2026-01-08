@@ -212,7 +212,7 @@ const Template10PDF: React.FC<Template10PDFProps> = ({ data }) => {
           <View style={styles.right}>
             {/* Name and Job Title */}
             <View style={styles.nameContainer}>
-              <Text style={styles.nameFirst}>{personal.firstName || ''}</Text>
+              <Text style={styles.nameFirst}>{personal.firstName || ''}{personal.middleName ? ' ' + personal.middleName : ''}</Text>
               <Text style={styles.nameLast}>{personal.lastName || ''}</Text>
               {experience.jobRole && <Text style={styles.jobTitle}>{experience.jobRole}</Text>}
             </View>
