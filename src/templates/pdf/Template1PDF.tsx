@@ -1,6 +1,6 @@
 import React from "react";
 import DOMPurify from 'dompurify';
-import { Document, Page, Text, View, StyleSheet, Svg, Path } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Path, Image } from "@react-pdf/renderer";
 import type { ResumeData } from "@/types/resume";
 
 const styles = StyleSheet.create({
@@ -145,6 +145,11 @@ const styles = StyleSheet.create({
   itemDate: {
     fontSize: 8,
     color: "#718096",
+  },
+  itemResult: {
+    fontSize: 9,
+    color: "#4a5568",
+    marginTop: 4,
   },
   // Skills List
   skillsList: {
@@ -321,11 +326,18 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
         <View style={styles.header}>
           <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
             <View style={styles.nameSection}>
-              <Text style={styles.name}>
-                {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
-              </Text>
-              <View style={styles.nameDivider} />
-              <Text style={styles.jobTitle}>{experience.jobRole || "Executive Secretary"}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {personal.profilePhotoUrl && (
+                  <Image src={personal.profilePhotoUrl} style={{ width: 64, height: 64, borderRadius: 32, objectFit: 'cover' }} />
+                )}
+                <View>
+                  <Text style={styles.name}>
+                    {(personal.firstName || '').toUpperCase()} {(personal.middleName || '').toUpperCase()} {(personal.lastName || '').toUpperCase()}
+                  </Text>
+                  <View style={styles.nameDivider} />
+                  <Text style={styles.jobTitle}>{experience.jobRole || "Executive Secretary"}</Text>
+                </View>
+              </View>
             </View>
 
             <View style={styles.contactSection}>
@@ -385,6 +397,9 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                         {getYear(edu.startYear)} -{" "}
                         {edu.currentlyPursuing ? "Present" : getYear(edu.endYear)}
                       </Text>
+                      {edu.resultFormat && edu.result && (
+                        <Text style={styles.itemResult}>{`${edu.resultFormat}: ${edu.result}`}</Text>
+                      )}
                     </View>
                   ))}
                           {/* Pre-University (show consistent label and same order as display) */}
@@ -393,6 +408,9 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                               <Text style={styles.itemTitle}>Pre University</Text>
                               <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
                               <Text style={styles.itemDate}>{getYear(education.preUniversity.yearOfPassing)}</Text>
+                              {education.preUniversity.resultFormat && education.preUniversity.result && (
+                                <Text style={styles.itemResult}>{`${education.preUniversity.resultFormat}: ${education.preUniversity.result}`}</Text>
+                              )}
                             </View>
                           )}
 
@@ -402,6 +420,9 @@ export const Template1PDF: React.FC<Template1PDFProps> = ({ data }) => {
                               <Text style={styles.itemTitle}>SSLC</Text>
                               <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
                               <Text style={styles.itemDate}>{getYear(education.sslc.yearOfPassing)}</Text>
+                              {education.sslc.resultFormat && education.sslc.result && (
+                                <Text style={styles.itemResult}>{`${education.sslc.resultFormat}: ${education.sslc.result}`}</Text>
+                              )}
                             </View>
                           )}
                 </View>

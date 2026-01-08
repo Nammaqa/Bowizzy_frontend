@@ -36,16 +36,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     marginLeft: 'auto',
     marginRight: 'auto',
+    // push the photo upward so it sits centered inside the white circular mask
+    marginTop: -56,
     marginBottom: 35,
     // use explicit border props for react-pdf
     borderWidth: 6,
     borderColor: '#ffffff',
+    overflow: 'hidden',
   },
   profilePhoto: {
     width: 140,
     height: 140,
     borderRadius: 70,
     objectFit: 'cover',
+    alignSelf: 'center',
   },
   nameSection: {
     textAlign: 'center',
@@ -126,8 +130,9 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   aboutText: {
-    textAlign: 'justify',
-    lineHeight: 1.5,
+    textAlign: 'left',
+    lineHeight: 1.3,
+    fontSize: 9,
   },
   // Right Content (White)
   rightContent: {
@@ -209,9 +214,17 @@ const styles = StyleSheet.create({
   itemDescription: {
     fontSize: 9,
     color: '#666666',
-    lineHeight: 1.6,
-    marginTop: 9,
+    lineHeight: 1.4,
+    marginTop: 0,
     textAlign: 'justify',
+  },
+  descBullet: {
+    width: 8,
+    textAlign: 'right',
+    marginRight: 8,
+    fontSize: 8,
+    color: '#666666',
+    marginTop: 2,
   },
   contactIconImg: {
     width: 10,
@@ -258,6 +271,41 @@ interface Template3PDFProps {
 export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
   const { personal, education, experience, projects, skillsLinks, certifications } = data;
 
+  const [photoForPdf, setPhotoForPdf] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const url = personal.profilePhotoUrl;
+    if (!url) return;
+
+    // If it's already a data URL or an absolute http(s) URL, use as-is (http(s) should work in most environments).
+    if (url.startsWith('data:') || /^https?:\/\//i.test(url)) {
+      setPhotoForPdf(url);
+      return;
+    }
+
+    // For blob/object URLs or other custom schemes, try to fetch and convert to data URL
+    (async () => {
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (!mounted) return;
+          setPhotoForPdf(reader.result as string);
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        // fallback: leave undefined so we render the placeholder
+        if (mounted) setPhotoForPdf(undefined);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [personal.profilePhotoUrl]);
+
   // NOTE: we render icons directly with Svg/Path (ICON_PATHS) so we don't
   // depend on external fonts or emoji. This makes PDF rendering reliable
   // across viewers and matches the preview visuals.
@@ -277,7 +325,7 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
     }
     return withBreaks.replace(/<[^>]+>/g, '').trim();
   };
-
+  const getYear = (s?: string) => (s ? s.split('-')[0] : '');
   // Inline SVG path data for icons (use react-pdf Svg/Path so icons render reliably in PDFs)
   const ICON_PATHS: Record<string, string> = {
     phone: 'M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 22 2 13.93 2 3.5A1 1 0 013 2.5H6.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.01l-2.2 2.2z',
@@ -311,7 +359,10 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
           <View style={styles.leftSidebarContent}>
             {/* Profile Photo */}
             <View style={styles.profilePhotoContainer}>
-              {personal.profilePhotoUrl ? (
+              {photoForPdf ? (
+                <Image src={photoForPdf} style={styles.profilePhoto} />
+              ) : personal.profilePhotoUrl ? (
+                // Attempt to use the original URL as a fallback for absolute HTTP URLs.
                 <Image src={personal.profilePhotoUrl} style={styles.profilePhoto} />
               ) : (
                 <View style={{ width: '100%', height: '100%', backgroundColor: '#e0e0e0' }} />
@@ -365,7 +416,25 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                   <Text style={styles.sidebarTitle}>About Me</Text>
                 </View>
                 <View style={[styles.sidebarContent, styles.sidebarDivider]}>
-                  <Text style={styles.aboutText}>{htmlToPlainText(personal.aboutCareerObjective)}</Text>
+                  {(() => {
+                    const about = htmlToPlainText(personal.aboutCareerObjective || '');
+                    const lines = about.split('\n').map(l => l.trim()).filter(Boolean);
+                    if (lines.length > 1) {
+                      return (
+                        <React.Fragment>
+                          {lines.map((line, i) => (
+                            <View key={i} style={{ flexDirection: 'row', marginBottom: 6, alignItems: 'flex-start' }}>
+                              <Text style={styles.descBullet}>{'\u2022'}</Text>
+                              <View style={{ flex: 1 }}>
+                                <Text style={styles.aboutText}>{line}</Text>
+                              </View>
+                            </View>
+                          ))}
+                        </React.Fragment>
+                      );
+                    }
+                    return <Text style={styles.aboutText}>{lines[0] || ''}</Text>;
+                  })()}
                 </View>
               </View>
             )}
@@ -428,7 +497,7 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                           {edu.instituteName || 'Borcelle University'}
                         </Text>
                         <Text style={styles.itemDate}>
-                          {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}
+                          {getYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : getYear(edu.endYear)}
                         </Text>
                         {edu.resultFormat && edu.result && (
                           <Text style={styles.itemResult}>
@@ -448,7 +517,10 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                       <View style={styles.itemContent}>
                         <Text style={styles.itemTitle}>Pre University</Text>
                         <Text style={styles.itemSubtitle}>{education.preUniversity.instituteName}</Text>
-                        <Text style={styles.itemDate}>{education.preUniversity.yearOfPassing}</Text>
+                        <Text style={styles.itemDate}>{getYear(education.preUniversity.yearOfPassing)}</Text>
+                        {education.preUniversity.resultFormat && education.preUniversity.result && (
+                          <Text style={styles.itemResult}>{`${education.preUniversity.resultFormat}: ${education.preUniversity.result}`}</Text>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -462,7 +534,10 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                       <View style={styles.itemContent}>
                         <Text style={styles.itemTitle}>SSLC</Text>
                         <Text style={styles.itemSubtitle}>{education.sslc.instituteName}</Text>
-                        <Text style={styles.itemDate}>{education.sslc.yearOfPassing}</Text>
+                        <Text style={styles.itemDate}>{getYear(education.sslc.yearOfPassing)}</Text>
+                        {education.sslc.resultFormat && education.sslc.result && (
+                          <Text style={styles.itemResult}>{`${education.sslc.resultFormat}: ${education.sslc.result}`}</Text>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -503,7 +578,16 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                           {exp.startDate} - {exp.currentlyWorking ? 'Present' : exp.endDate}
                         </Text>
                         {exp.description && (
-                          <Text style={styles.itemDescription}>{htmlToPlainText(exp.description)}</Text>
+                          <View style={{ marginTop: 6 }}>
+                            {htmlToPlainText(exp.description).split("\n").map((line, i) => line.trim()).filter(Boolean).map((line, i) => (
+                              <View key={i} style={{ flexDirection: 'row', marginBottom: 4, alignItems: 'flex-start' }}>
+                                <Text style={styles.descBullet}>{'\u2022'}</Text>
+                                <View style={{ flex: 1 }}>
+                                  <Text style={styles.itemDescription}>{line}</Text>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
                         )}
                       </View>
                     </View>
@@ -544,13 +628,66 @@ export const Template3PDF: React.FC<Template3PDFProps> = ({ data }) => {
                           {project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}
                         </Text>
                         {project.description && (
-                          <Text style={styles.itemDescription}>{htmlToPlainText(project.description)}</Text>
+                          <View style={{ marginTop: 6 }}>
+                            {htmlToPlainText(project.description).split("\n").map((line, i) => line.trim()).filter(Boolean).map((line, i) => (
+                              <View key={i} style={{ flexDirection: 'row', marginBottom: 4, alignItems: 'flex-start' }}>
+                                <Text style={styles.descBullet}>{'\u2022'}</Text>
+                                <View style={{ flex: 1 }}>
+                                  <Text style={styles.itemDescription}>{line}</Text>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
                         )}
                       </View>
                     </View>
                   </View>
                 ))}
               </View>
+            </View>
+          )}
+
+          {/* Certifications (two-column grid like display) */}
+          {certifications.length > 0 && certifications.some(c => c.enabled && c.certificateTitle) && (
+            <View style={styles.contentSection}>
+              <View style={styles.contentSectionHeader}>
+                <Svg width={20} height={20} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
+                  {/* Ribbon */}
+                  <Path d="M12 3 L15 9 L12 11 L9 9 Z" fill="#5B8FB9" />
+                  <Path d="M10.2 9.6 L12 11 L13.8 9.6 L14.6 16 L12 18 L9.4 16 Z" fill="#5B8FB9" opacity={0.95} />
+                  {/* Gold circle */}
+                  <Path d="M12 11a3 3 0 100 6 3 3 0 000-6z" fill="#f4b400" />
+                </Svg>
+                <Text style={styles.contentTitle}>Certifications</Text>
+              </View>
+
+              {(() => {
+                const certs = certifications.filter(c => c.enabled && c.certificateTitle);
+                const rows: Array<[any, any?]> = [];
+                for (let i = 0; i < certs.length; i += 2) {
+                  rows.push([certs[i], certs[i + 1]]);
+                }
+                return (
+                  <View style={{ marginTop: 8 }}>
+                    {rows.map((pair, rowIdx) => (
+                      <View key={rowIdx} style={{ flexDirection: 'row', marginBottom: 8 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#333333' }}>{pair[0]?.certificateTitle}</Text>
+                          <Text style={{ fontSize: 9, color: '#666666', marginTop: 3 }}>{pair[0]?.date ? pair[0].date : ''}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          {pair[1] && (
+                            <>
+                              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#333333' }}>{pair[1].certificateTitle}</Text>
+                              <Text style={{ fontSize: 9, color: '#666666', marginTop: 3 }}>{pair[1].date ? pair[1].date : ''}</Text>
+                            </>
+                          )}
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()}
             </View>
           )}
 

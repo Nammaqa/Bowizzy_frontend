@@ -28,6 +28,8 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
   const padding = '45px 30px';
   const mainContentPadding = '45px 40px 45px 35px';
 
+  const getYear = (s?: string) => (s ? s.split('-')[0] : '');
+
   // Show education if any of the education subsections have data
   const hasEducation = (
     (education.higherEducationEnabled && education.higherEducation.length > 0) ||
@@ -325,7 +327,7 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
                         color: lightTextColor,
                         margin: '0 0 6px 0'
                       }}>
-                        {edu.startYear || '2016'} - {edu.currentlyPursuing ? 'Present' : (edu.endYear || '2020')}
+                        {getYear(edu.startYear) || '2016'} - {edu.currentlyPursuing ? 'Present' : (getYear(edu.endYear) || '2020')}
                       </p>
                       {edu.resultFormat && edu.result && (
                         <p style={{ 
@@ -376,8 +378,13 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
                         color: lightTextColor,
                         margin: '0'
                       }}>
-                        {education.preUniversity.yearOfPassing}
+                        {getYear(education.preUniversity.yearOfPassing)}
                       </p>
+                      {education.preUniversity.resultFormat && education.preUniversity.result && (
+                        <p style={{ fontSize: '10px', color: mediumTextColor, margin: '4px 0 0 0' }}>
+                          {education.preUniversity.resultFormat}: {education.preUniversity.result}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -419,8 +426,13 @@ export const Template3Display: React.FC<Template3DisplayProps> = ({
                         color: lightTextColor,
                         margin: '0'
                       }}>
-                        {education.sslc.yearOfPassing}
+                        {getYear(education.sslc.yearOfPassing)}
                       </p>
+                      {education.sslc.resultFormat && education.sslc.result && (
+                        <p style={{ fontSize: '10px', color: mediumTextColor, margin: '4px 0 0 0' }}>
+                          {education.sslc.resultFormat}: {education.sslc.result}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
