@@ -1,5 +1,6 @@
 import React from "react";
 import DOMPurify from 'dompurify';
+import { FiPhone, FiMail, FiMapPin } from 'react-icons/fi';
 import type { ResumeData } from "@/types/resume";
 
 interface Template2DisplayProps {

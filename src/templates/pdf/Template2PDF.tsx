@@ -201,6 +201,12 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 		return withBreaks.replace(/<[^>]+>/g, '').trim();
 	};
 
+	const ICON_PATHS: Record<string, string> = {
+		phone: 'M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 22 2 13.93 2 3.5A1 1 0 013 2.5H6.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.01l-2.2 2.2z',
+		mail: 'M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
+		location: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z',
+	};
+
 	return (
 		<Document>
 			<Page size="A4" style={styles.page}>
@@ -215,13 +221,22 @@ export const Template2PDF: React.FC<Template2PDFProps> = ({ data }) => {
 						<View style={styles.section}>
 							<Text style={styles.sectionTitle}>CONTACT</Text>
 							<View style={styles.contactItem}>
-								<Text>{personal.mobileNumber}</Text>
+								<Svg width={10} height={10} viewBox="0 0 24 24" style={styles.contactIcon}>
+							<Path d={ICON_PATHS.phone} fill="#666666" />
+						</Svg>
+						<Text>{personal.mobileNumber}</Text>
 							</View>
 							<View style={styles.contactItem}>
-								<Text>{personal.address}</Text>
+								<Svg width={10} height={10} viewBox="0 0 24 24" style={styles.contactIcon}>
+							<Path d={ICON_PATHS.location} fill="#666666" />
+						</Svg>
+						<Text>{personal.address}</Text>
 							</View>
 							<View style={styles.contactItem}>
-								<Text>{personal.email}</Text>
+								<Svg width={10} height={10} viewBox="0 0 24 24" style={styles.contactIcon}>
+							<Path d={ICON_PATHS.mail} fill="#666666" />
+						</Svg>
+						<Text>{personal.email}</Text>
 							</View>
 							{skillsLinks.links.portfolioEnabled &&
 								skillsLinks.links.portfolioUrl && (
