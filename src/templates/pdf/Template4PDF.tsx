@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, StyleSheet, Svg, Path } from '@react-pdf/renderer';
 import type { ResumeData } from '@/types/resume';
 
 const styles = StyleSheet.create({
@@ -71,6 +71,12 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
     }
   };
 
+  const ICON_PATHS: Record<string, string> = {
+    phone: 'M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 22 2 13.93 2 3.5A1 1 0 013 2.5H6.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.01l-2.2 2.2z',
+    mail: 'M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z',
+    location: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z',
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -78,11 +84,7 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
           <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           <Text style={styles.jobTitle}>{experience.jobRole}</Text>
 
-          <View style={{ marginTop: 10 }}>
-            {personal.mobileNumber && <Text style={styles.contactItem}>{personal.mobileNumber}</Text>}
-            {personal.email && <Text style={styles.contactItem}>{personal.email}</Text>}
-            {personal.address && <Text style={styles.contactItem}>{personal.address}</Text>}
-          </View>
+
 
           <View style={{ marginTop: 12 }}>
             <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#ffffff', marginBottom: 6 }}>LANGUAGES</Text>
@@ -121,13 +123,32 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
           {/* Header: job role on its own line, contact items in a single formatted line */}
           <View style={{ marginBottom: 10 }}>
             <Text style={{ fontSize: 14, fontFamily: 'Times-Bold', color: '#0f766e', marginBottom: 6 }}>{experience.jobRole}</Text>
-            <Text style={{ fontSize: 9, color: '#4a5568', lineHeight: 1.4 }}>
-              {personal.mobileNumber && <Text>Tel: {personal.mobileNumber}</Text>}
-              {personal.mobileNumber && personal.email && <Text>     Email: </Text>}
-              {personal.email && <Text>{personal.email}</Text>}
-              {(personal.mobileNumber || personal.email) && (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) && <Text>     LinkedIn Profile</Text>}
-              {(personal.mobileNumber || personal.email || (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile)) && personal.address && <Text>     {personal.address.split(',')[0]}</Text>}
-            </Text>
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              {personal.mobileNumber && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Svg width={10} height={10} viewBox="0 0 24 24"><Path d={ICON_PATHS.phone} fill="#4a5568" /></Svg>
+                  <Text style={{ fontSize: 9, color: '#4a5568', marginLeft: 4 }}>{personal.mobileNumber}</Text>
+                </View>
+              )}
+
+              {personal.email && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Svg width={10} height={10} viewBox="0 0 24 24"><Path d={ICON_PATHS.mail} fill="#4a5568" /></Svg>
+                  <Text style={{ fontSize: 9, color: '#4a5568', marginLeft: 4 }}>{personal.email}</Text>
+                </View>
+              )}
+
+              {personal.address && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Svg width={10} height={10} viewBox="0 0 24 24"><Path d={ICON_PATHS.location} fill="#4a5568" /></Svg>
+                  <Text style={{ fontSize: 9, color: '#4a5568', marginLeft: 4 }}>{personal.address.split(',')[0]}</Text>
+                </View>
+              )}
+
+              {((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && (
+                <Text style={{ fontSize: 9, color: '#4a5568' }}>LinkedIn Profile</Text>
+              )}
+            </View>
           </View>
 
           {personal.aboutCareerObjective && (
@@ -145,7 +166,10 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
                   {/* keep title+company together, allow description to flow */}
                   <View wrap={false}>
                     <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{w.jobTitle}</Text>
-                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{w.companyName} • {w.startDate} - {w.currentlyWorking ? 'Present' : w.endDate}</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 9, color: '#4a5568' }}>{w.companyName}</Text>
+                      <Text style={{ fontSize: 9, color: '#4a5568' }}>{w.startDate} - {w.currentlyWorking ? 'Present' : w.endDate}</Text>
+                    </View>
                   </View>
                   {w.description && <Text style={styles.text}>{htmlToText(w.description)}</Text>}
                 </View>
@@ -160,11 +184,23 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
               {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
                 <View key={idx} style={{ marginBottom: 8 }}>
                   <View wrap={false}>
-                    <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{project.projectTitle}</Text>
-                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{project.projectTitle}</Text>
+                      <Text style={{ fontSize: 9, color: '#4a5568' }}>{project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}</Text>
+                    </View>
                   </View>
-                  {project.description && <Text style={styles.text}>{sanitizeLines(htmlToText(project.description))}</Text>}
-                  {project.rolesResponsibilities && <Text style={styles.text}><Text style={{ fontFamily: 'Times-Bold' }}>Roles & Responsibilities: </Text>{sanitizeLines(htmlToText(project.rolesResponsibilities))}</Text>}
+                  {project.description && (
+                    <Text style={styles.text}>
+                      <Text style={{ fontFamily: 'Times-Bold' }}>Description: </Text>
+                      {sanitizeLines(htmlToText(project.description))}
+                    </Text>
+                  )}
+                  {project.rolesResponsibilities && (
+                    <Text style={styles.text}>
+                      <Text style={{ fontFamily: 'Times-Bold' }}>Roles & Responsibilities: </Text>
+                      {sanitizeLines(htmlToText(project.rolesResponsibilities))}
+                    </Text>
+                  )}
                 </View>
               ))}
             </View>
@@ -176,14 +212,20 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
               {education.higherEducation.map((edu, idx) => (
                 <View key={idx} style={{ marginBottom: 6 }}>
                   <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{edu.instituteName}</Text>
-                  <Text style={{ fontSize: 9, color: '#4a5568' }}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{edu.degree}</Text>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</Text>
+                  </View>
                 </View>
               ))}
               {/* Pre University */}
               {education.preUniversityEnabled && education.preUniversity.instituteName && (
                 <View style={{ marginBottom: 6 }}>
                   <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{education.preUniversity.instituteName}</Text>
-                  <Text style={{ fontSize: 9, color: '#4a5568' }}>Pre University - {education.preUniversity.boardType} • {education.preUniversity.yearOfPassing}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>Pre University - {education.preUniversity.boardType}</Text>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{education.preUniversity.yearOfPassing}</Text>
+                  </View>
                 </View>
               )}
 
@@ -191,7 +233,10 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
               {education.sslcEnabled && education.sslc.instituteName && (
                 <View style={{ marginBottom: 6 }}>
                   <Text style={{ fontSize: 10, fontFamily: 'Times-Bold', color: '#2d3748' }}>{education.sslc.instituteName}</Text>
-                  <Text style={{ fontSize: 9, color: '#4a5568' }}>SSLC - {education.sslc.boardType} • {education.sslc.yearOfPassing}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>SSLC - {education.sslc.boardType}</Text>
+                    <Text style={{ fontSize: 9, color: '#4a5568' }}>{education.sslc.yearOfPassing}</Text>
+                  </View>
                 </View>
               )}
             </View>
@@ -210,17 +255,7 @@ const Template4PDF: React.FC<Template4PDFProps> = ({ data }) => {
             </View>
           )}
 
-          {certifications.length > 0 && (
-            <View style={{ marginBottom: 10 }}>
-              <Text style={styles.sectionTitle}>CERTIFICATIONS</Text>
-              {certifications.filter(c => c.enabled && c.certificateTitle).map((c, i) => (
-                <View key={i} style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontFamily: 'Times-Bold', color: '#2d3748' }}>{c.certificateTitle}</Text>
-                  {c.providedBy && <Text style={{ fontSize: 8, color: '#4a5568' }}>{c.providedBy} {c.date && `• ${c.date}`}</Text>}
-                </View>
-              ))}
-            </View>
-          )}
+
         </View>
       </Page>
     </Document>

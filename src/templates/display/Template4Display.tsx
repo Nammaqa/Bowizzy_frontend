@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiPhone, FiMail, FiMapPin } from 'react-icons/fi';
 import type { ResumeData } from '@/types/resume';
 
 interface Template4DisplayProps {
@@ -53,14 +54,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             <p style={{ fontSize: '12px', opacity: 0.95 }}>{experience.jobRole}</p>
           </div>
 
-          <div style={{ marginTop: 12 }}>
-            <h3 style={{ fontSize: '12px', fontWeight: 700, marginBottom: 8 }}>Contact</h3>
-            <div style={{ fontSize: 11, lineHeight: '1.5' }}>
-              {personal.mobileNumber && <div>{personal.mobileNumber}</div>}
-              {personal.email && <div>{personal.email}</div>}
-              {personal.address && <div>{personal.address}</div>}
-            </div>
-          </div>
+
 
           <div style={{ marginTop: 18 }}>
             <h3 style={{ fontSize: '12px', fontWeight: 700, marginBottom: 8 }}>Languages</h3>
@@ -113,12 +107,28 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             <div style={{ fontSize: 16, fontWeight: 700, color: '#0f766e', marginBottom: 8 }}>
               {experience.jobRole}
             </div>
-            <div style={{ fontSize: 12, color: '#4a5568', lineHeight: 1.6 }}>
-              {personal.mobileNumber && <span>Tel: {personal.mobileNumber}</span>}
-              {personal.mobileNumber && personal.email && <span>     Email: </span>}
-              {personal.email && <span>{personal.email}</span>}
-              {(personal.mobileNumber || personal.email) && ((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && <span>     LinkedIn Profile</span>}
-              {(personal.mobileNumber || personal.email || ((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile)) && personal.address && <span>     + {personal.address.split(',')[0]}</span>}
+            <div style={{ fontSize: 12, color: '#4a5568', lineHeight: 1.6, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              {personal.mobileNumber && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <FiPhone color="#4a5568" size={14} />
+                  <span>{personal.mobileNumber}</span>
+                </span>
+              )}
+              {personal.email && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <FiMail color="#4a5568" size={14} />
+                  <span>{personal.email}</span>
+                </span>
+              )}
+              {personal.address && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <FiMapPin color="#4a5568" size={14} />
+                  <span>{personal.address.split(',')[0]}</span>
+                </span>
+              )}
+              {((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>LinkedIn Profile</span>
+              )}
             </div>
           </div>
 
@@ -137,7 +147,10 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
               {experience.workExperiences.filter(w => w.enabled).map((w, i) => (
                 <div key={i} className="avoid-break">
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#2d3748' }}>{w.jobTitle}</div>
-                  <div style={{ fontSize: 11, color: '#4a5568', fontStyle: 'italic' }}>{w.companyName} • {w.startDate} - {w.currentlyWorking ? 'Present' : w.endDate}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 11, color: '#4a5568', fontStyle: 'italic' }}>{w.companyName}</div>
+                    <div style={{ fontSize: 11, color: '#4a5568', fontStyle: 'italic' }}>{w.startDate} - {w.currentlyWorking ? 'Present' : w.endDate}</div>
+                  </div>
                   {w.description && <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify', whiteSpace: 'pre-wrap' }}>{htmlToText(w.description)}</p>}
                 </div>
               ))}
@@ -150,10 +163,14 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
               <h2 style={{ fontSize: 12, fontWeight: 700, color: '#2d3748', letterSpacing: '2px', marginBottom: 8 }}>PROJECTS</h2>
               {projects.filter(p => p.enabled && p.projectTitle).map((project, idx) => (
                     <div key={idx} className="avoid-break">
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#2d3748' }}>{project.projectTitle}</div>
-                  <div style={{ fontSize: 11, color: '#4a5568' }}>{project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#2d3748' }}>{project.projectTitle}</div>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>{project.startDate} - {project.currentlyWorking ? 'Present' : project.endDate}</div>
+                  </div>
                   {project.description && (
-                    <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify', whiteSpace: 'pre-wrap' }}>{sanitizeLines(htmlToText(project.description))}</p>
+                    <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify', whiteSpace: 'pre-wrap' }}>
+                      <strong>Description:</strong> {sanitizeLines(htmlToText(project.description))}
+                    </p>
                   )}
                   {project.rolesResponsibilities && (
                     <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify' }}>
@@ -161,7 +178,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
                     </p>
                   )}
                 </div>
-              ))}
+              ))} 
             </section>
           )}
 
@@ -172,14 +189,20 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
               {education.higherEducation.map((edu, idx) => (
                  <div key={idx} className="avoid-break">
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{edu.instituteName}</div>
-                  <div style={{ fontSize: 11, color: '#4a5568' }}>{edu.degree} • {edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>{edu.degree}</div>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>{edu.startYear} - {edu.currentlyPursuing ? 'Present' : edu.endYear}</div>
+                  </div>
                 </div>
               ))}
               {/* Pre University */}
               {education.preUniversityEnabled && education.preUniversity.instituteName && (
                 <div className="avoid-break" style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{education.preUniversity.instituteName}</div>
-                  <div style={{ fontSize: 11, color: '#4a5568' }}>Pre University - {education.preUniversity.boardType} • {education.preUniversity.yearOfPassing}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>Pre University - {education.preUniversity.boardType}</div>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>{education.preUniversity.yearOfPassing}</div>
+                  </div>
                 </div>
               )}
 
@@ -187,7 +210,10 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
               {education.sslcEnabled && education.sslc.instituteName && (
                 <div className="avoid-break" style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{education.sslc.instituteName}</div>
-                  <div style={{ fontSize: 11, color: '#4a5568' }}>SSLC - {education.sslc.boardType} • {education.sslc.yearOfPassing}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>SSLC - {education.sslc.boardType}</div>
+                    <div style={{ fontSize: 11, color: '#4a5568' }}>{education.sslc.yearOfPassing}</div>
+                  </div>
                 </div>
               )}
             </section>
@@ -205,31 +231,7 @@ const Template4Display: React.FC<Template4DisplayProps> = ({ data }) => {
             </section>
           )}
 
-          {/* Certifications */}
-          {certifications.length > 0 && (
-            <section style={{ marginBottom: 18 }}>
-              <h2 style={{ fontSize: 12, fontWeight: 700, color: '#2d3748', letterSpacing: '2px', marginBottom: 8 }}>CERTIFICATIONS</h2>
-              {certifications.filter(c => c.enabled && (c.certificateTitle || c.description)).map((c, i) => {
-                const start = (c as any).startDate;
-                const end = (c as any).endDate;
-                const single = c.date;
-                const dateRange = start && end ? `${start} - ${end}` : (single ? single : '');
-                return (
-                        <div key={i} className="avoid-break">
-                    {c.certificateTitle ? (
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#2d3748' }}>{c.certificateTitle}</div>
-                    ) : null}
-                    {c.providedBy || dateRange ? (
-                      <div style={{ fontSize: 11, color: '#4a5568' }}>{c.providedBy}{c.providedBy && dateRange ? ' • ' : ''}{dateRange}</div>
-                    ) : null}
-                    {c.description ? (
-                      <p style={{ fontSize: 11, color: '#4a5568', marginTop: 6, textAlign: 'justify', whiteSpace: 'pre-wrap' }}>{htmlToText(c.description)}</p>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </section>
-          )}
+
         </main>
       </div>
     </div>
