@@ -13,6 +13,7 @@ import { getSkillsByUserId } from "@/services/skillsLinksService";
 import { getExperienceByUserId } from "@/services/experienceService";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 import {deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
+import api from "@/api";
 
 const GiveMockInterview = () => {
     const navigate = useNavigate();
@@ -31,6 +32,8 @@ const GiveMockInterview = () => {
     const [apiError, setApiError] = useState(null);
     const [bookingError, setBookingError] = useState('');
     const { slotId } = useParams();
+
+    const [planAmount, setPlanAmount] = useState<number | null>(null);
 
     const [cloudinaryData, setCloudinaryData] = useState({
         url: '',
@@ -372,6 +375,57 @@ const GiveMockInterview = () => {
         }
     }, [slotId]);
 
+    const fetchPricing = useCallback(async () => {
+        const acceptFields = ['amount', 'price', 'value', 'cost'];
+        const tryExtractAmount = (obj) => {
+            if (!obj) return null;
+            for (const f of acceptFields) {
+                if (typeof obj[f] !== 'undefined' && obj[f] !== null) return Number(obj[f]);
+            }
+            return null;
+        };
+
+        const getAndProcess = async (url, authHeader) => {
+            const resp = await api.get(url, authHeader ? { headers: { Authorization: `Bearer ${authHeader}` } } : undefined);
+            console.debug('pricing resp', url, resp);
+            return resp?.data;
+        };
+
+        try {
+            const data = await getAndProcess('/admin/pricing', token);
+
+            if (Array.isArray(data)) {
+                const found = data.find(item => String(item?.bowizzy_plan_type || '').toLowerCase() === 'interview');
+                const amt = tryExtractAmount(found);
+                if (amt !== null && !Number.isNaN(amt)) {
+                    setPlanAmount(amt);
+                    return;
+                }
+            } else {
+                const candidate = data?.data ?? data; // handle some API wrappers
+                const byType = (candidate && String(candidate?.bowizzy_plan_type || '').toLowerCase() === 'interview') ? candidate : null;
+                const amt = tryExtractAmount(byType ?? candidate);
+                if (amt !== null && !Number.isNaN(amt)) {
+                    setPlanAmount(amt);
+                    return;
+                }
+            }
+
+            // fallback try explicit id endpoint
+            const d2 = await getAndProcess('/admin/pricing/1', token);
+            const amt2 = tryExtractAmount(d2?.data ?? d2);
+            if (amt2 !== null && !Number.isNaN(amt2)) {
+                setPlanAmount(amt2);
+            }
+        } catch (err) {
+            console.warn('fetchPricing failed', err);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        fetchPricing();
+    }, [fetchPricing]);
+
 
     // create a preview URL for the uploaded resume (object URL for local File, or cloud url)
     useEffect(() => {
@@ -509,18 +563,118 @@ const GiveMockInterview = () => {
     const handlePayAndConfirm = async () => {
         if (loading || !bookingData.interviewId) return;
 
+        if (planAmount == null) {
+            alert('Price not loaded yet. Please wait a moment and try again.');
+            return;
+        }
+
+        const loadRazorpayScript = () => new Promise((resolve, reject) => {
+            if (typeof window !== 'undefined' && (window as any).Razorpay) {
+                return resolve(true);
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => reject(new Error('Razorpay SDK failed to load'));
+            document.body.appendChild(script);
+        });
+
         try {
             setLoading(true);
-            const slotId = bookingData.interviewId;
 
-            await confirmInterviewSlotPayment(userId, token, slotId);
+            // create order on backend — send amount in rupees (backend expects rupees)
+            const amountPaise = Math.round(planAmount * 100);
+            const amountToSend = planAmount; // send rupees so backend can convert to paise
 
-            setCurrentScreen('success');
+            console.debug('Creating order, planAmount (rupees):', planAmount, 'amountPaise:', amountPaise, 'sending amount (rupees):', amountToSend);
+            const createResp = await api.post('/payment/create-order', { amount: amountToSend }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+            const orderData = createResp?.data ?? createResp;
+
+            const orderId = orderData?.id || orderData?.order_id || orderData?.orderId || orderData?.razorpay_order_id;
+            let orderAmount = orderData?.amount ?? amountPaise;
+            const razorKey = orderData?.key || orderData?.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+
+            // Normalize amount: backend might return rupees instead of paise.
+            // Razorpay expects amount in paise.
+            try {
+                const oa = Number(orderAmount);
+                if (!Number.isNaN(oa)) {
+                    // if returned amount looks like rupees (small number and equals planAmount), convert to paise
+                    if (planAmount != null && (oa === planAmount || oa === Math.round(planAmount))) {
+                        orderAmount = Math.round(oa * 100);
+                    } else if (oa > 0 && oa < 1000 && planAmount != null && Math.abs(oa - planAmount) < 1) {
+                        orderAmount = Math.round(planAmount * 100);
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            console.debug('Order data from backend:', orderData, 'final orderAmount (paise):', orderAmount, 'orderId:', orderId);
+
+            await loadRazorpayScript();
+
+            const options: any = {
+                key: razorKey,
+                amount: orderAmount,
+                currency: 'INR',
+                name: 'Bowizzy',
+                description: 'Interview Payment',
+                order_id: orderId,
+                modal: {
+                    ondismiss: () => {
+                        // user closed the checkout without completing payment
+                        setLoading(false);
+                    }
+                },
+                handler: async function (response) {
+                    try {
+                        // verify payment on backend
+                        const verifyResp = await api.post('/payment/verify', { ...response, order_id: orderId, interview_id: bookingData.interviewId }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+                        const verifyData = verifyResp?.data ?? verifyResp;
+
+                        // if verification successful, confirm interview slot and go to success
+                        const ok = verifyData?.success || verifyData?.status === 'success' || String(verifyData?.message || '').toLowerCase().includes('success');
+                        if (ok) {
+                            try {
+                                await confirmInterviewSlotPayment(userId, token, bookingData.interviewId);
+                            } catch (e) {
+                                console.warn('confirmInterviewSlotPayment failed, continuing to success screen', e);
+                            }
+                            setCurrentScreen('success');
+                        } else {
+                            alert('Payment verification failed. Please contact support.');
+                        }
+                    } catch (err) {
+                        console.error('Payment verification error', err);
+                        alert('Payment verification failed.');
+                    } finally {
+                        setLoading(false);
+                    }
+                },
+                prefill: {
+                    name: userData?.name || userData?.full_name || '',
+                    email: userData?.email || ''
+                },
+                theme: {
+                    color: '#FF8251'
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            // handle explicit payment failures (if SDK exposes `on`)
+            if (typeof (rzp as any)?.on === 'function') {
+                (rzp as any).on('payment.failed', (resp: any) => {
+                    console.warn('Razorpay payment.failed', resp);
+                    setLoading(false);
+                    alert('Payment failed or was cancelled.');
+                });
+            }
+            rzp.open();
 
         } catch (error) {
-            console.error('Payment Confirmation API Error:', error);
-            alert(`Payment confirmation failed: ${error.message || 'Server error'}`);
-        } finally {
+            console.error('Payment Error:', error);
+            alert('Failed to initiate payment. Please try again.');
             setLoading(false);
         }
     };
@@ -1233,7 +1387,7 @@ const GiveMockInterview = () => {
                     Amount :
                     </span>
                     <span className="text-xl font-bold text-[#3A3A3A]">
-                    ₹ 399.00 /-
+                    {planAmount != null ? `₹ ${planAmount.toFixed(2)} /-` : '—'}
                     </span>
                 </div>
 
