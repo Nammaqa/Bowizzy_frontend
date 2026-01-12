@@ -14,9 +14,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   header: {
-    paddingTop: 18,
-    paddingBottom: 6,
-    marginBottom: 40,
+    paddingTop: 36,
+    paddingBottom: 16,
+    marginBottom: 48,
+    paddingLeft: 36,
+    paddingRight: 36,
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
@@ -24,13 +26,18 @@ const styles = StyleSheet.create({
   nameSection: {
     flexDirection: "column",
     flex: 1,
+    alignItems: 'flex-start',
+    width: '100%'
   },
   name: {
-    fontSize: 34,
+    fontSize: 36,
     fontFamily: "Times-Bold",
     color: "#111827",
-    marginBottom: 10,
-    lineHeight: 1,
+    marginBottom: 24,
+    lineHeight: 1.05,
+    textAlign: 'left',
+    width: '100%',
+    alignSelf: 'flex-start'
   },
   jobTitle: {
     fontSize: 12,
@@ -40,9 +47,11 @@ const styles = StyleSheet.create({
   },
   contactLine: {
     fontSize: 11,
-    color: "#6b7280",
-    marginTop: 8,
+    color: "#111827",
+    marginTop: 6,
     letterSpacing: 0.2,
+    textAlign: 'left',
+    width: '100%'
   },
   contactSection: {
     flexDirection: "column",
@@ -58,7 +67,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 9,
-    color: '#0a66c2',
+    color: '#06090fff',
     marginTop: 6,
     marginRight: 10,
   },
@@ -72,7 +81,7 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 11,
     fontFamily: "Times-Bold",
-    color: "#2d3748",
+    color: "#111827",
     marginBottom: 2,
   },
   itemSubtitle: {
@@ -82,7 +91,8 @@ const styles = StyleSheet.create({
   },
   itemDate: {
     fontSize: 10,
-    color: "#718096",
+    color: "#111827",
+    fontFamily: "Times-Bold",
   },
   bulletText: {
     fontSize: 10,
@@ -188,17 +198,8 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
         {/* Header */}
         <View style={styles.header}>
             <View style={styles.nameSection}>
-              <Text style={styles.name}>{personal.firstName} {personal.middleName ? ' ' + personal.middleName : ''} {personal.lastName}</Text>
-              {personal.aboutCareerObjective ? <Text style={styles.objective}>{htmlToPlainText(personal.aboutCareerObjective)}</Text> : null}
+              <Text style={styles.name}>{personal.firstName}{personal.middleName ? ' ' + personal.middleName : ''}{personal.lastName ? ' ' + personal.lastName : ''}</Text>
               <Text style={styles.contactLine}>{[personal.email, personal.mobileNumber, personal.address].filter(Boolean).join(' | ')}</Text>
-              <View style={{ flexDirection: 'row', marginTop: 6 }}>
-                {((skillsLinks && (skillsLinks as any).links && (skillsLinks as any).links.linkedinProfile) || (personal as any).linkedinProfile) && (
-                  <Text style={styles.linkText}>LinkedIn</Text>
-                )}
-                {((skillsLinks && (skillsLinks as any).links && (skillsLinks as any).links.githubProfile) || (personal as any).githubProfile) && (
-                  <Text style={[styles.linkText, { color: '#111' }]}>GitHub</Text>
-                )}
-              </View>
             </View>
         </View>
 
@@ -227,9 +228,11 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
             <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
             {education.higherEducation.map((edu, idx) => (
               <View key={idx} style={{ marginBottom: 8 }}>
-                <Text style={styles.itemTitle}>{edu.instituteName}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  <Text style={[styles.itemTitle, { flex: 1, marginRight: 8 }]}>{edu.instituteName}</Text>
+                  <Text style={styles.itemDate}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
+                </View>
                 <Text style={styles.itemSubtitle}>{edu.degree}</Text>
-                <Text style={styles.itemDate}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
               </View>
             ))}
           </View>
@@ -242,21 +245,18 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
 
           {skillsLinks.skills.length > 0 && (
             <View style={{ marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontFamily: 'Times-Bold' }}>Technical Skills:</Text>
-              <Text style={{ fontSize: 10 }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text>
+              <Text style={{ fontSize: 10 }}><Text style={{ fontFamily: 'Times-Bold', fontSize: 11 }}>Technical Skills:</Text> <Text style={{ fontSize: 10 }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text></Text>
             </View>
           )}
 
           {certifications.length > 0 && (
             <View style={{ marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontFamily: 'Times-Bold' }}>Certifications & Training:</Text>
-              <Text style={{ fontSize: 10 }}>{certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle).join(', ')}</Text>
+              <Text style={{ fontSize: 10 }}><Text style={{ fontFamily: 'Times-Bold', fontSize: 11 }}>Certifications & Training:</Text> <Text style={{ fontSize: 10 }}>{Array.from(new Set(certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle))).join(', ')}</Text></Text>
             </View>
           )}
 
-          <View>
-            <Text style={{ fontSize: 11, fontFamily: 'Times-Bold' }}>Languages:</Text>
-            <Text style={{ fontSize: 10 }}>{personal.languagesKnown && personal.languagesKnown.length > 0 ? personal.languagesKnown.join(', ') : ''}</Text>
+          <View style={{ marginBottom: 0 }}>
+            <Text style={{ fontSize: 10 }}><Text style={{ fontFamily: 'Times-Bold', fontSize: 11 }}>Languages:</Text> <Text style={{ fontSize: 10 }}>{personal.languagesKnown && personal.languagesKnown.length > 0 ? personal.languagesKnown.join(', ') : ''}</Text></Text>
           </View>
         </View>
       </Page>

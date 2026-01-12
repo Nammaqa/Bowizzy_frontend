@@ -95,27 +95,9 @@ const Template11Display: React.FC<Template11DisplayProps> = ({
     <div className="w-[210mm] bg-white" style={{ minHeight: '297mm', fontFamily: 'Times New Roman, serif' }}>
       {/* Header Section - Classic Serif look */}
       <div style={{ padding: '18px 36px 6px 36px' }}>
-        <h1 style={{ fontSize: '36px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '1', fontFamily: 'Georgia, serif' }}>{personal.firstName} {personal.middleName ? ' ' + personal.middleName : ''} {personal.lastName}</h1>
-        {personal.aboutCareerObjective && (
-          <div style={{ fontSize: 11, color: '#444', marginTop: 8, maxWidth: '70%', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' }}>
-            {DOMPurify.sanitize(personal.aboutCareerObjective)}
-          </div>
-        )}
-        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: 8 }}>
+        <h1 style={{ fontSize: '36px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '1', fontFamily: 'Georgia, serif', textAlign: 'left' }}>{personal.firstName}{personal.middleName ? ' ' + personal.middleName : ''}{personal.lastName ? ' ' + personal.lastName : ''}</h1>
+        <div style={{ fontSize: '11px', color: '#111827', marginTop: 8, textAlign: 'left' }}>
           { [personal.email, personal.mobileNumber, personal.address].filter(Boolean).join(' | ') }
-        </div>
-
-        <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 12, color: '#6b7280' }}>
-          {((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile) && (
-            <a href={(skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile} target="_blank" rel="noreferrer" style={{ color: '#0a66c2', display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
-              <FiLinkedin /> <span style={{ fontSize: 11 }}>LinkedIn</span>
-            </a>
-          )}
-          {((skillsLinks && skillsLinks.links && skillsLinks.links.githubProfile) || (personal as any).githubProfile) && (
-            <a href={(skillsLinks && skillsLinks.links && skillsLinks.links.githubProfile) || (personal as any).githubProfile} target="_blank" rel="noreferrer" style={{ color: '#111', display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
-              <FiGithub /> <span style={{ fontSize: 11 }}>GitHub</span>
-            </a>
-          )}
         </div>
       </div>
 
@@ -132,8 +114,8 @@ const Template11Display: React.FC<Template11DisplayProps> = ({
             {experience.workExperiences.filter(exp => exp.enabled).map((exp, idx) => (
               <div key={idx} style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>{exp.companyName}</div>
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>{formatMonthYear(exp.startDate)} - {exp.currentlyWorking ? 'Present' : formatMonthYear(exp.endDate)}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>{exp.companyName}</div>
+                  <div style={{ fontSize: 11, color: '#111827', fontWeight: 700 }}>{formatMonthYear(exp.startDate)} - {exp.currentlyWorking ? 'Present' : formatMonthYear(exp.endDate)}</div>
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#222', marginBottom: 6 }}>{exp.jobTitle}</div>
                 {exp.description && (
@@ -155,9 +137,11 @@ const Template11Display: React.FC<Template11DisplayProps> = ({
             <div style={{ height: 1, background: '#333', width: '100%', marginBottom: 12 }} />
             {sortedHigherEducation.map((edu, idx) => (
               <div key={idx} style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700 }}>{edu.instituteName}</div>
-                <div style={{ fontSize: 11, color: '#6b7280' }}>{edu.degree}</div>
-                <div style={{ fontSize: 10, color: '#9ca3af' }}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#111827', flex: 1, marginRight: 8 }}>{edu.instituteName}</div>
+                  <div style={{ fontSize: 10, color: '#111827', fontWeight: 700 }}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>{edu.degree}</div>
               </div>
             ))}
           </section>
@@ -170,24 +154,21 @@ const Template11Display: React.FC<Template11DisplayProps> = ({
 
           {/* Skills */}
           {skillsLinks.skills.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700 }}>Technical Skills:</div>
-              <div style={{ fontSize: 11, color: '#444' }}>{skillsLinks.skills.filter(s => s.enabled && s.skillName).map(s => s.skillName).join(', ')}</div>
+            <div style={{ marginBottom: 8, fontSize: 11, color: '#444' }}>
+              <span style={{ fontSize: 11, fontWeight: 700 }}>Technical Skills:</span> <span style={{ fontSize: 11 }}>{skillsLinks.skills.filter(s => s.enabled && s.skillName).map(s => s.skillName).join(', ')}</span>
             </div>
           )}
 
           {/* Certifications */}
           {certifications.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700 }}>Certifications & Training:</div>
-              <div style={{ fontSize: 11, color: '#444' }}>{certifications.filter(c => c.enabled && c.certificateTitle).map(c => c.certificateTitle).join(', ')}</div>
+            <div style={{ marginBottom: 8, fontSize: 11, color: '#444' }}>
+              <span style={{ fontSize: 11, fontWeight: 700 }}>Certifications & Training:</span> <span style={{ fontSize: 11 }}>{Array.from(new Set(certifications.filter(c => c.enabled && c.certificateTitle).map(c => c.certificateTitle))).join(', ')}</span>
             </div>
           )}
 
           {/* Languages */}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700 }}>Languages:</div>
-            <div style={{ fontSize: 11, color: '#444' }}>{personal.languagesKnown && personal.languagesKnown.length > 0 ? personal.languagesKnown.join(', ') : ''}</div>
+          <div style={{ marginBottom: 0, fontSize: 11, color: '#444' }}>
+            <span style={{ fontSize: 11, fontWeight: 700 }}>Languages:</span> <span style={{ fontSize: 11 }}>{personal.languagesKnown && personal.languagesKnown.length > 0 ? personal.languagesKnown.join(', ') : ''}</span>
           </div>
         </section>
       </div>
