@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: { fontSize: 11, fontFamily: 'Times-Bold', marginBottom: 6 },
   itemTitle: { fontSize: 11, fontFamily: 'Times-Bold' },
-  itemSub: { fontSize: 10, color: '#6b7280' },
+  itemSub: { fontSize: 10, color: '#111827', fontFamily: 'Times-Bold' },
   bullet: { fontSize: 10, color: '#444', marginTop: 4 },
 });
 
@@ -121,13 +121,42 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
           <View style={styles.rightCol}>
             {education.higherEducationEnabled && education.higherEducation.map((edu: any, i: number) => (
               <View key={i} style={{ marginBottom: 8 }}>
-                <Text style={styles.itemTitle}>{edu.instituteName}</Text>
-                <Text style={styles.itemSub}>{edu.degree} — {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.itemTitle}>{edu.degree}</Text>
+                  <Text style={styles.itemSub}>{edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
+                </View>
+                <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{edu.instituteName}</Text>
                 {edu.resultFormat && edu.result && (
-                  <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>
+                  <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>
                 )}
               </View>
             ))}
+
+            {education.preUniversityEnabled && education.preUniversity.instituteName && (
+              <View style={{ marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.itemTitle}>PUC</Text>
+                  <Text style={styles.itemSub}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
+                </View>
+                <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{education.preUniversity.instituteName}</Text>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (
+                  <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
+                )}
+              </View>
+            )}
+
+            {education.sslcEnabled && education.sslc.instituteName && (
+              <View style={{ marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.itemTitle}>SSLC</Text>
+                  <Text style={styles.itemSub}>{formatMonthYear(education.sslc.yearOfPassing) || ''}</Text>
+                </View>
+                <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{education.sslc.instituteName}</Text>
+                {education.sslc.resultFormat && education.sslc.result && (
+                  <Text style={{ fontSize: 10, color: '#111827', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
+                )}
+              </View>
+            )}
           </View>
         </View>
 
