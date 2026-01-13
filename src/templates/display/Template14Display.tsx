@@ -71,7 +71,6 @@ const Template14Display: React.FC<Template14DisplayProps> = ({ data }) => {
             })()}
           </div>
         </div>
-        <div style={{ height: 1, background: '#eee', marginTop: 12, width: '100%' }} />
       </div>
 
       <div style={{ padding: '0 36px 36px 36px' }}>

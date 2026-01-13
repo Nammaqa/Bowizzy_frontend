@@ -86,7 +86,6 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
           <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           {profession && <Text style={styles.subtitle}>{profession}</Text>}
           <Text style={styles.contact}>{pdfContactLine}</Text>
-          <View style={styles.divider} />
         </View>
 
         <View style={{ marginTop: 12 }}>
