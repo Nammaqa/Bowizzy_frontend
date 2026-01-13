@@ -10,9 +10,9 @@ const styles = StyleSheet.create({
   name: { fontSize: 20, fontFamily: 'Times-Bold' },
   role: { fontSize: 12, fontFamily: 'Times-Roman' },
   dividerThick: { height: 1, backgroundColor: '#000', marginBottom: 12 },
-  leftCol: { width: 150, paddingRight: 12 },
+  leftCol: { width: 170, paddingRight: 12 },
   rightCol: { flex: 1 },
-  sectionHeading: { fontSize: 10, fontFamily: 'Times-Bold', textTransform: 'uppercase', letterSpacing: 1.2 },
+  sectionHeading: { fontSize: 11, fontFamily: 'Times-Bold', textTransform: 'uppercase', letterSpacing: 1.2 },
   smallDivider: { height: 1, backgroundColor: '#ddd', marginTop: 6, marginBottom: 8 }
 });
 
@@ -55,7 +55,20 @@ interface Template20PDFProps { data: ResumeData }
 
 const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
   const { personal, experience, education, certifications, skillsLinks } = data;
-  const contactItems = [personal.mobileNumber && `Phone: ${personal.mobileNumber}`, personal.email && `Email: ${personal.email}`, personal.address && `Address: ${personal.address}`, skillsLinks && skillsLinks.links && skillsLinks.links.portfolioUrl && `Portfolio: ${skillsLinks.links.portfolioUrl}`].filter(Boolean);
+  const formatMobile = (m?: string) => {
+    if (!m) return '';
+    const trimmed = String(m).trim();
+    if (/^\+/.test(trimmed)) return trimmed;
+    if ((personal.country || '').toLowerCase() === 'india') return `+91 ${trimmed}`;
+    return trimmed;
+  };
+  const formatYear = (s?: string) => {
+    if (!s) return '';
+    const y = String(s).match(/(\d{4})/);
+    return y ? y[1] : '';
+  };
+
+  const contactItems = [personal.mobileNumber && `Phone: ${formatMobile(personal.mobileNumber)}`, personal.email && `Email: ${personal.email}`, personal.address && `Address: ${personal.address}`, skillsLinks && skillsLinks.links && skillsLinks.links.portfolioUrl && `Portfolio: ${skillsLinks.links.portfolioUrl}`].filter(Boolean);
 
   return (
     <Document>
@@ -71,7 +84,7 @@ const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
 
         {/* CONTACT row */}
         <View style={{ flexDirection: 'row', marginTop: 6 }}>
-          <View style={{ width: 90 }}>
+          <View style={{ width: 150 }}>
             <Text style={styles.sectionHeading}>CONTACT</Text>
           </View>
           <View style={{ flex: 1 }}>
@@ -90,15 +103,15 @@ const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
 
         {/* PROFESSIONAL EXPERIENCE row */}
         <View style={{ flexDirection: 'row' }}>
-          <View style={{ width: 90 }}><Text style={styles.sectionHeading}>PROFESSIONAL EXPERIENCE</Text></View>
+          <View style={{ width: 150 }}><Text style={styles.sectionHeading}>PROFESSIONAL EXPERIENCE</Text></View>
           <View style={{ flex: 1 }}>
             {experience.workExperiences.filter((w:any)=>w.enabled).map((w:any,i:number)=> (
               <View key={i} style={{ marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={{ fontFamily: 'Times-Bold' }}>{w.jobTitle}</Text>
-                  <Text style={{ color: '#6b7280', fontFamily: 'Times-Bold' }}>{w.startDate ? formatMonthYear(w.startDate) : ''} {w.currentlyWorking ? '— Present' : (w.endDate ? `— ${formatMonthYear(w.endDate)}` : '')}</Text>
+                  <Text style={{ color: '#000', fontFamily: 'Times-Bold' }}>{w.startDate ? formatMonthYear(w.startDate) : ''} {w.currentlyWorking ? '— Present' : (w.endDate ? `— ${formatMonthYear(w.endDate)}` : '')}</Text>
                 </View>
-                <Text style={{ marginTop: 4 }}>{w.companyName}</Text>
+                <Text style={{ marginTop: 4, fontFamily: 'Times-Bold', color: '#000' }}>{w.companyName}</Text>
                 {w.description && (
                   <View style={{ marginTop: 6 }}>
                     {htmlToLines(w.description).map((ln, idx)=> (
@@ -118,15 +131,18 @@ const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
 
         {/* EDUCATION row */}
         <View style={{ flexDirection: 'row' }}>
-          <View style={{ width: 90 }}><Text style={styles.sectionHeading}>EDUCATION</Text></View>
+          <View style={{ width: 150 }}><Text style={styles.sectionHeading}>EDUCATION</Text></View>
           <View style={{ flex: 1 }}>
             {education.higherEducationEnabled && education.higherEducation.slice().map((edu:any,i:number)=> (
-              <View key={i} style={{ marginBottom: 8 }}>
+              <View key={i} style={{ marginBottom: 12 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ fontFamily: 'Times-Bold' }}>{edu.instituteName}</Text>
-                  <Text style={{ color: '#6b7280', fontFamily: 'Times-Bold' }}>{edu.endYear ? String(edu.endYear).match(/(\d{4})/)?.[1] : ''}</Text>
+                  <Text style={{ fontFamily: 'Times-Bold' }}>{edu.degree}{(edu.startYear || edu.endYear) ? ` ${formatYear(edu.startYear)} | ${formatYear(edu.endYear)}` : ''}</Text>
+                  <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>{edu.endYear ? `Graduated: ${formatYear(edu.endYear)}` : ''}</Text>
                 </View>
-                <Text style={{ marginTop: 4 }}>{edu.degree}</Text>
+                <Text style={{ fontSize: 11, color: '#444', marginTop: 6 }}>{edu.instituteName}</Text>
+                {edu.resultFormat && edu.result ? (
+                  <Text style={{ fontSize: 11, color: '#0f0f0fff', fontFamily: 'Times-Bold', marginTop: 6 }}>{edu.resultFormat}: {edu.result}</Text>
+                ) : null}
                 {edu.description && (
                   <View style={{ marginTop: 6 }}>
                     {htmlToLines(edu.description).map((ln, idx)=> (
@@ -146,7 +162,7 @@ const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
 
         {/* CERTIFICATES row */}
         <View style={{ flexDirection: 'row' }}>
-          <View style={{ width: 90 }}><Text style={styles.sectionHeading}>CERTIFICATES</Text></View>
+          <View style={{ width: 140 }}><Text style={styles.sectionHeading}>CERTIFICATES</Text></View>
           <View style={{ flex: 1 }}>
             <View style={{ marginTop: 6, flexDirection: 'row', flexWrap: 'wrap' }}>
               {(certifications || []).filter((c:any)=>c.enabled && c.certificateTitle).map((c:any,i:number)=> (

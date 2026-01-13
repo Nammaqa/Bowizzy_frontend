@@ -33,7 +33,22 @@ const formatMonthYear = (s?: string) => {
 
 const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
   const { personal, experience, education, certifications, skillsLinks } = data;
-  const contactItems = [personal.mobileNumber && `Phone: ${personal.mobileNumber}`, personal.email && `Email: ${personal.email}`, personal.address && `Address: ${personal.address}`, skillsLinks && skillsLinks.links && skillsLinks.links.portfolioUrl && `Portfolio: ${skillsLinks.links.portfolioUrl}`].filter(Boolean);
+
+  const formatMobile = (m?: string) => {
+    if (!m) return '';
+    const trimmed = String(m).trim();
+    if (/^\+/.test(trimmed)) return trimmed;
+    if ((personal.country || '').toLowerCase() === 'india') return `+91 ${trimmed}`;
+    return trimmed;
+  };
+
+  const formatYear = (s?: string) => {
+    if (!s) return '';
+    const y = String(s).match(/(\d{4})/);
+    return y ? y[1] : '';
+  };
+
+  const contactItems = [personal.mobileNumber && `Phone: ${formatMobile(personal.mobileNumber)}`, personal.email && `Email: ${personal.email}`, personal.address && `Address: ${personal.address}`, skillsLinks && skillsLinks.links && skillsLinks.links.portfolioUrl && `Portfolio: ${skillsLinks.links.portfolioUrl}`].filter(Boolean);
 
   return (
     <div style={{ width: '210mm', minHeight: '297mm', fontFamily: 'Helvetica, Arial, sans-serif', background: '#fff', padding: 24, boxSizing: 'border-box' }}>
@@ -49,7 +64,7 @@ const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
       <div>
         {/* CONTACT row */}
         <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ width: 140, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Contact</div>
+          <div style={{ width: 170, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Contact</div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 12, color: '#111827', lineHeight: 1.6 }}>
               {contactItems.map((c, i) => (<div key={i} style={{ marginBottom: 6 }}>{c}</div>))}
@@ -61,7 +76,7 @@ const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
 
         {/* PROFESSIONAL EXPERIENCE row */}
         <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ width: 140, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Professional Experience</div>
+          <div style={{ width: 170, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Professional Experience</div>
           <div style={{ flex: 1 }}>
             {experience.workExperiences.filter((w:any)=>w.enabled).map((w:any, idx:number)=> (
               <div key={idx} style={{ marginBottom: 14 }}>
@@ -69,7 +84,7 @@ const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
                   <div style={{ fontWeight: 700 }}>{w.jobTitle}</div>
                   <div style={{ color: '#6b7280', fontWeight: 700 }}>{w.startDate ? formatMonthYear(w.startDate) : ''} {w.currentlyWorking ? '— Present' : (w.endDate ? `— ${formatMonthYear(w.endDate)}` : '')}</div>
                 </div>
-                <div style={{ color: '#374151', marginTop: 4 }}>{w.companyName}</div>
+                <div style={{ color: '#000', marginTop: 4, fontWeight: 700 }}>{w.companyName}</div>
                 {w.description && (
                   <ul style={{ marginTop: 8, paddingLeft: 18, color: '#333' }}>
                     {htmlToLines(w.description).map((ln, i2) => <li key={i2} style={{ marginBottom: 6 }}>{ln}</li>)}
@@ -84,12 +99,18 @@ const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
 
         {/* EDUCATION row */}
         <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ width: 140, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Education</div>
+          <div style={{ width: 170, paddingRight: 12, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Education</div>
           <div style={{ flex: 1 }}>
             {education.higherEducationEnabled && education.higherEducation.slice().map((edu:any,i:number)=> (
               <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>{edu.instituteName} <span style={{ fontWeight: 700, color: '#6b7280' }}>{edu.endYear ? `| ${String(edu.endYear).match(/(\d{4})/)?.[1]}` : ''}</span></div>
-                <div style={{ marginTop: 4 }}>{edu.degree}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 800, color: '#000' }}>{edu.degree}{(edu.startYear || edu.endYear) ? ` ${edu.startYear ? formatYear(edu.startYear) : ''} | ${edu.endYear ? formatYear(edu.endYear) : ''}` : ''}</div>
+                  <div style={{ color: '#000', fontWeight: 800, fontFamily: "'Times New Roman', Times, serif" }}>{edu.endYear ? `Graduated: ${String(edu.endYear).match(/(\d{4})/)?.[1]}` : ''}</div>
+                </div>
+                <div style={{ color: '#444', marginTop: 6 }}>{edu.instituteName}</div>
+                {edu.resultFormat && edu.result ? (
+                  <div style={{ marginTop: 6, color: '#515157ff', fontWeight: 700 }}>{edu.resultFormat}: {edu.result}</div>
+                ) : null}
                 {edu.description && (
                   <ul style={{ marginTop: 8, paddingLeft: 18 }}>
                     {htmlToLines(edu.description).map((ln, j)=> <li key={j} style={{ marginBottom: 6 }}>{ln}</li>)}
