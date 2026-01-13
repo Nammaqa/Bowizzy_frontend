@@ -52,13 +52,39 @@ const Template18Display: React.FC<Template18DisplayProps> = ({ data }) => {
   const { personal, experience, education, projects, skillsLinks, certifications } = data;
   const role = (experience && (experience as any).jobRole) || (experience.workExperiences && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle) && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle).jobTitle) || '';
 
-  const contactLine = [personal.email, personal.mobileNumber, (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || ''].filter(Boolean).join(' | ');
+  // Helpers for contact formatting
+  const extractHandle = (s?: string) => {
+    if (!s) return '';
+    try {
+      if (/^https?:\/\//i.test(s)) {
+        const u = new URL(s);
+        const path = u.pathname.replace(/\/+$|^\//g, '');
+        if (!path) return u.hostname;
+        const parts = path.split('/');
+        return parts[parts.length - 1];
+      }
+    } catch (e) {}
+    return s;
+  };
+
+  const formatMobile = (m?: string) => {
+    if (!m) return '';
+    const trimmed = String(m).trim();
+    if (/^\+/.test(trimmed)) return trimmed;
+    if ((personal.country || '').toLowerCase() === 'india') return `+91 ${trimmed}`;
+    return trimmed;
+  };
+
+  const locationPart = personal.city || (personal.address && String(personal.address).split(',')[0]) || '';
+  const locNat = [locationPart, personal.nationality].filter(Boolean).join(', ');
+  const linkedinLabel = extractHandle((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile);
+  const contactLine = [locNat, personal.email, formatMobile(personal.mobileNumber), linkedinLabel].filter(Boolean).join(' | ');
 
   return (
     <div style={{ width: '210mm', minHeight: '297mm', fontFamily: 'Times New Roman, serif', background: '#fff', padding: 24, boxSizing: 'border-box' }}>
       <header style={{ textAlign: 'center', marginBottom: 18 }}>
         <h1 style={{ margin: 0, fontSize: 28, letterSpacing: 1, color: '#000' }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</h1>
-        {role && <div style={{ marginTop: 6, color: '#6b7280', fontSize: 12, fontWeight: 700 }}>{role}</div>}
+        {role && <div style={{ marginTop: 6, color: '#000', fontSize: 12, fontWeight: 800 }}>{role}</div>}
         {contactLine && <div style={{ marginTop: 10, color: '#374151', fontSize: 12 }}>{contactLine}</div>}
       </header>
 
@@ -81,21 +107,24 @@ const Template18Display: React.FC<Template18DisplayProps> = ({ data }) => {
               <div key={i} style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ fontWeight: 800 }}>{w.jobTitle}</div>
-                  <div style={{ color: '#6b7280', fontFamily: "'Times New Roman', Times, serif", display: 'flex' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {/* Start date */}
                     {(() => {
                       const s = formatMonthYearParts(w.startDate);
-                      return (<div style={{ whiteSpace: 'nowrap' }}>{s.month}{s.month ? ' ' : ''}<span style={{ fontWeight: 800 }}>{s.year}</span></div>);
+                      return (<div style={{ whiteSpace: 'nowrap' }}><span style={{ color: '#000' }}>{s.month}{s.month ? ' ' : ''}</span><span style={{ fontWeight: 800, color: '#000' }}>{s.year}</span></div>);
                     })()}
-                    <div style={{ margin: '0 6px', fontWeight: 800 }}>—</div>
+                    <div style={{ margin: '0 6px', fontWeight: 800, color: '#000' }}>—</div>
                     {/* End date or Present */}
-                    {w.currentlyWorking ? (<div style={{ fontWeight: 800 }}>Present</div>) : (() => {
+                    {w.currentlyWorking ? (<div style={{ fontWeight: 800, color: '#000' }}>Present</div>) : (() => {
                       const e = formatMonthYearParts(w.endDate);
-                      return (<div style={{ whiteSpace: 'nowrap' }}>{e.month}{e.month ? ' ' : ''}<span style={{ fontWeight: 800 }}>{e.year}</span></div>);
+                      return (<div style={{ whiteSpace: 'nowrap' }}><span style={{ color: '#000' }}>{e.month}{e.month ? ' ' : ''}</span><span style={{ fontWeight: 800, color: '#000' }}>{e.year}</span></div>);
                     })()}
                   </div>
                 </div>
-                <div style={{ color: '#444', marginTop: 6 }}>{w.companyName}{w.location ? ` — ${w.location}` : ''}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <div style={{ color: '#000' }}>{w.companyName}</div>
+                  <div style={{ color: '#000', fontWeight: 700 }}>{w.location}</div>
+                </div>
                 {w.description && <div style={{ marginTop: 6, paddingLeft: 10 }}>{htmlToLines(w.description).map((ln, idx) => <div key={idx} style={{ marginTop: 6 }}>• {ln}</div>)}</div>}
               </div>
             ))}
@@ -110,11 +139,11 @@ const Template18Display: React.FC<Template18DisplayProps> = ({ data }) => {
           <div style={{ marginTop: 8 }}>
             {education.higherEducationEnabled && education.higherEducation.slice().map((edu:any,i:number)=>(
               <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <div style={{ fontWeight: 700 }}>{edu.instituteName}</div>
-                  <div style={{ color: '#6b7280', marginTop: 4, fontWeight: 800, fontFamily: "'Times New Roman', Times, serif" }}>{edu.endYear ? `Graduated: ${String(edu.endYear).match(/(\d{4})/)?.[1]}` : ''}</div>
+                <div style={{ color: '#000', marginTop: 4, fontWeight: 800 }}>{edu.degree}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <div style={{ color: '#444' }}>{edu.instituteName}</div>
+                  <div style={{ color: '#000', fontWeight: 800, fontFamily: "'Times New Roman', Times, serif" }}>{edu.endYear ? `Graduated: ${String(edu.endYear).match(/(\d{4})/)?.[1]}` : ''}</div>
                 </div>
-                <div style={{ color: '#6b7280', marginTop: 4 }}>{edu.degree}</div>
               </div>
             ))}
           </div>

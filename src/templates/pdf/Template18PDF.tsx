@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
   page: { padding: 24, fontFamily: 'Times-Roman', fontSize: 10 },
   header: { textAlign: 'center', marginBottom: 8 },
   name: { fontSize: 22, fontFamily: 'Times-Bold', color: '#000' },
-  role: { fontSize: 11, color: '#6b7280', marginTop: 6, fontFamily: 'Times-Bold' },
+  role: { fontSize: 11, color: '#000', marginTop: 6, fontFamily: 'Times-Bold' },
   contact: { fontSize: 10, color: '#374151', marginTop: 6 },
   sectionHeading: { fontSize: 10, fontFamily: 'Times-Bold', letterSpacing: 1.2, textTransform: 'uppercase', color: '#111827' },
   divider: { height: 1, backgroundColor: '#ddd', marginTop: 6, width: '100%' },
@@ -77,7 +77,33 @@ interface Template18PDFProps { data: ResumeData }
 const Template18PDF: React.FC<Template18PDFProps> = ({ data }) => {
   const { personal, experience, education, skillsLinks, certifications } = data;
   const role = (experience && (experience as any).jobRole) || (experience.workExperiences && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle) && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle).jobTitle) || '';
-  const contactLine = [personal.email, personal.mobileNumber, (skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || ''].filter(Boolean).join(' | ');
+
+  const extractHandle = (s?: string) => {
+    if (!s) return '';
+    try {
+      if (/^https?:\/\//i.test(s)) {
+        const u = new URL(s);
+        const path = u.pathname.replace(/\/+$|^\//g, '');
+        if (!path) return u.hostname;
+        const parts = path.split('/');
+        return parts[parts.length - 1];
+      }
+    } catch (e) { }
+    return s;
+  };
+
+  const formatMobile = (m?: string) => {
+    if (!m) return '';
+    const trimmed = String(m).trim();
+    if (/^\+/.test(trimmed)) return trimmed;
+    if ((personal.country || '').toLowerCase() === 'india') return `+91 ${trimmed}`;
+    return trimmed;
+  };
+
+  const locationPart = personal.city || (personal.address && String(personal.address).split(',')[0]) || '';
+  const locNat = [locationPart, personal.nationality].filter(Boolean).join(', ');
+  const linkedinLabel = extractHandle((skillsLinks && skillsLinks.links && skillsLinks.links.linkedinProfile) || (personal as any).linkedinProfile);
+  const contactLine = [locNat, personal.email, formatMobile(personal.mobileNumber), linkedinLabel].filter(Boolean).join(' | ');
 
   return (
     <Document>
@@ -108,28 +134,31 @@ const Template18PDF: React.FC<Template18PDFProps> = ({ data }) => {
                         const sParts = formatMonthYearParts(w.startDate);
                         return (
                           <>
-                            <Text style={{ fontSize: 11, color: '#6b7280' }}>{sParts.month}{sParts.month ? ' ' : ''}</Text>
-                            <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'Times-Bold' }}>{sParts.year}</Text>
+                            <Text style={{ fontSize: 11, color: '#444' }}>{sParts.month}{sParts.month ? ' ' : ''}</Text>
+                            <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>{sParts.year}</Text>
                           </>
                         );
                       })()}
 
-                      <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'Times-Bold' }}> {' '}-{' '}</Text>
+                      <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}> {' '}-{' '}</Text>
 
                       {w.currentlyWorking ? (
-                        <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'Times-Bold' }}>Present</Text>
+                        <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>Present</Text>
                       ) : (() => {
                         const eParts = formatMonthYearParts(w.endDate);
                         return (
                           <>
-                            <Text style={{ fontSize: 11, color: '#6b7280' }}>{eParts.month}{eParts.month ? ' ' : ''}</Text>
-                            <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'Times-Bold' }}>{eParts.year}</Text>
+                            <Text style={{ fontSize: 11, color: '#000' }}>{eParts.month}{eParts.month ? ' ' : ''}</Text>
+                            <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>{eParts.year}</Text>
                           </>
                         );
                       })()}
                     </View>
                   </View>
-                  <Text style={{ marginTop: 6, color: '#444' }}>{w.companyName}{w.location ? ` — ${w.location}` : ''}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                    <Text style={{ fontSize: 11, color: '#000' }}>{w.companyName}</Text>
+                    <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>{w.location}</Text>
+                  </View>
                   {w.description && (
                     <View style={{ marginTop: 6 }}>
                       {htmlToLines(w.description).map((ln:any, idx:number) => (
@@ -151,11 +180,11 @@ const Template18PDF: React.FC<Template18PDFProps> = ({ data }) => {
             <View style={{ marginTop: 8 }}>
               {education.higherEducationEnabled && education.higherEducation.slice().map((edu:any,i:number)=>(
                 <View key={i} style={{ marginBottom: 10 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold' }}>{edu.instituteName}</Text>
-                    <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'Times-Bold' }}>{edu.endYear ? `Graduated: ${formatYear(edu.endYear)}` : ''}</Text>
-                  </View>
-                  <Text style={{ marginTop: 6, color: '#6b7280' }}>{edu.degree}</Text>
+                  <Text style={{ marginTop: 6, color: '#000', fontFamily: 'Times-Bold' }}>{edu.degree}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#444' }}>{edu.instituteName}</Text>
+                  <Text style={{ fontSize: 11, color: '#000', fontFamily: 'Times-Bold' }}>{edu.endYear ? `Graduated: ${formatYear(edu.endYear)}` : ''}</Text>
+                </View>
                 </View>
               ))}
             </View>
