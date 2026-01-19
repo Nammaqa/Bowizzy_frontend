@@ -1,6 +1,6 @@
 import React from 'react';
 import DOMPurify from 'dompurify';
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, StyleSheet, Svg, Path } from '@react-pdf/renderer';
 import type { ResumeData } from '@/types/resume';
 
 const styles = StyleSheet.create({
@@ -50,6 +50,25 @@ const formatYear = (s?: string) => {
 
 interface Template17PDFProps { data: ResumeData }
 
+const IconEmail = () => (
+  <Svg width="12" height="12" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+    <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="#374151" strokeWidth="1.5" />
+    <Path d="M20 6l-8 5-8-5" stroke="#374151" strokeWidth="1.5" fill="none" />
+  </Svg>
+);
+
+const IconPhone = () => (
+  <Svg width="12" height="12" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+    <Path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 22 2 13.93 2 3.5A1 1 0 013 2.5H6.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.01l-2.2 2.2z" fill="none" stroke="#374151" strokeWidth="1.5" />
+  </Svg>
+);
+
+const IconLocation = () => (
+  <Svg width="12" height="12" viewBox="0 0 24 24" style={{ marginRight: 6 }}>
+    <Path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" fill="none" stroke="#374151" strokeWidth="1.5" />
+  </Svg>
+);
+
 const Template17PDF: React.FC<Template17PDFProps> = ({ data }) => {
   const { personal, experience, education, projects, skillsLinks, certifications } = data;
   const role = (experience && (experience as any).jobRole) || (experience.workExperiences && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle) && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle).jobTitle) || '';
@@ -62,9 +81,11 @@ const Template17PDF: React.FC<Template17PDFProps> = ({ data }) => {
           {role && <Text style={styles.role}>{role}</Text>}
 
           <View style={{ marginTop: 12 }}>
-            {personal.email && <Text style={{ fontSize: 10, color: '#374151' }}>✉️  {personal.email}</Text>}
-            {personal.mobileNumber && <Text style={{ fontSize: 10, color: '#374151', marginTop: 6 }}>📞  {personal.mobileNumber}</Text>}
-            {personal.address && <Text style={{ fontSize: 10, color: '#374151', marginTop: 6 }}>📍  {String(personal.address).split(',')[0]}</Text>}
+            <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', letterSpacing: 1, color: '#374151', marginBottom: 6 }}>DETAILS</Text>
+            <View style={{ height: 1, backgroundColor: '#e5e7eb', marginBottom: 8 }} />
+            {personal.email && <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}><IconEmail /><Text style={{ fontSize: 10, color: '#374151' }}>{personal.email}</Text></View>}
+            {personal.mobileNumber && <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}><IconPhone /><Text style={{ fontSize: 10, color: '#374151' }}>{personal.mobileNumber}</Text></View>}
+            {personal.address && <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}><IconLocation /><Text style={{ fontSize: 10, color: '#374151' }}>{String(personal.address).split(',')[0]}</Text></View>}
           </View>
 
           <View style={{ marginTop: 18 }}>
@@ -73,7 +94,7 @@ const Template17PDF: React.FC<Template17PDFProps> = ({ data }) => {
             { (skillsLinks.skills || []).filter((s:any)=>s.enabled && s.skillName).slice(0,6).map((s:any,i:number)=>(<Text key={i} style={{ marginTop: 6, fontSize: 10, color: '#374151' }}>• {s.skillName}</Text>)) }
           </View>
 
-          <View style={{ marginTop: 14 }}>
+          <View style={{ marginTop: 18 }}>
             <Text style={styles.sectionHeading}>Languages</Text>
             <View style={styles.divider} />
             {(((personal as any).languagesKnown || (personal as any).languages || [])).map((l:string,i:number)=>(<Text key={i} style={{ marginTop: 6, fontSize: 10, color: '#374151' }}>• {l}</Text>))}
@@ -99,7 +120,7 @@ const Template17PDF: React.FC<Template17PDFProps> = ({ data }) => {
                     <Text style={{ fontSize: 10, color: '#6b7280' }}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
                   </View>
                   <Text style={{ marginTop: 6, color: '#444' }}>{w.companyName}{w.location ? ` — ${w.location}` : ''}</Text>
-                  {w.description && <Text style={{ marginTop: 6, color: '#444' }}>{htmlToPlainText(w.description)}</Text>}
+                  {w.description && <View style={{ marginTop: 6, paddingLeft: 10 }}>{htmlToPlainText(w.description).split('\n').filter(Boolean).map((line, idx) => <Text key={idx} style={{ fontSize: 10, color: '#444', marginTop: 6 }}>• {line}</Text>)}</View>}
                 </View>
               ))}
             </View>
