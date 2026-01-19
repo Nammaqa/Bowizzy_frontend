@@ -69,14 +69,20 @@ const IconLocation = () => (
   </Svg>
 );
 
-const getSkillStars = (level?: string) => {
+const StarIcon = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" style={{ marginRight: 2 }}>
+    <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#374151" />
+  </Svg>
+);
+
+const getSkillStarsCount = (level?: string) => {
   const normalizedLevel = String(level || '').toLowerCase().trim();
   switch (normalizedLevel) {
-    case 'beginner': return '★';
-    case 'intermediate': return '★★';
-    case 'advanced': return '★★★★';
-    case 'expert': return '★★★★★';
-    default: return '';
+    case 'beginner': return 1;
+    case 'intermediate': return 2;
+    case 'advanced': return 4;
+    case 'expert': return 5;
+    default: return 0;
   }
 };
 
@@ -102,7 +108,7 @@ const Template17PDF: React.FC<Template17PDFProps> = ({ data }) => {
           <View style={{ marginTop: 18 }}>
             <Text style={styles.sectionHeading}>Skills</Text>
             <View style={styles.divider} />
-            { (skillsLinks.skills || []).filter((s:any)=>s.enabled && s.skillName).slice(0,6).map((s:any,i:number)=>(<View key={i} style={{ marginTop: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Text style={{ fontSize: 10, color: '#374151', flex: 1 }}>• {s.skillName}</Text><Text style={{ fontSize: 9, color: '#374151', marginLeft: 8 }}>{getSkillStars(s.skillLevel)}</Text></View>)) }
+            { (skillsLinks.skills || []).filter((s:any)=>s.enabled && s.skillName).slice(0,6).map((s:any,i:number)=>(<View key={i} style={{ marginTop: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Text style={{ fontSize: 10, color: '#374151', flex: 1 }}>• {s.skillName}</Text><View style={{ flexDirection: 'row', gap: 1 }}>{ Array.from({ length: getSkillStarsCount(s.skillLevel) }).map((_, idx) => <StarIcon key={idx} />) }</View></View>)) }
           </View>
 
           <View style={{ marginTop: 18 }}>
