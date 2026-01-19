@@ -89,8 +89,11 @@ const Template14Display: React.FC<Template14DisplayProps> = ({ data }) => {
                   <div style={{ fontSize: 11, color: '#111827', fontWeight: 700 }}>{formatMonthYearNumeric(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYearNumeric(w.endDate)}</div>
                 </div>
                 {w.description && (
-                  <div style={{ marginTop: 6, color: '#444', paddingLeft: 10 }}>
-                    {htmlToLines(w.description).map((ln, idx) => <div key={idx} style={{ marginTop: 6 }}>• {ln}</div>)}
+                  <div style={{ marginTop: 6, color: '#444' }}>
+                    <div
+                      style={{ fontSize: '10px', color: '#444', lineHeight: '1.4' }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(w.description || '') }}
+                    />
                   </div>
                 )}
               </div>
