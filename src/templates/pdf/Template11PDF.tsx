@@ -5,18 +5,18 @@ import type { ResumeData } from "@/types/resume";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 36,
+    paddingTop: 0,
     paddingBottom: 24,
-    paddingLeft: 36,
-    paddingRight: 36,
+    paddingLeft: 0,
+    paddingRight: 0,
     fontSize: 10,
     fontFamily: "Times-Roman",
     backgroundColor: "#ffffff",
   },
   header: {
-    paddingTop: 36,
+    paddingTop: 18,
     paddingBottom: 16,
-    marginBottom: 48,
+    marginBottom: 12,
     paddingLeft: 36,
     paddingRight: 36,
     flexDirection: "column",
@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontFamily: "Times-Bold",
     color: "#111827",
-    marginBottom: 24,
-    lineHeight: 1.05,
+    marginBottom: 30,
+    lineHeight: 5,
     textAlign: 'left',
     width: '100%',
     alignSelf: 'flex-start'
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   contactLine: {
     fontSize: 11,
     color: "#111827",
-    marginTop: 6,
+    marginTop: 8,
     letterSpacing: 0.2,
     textAlign: 'left',
     width: '100%'
@@ -205,7 +205,7 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
 
         {/* Experience */}
         {experience.workExperiences.length > 0 && (
-          <View style={{ marginTop: 28, marginBottom: 12 }}>
+          <View style={{ marginTop: 28, marginBottom: 12, paddingLeft: 36, paddingRight: 36 }}>
             <Text style={styles.sectionTitle}>EXPERIENCE</Text>
             <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
             {experience.workExperiences.filter((w: any) => w.enabled).map((w: any, i: number) => (
@@ -223,7 +223,7 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
 
         {/* Education */}
         {education.higherEducationEnabled && education.higherEducation.length > 0 && (
-          <View style={{ marginBottom: 12 }}>
+          <View style={{ marginBottom: 12, paddingLeft: 36, paddingRight: 36 }}>
             <Text style={styles.sectionTitle}>EDUCATION</Text>
             <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
             {education.higherEducation.map((edu, idx) => (
@@ -239,7 +239,7 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
         )}
 
         {/* Other: Skills, Certifications, Languages */}
-        <View>
+        <View style={{ paddingLeft: 36, paddingRight: 36 }}>
           <Text style={styles.sectionTitle}>OTHER</Text>
           <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
 
