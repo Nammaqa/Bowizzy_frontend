@@ -77,9 +77,12 @@ const Template12Display: React.FC<Template12DisplayProps> = ({ data }) => {
               </div>
             ))}
             {/* divider after work experience */}
-            <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '12px 0' }} />
           </div>
+        </div>
 
+        <hr style={{ border: 'none', borderTop: '1px solid #333', margin: '12px 0', width: '100%' }} />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '16px', padding: '0 8px' }}>
           <div style={{ textTransform: 'uppercase', fontSize: 11, letterSpacing: 1.5, color: '#111827', fontWeight: 700 }}>Education</div>
           <div>
             {education.higherEducationEnabled && education.higherEducation.map((edu, i) => (
