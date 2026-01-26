@@ -97,12 +97,12 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
 
         <View style={{ marginTop: 12 }}>
           <Text style={styles.sectionHeading}>WORK EXPERIENCE</Text>
-          <View style={{ height: 1, backgroundColor: '#eee', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
 
         <View style={{ marginTop: 8 }}>
           {experience.workExperiences.filter((w: any) => w.enabled).map((w: any, i: number) => (
-            <View key={i} style={{ marginBottom: 10 }}>
+            <View key={i} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.itemTitle}>{w.jobTitle} — {w.companyName}{w.location ? `, ${w.location}` : ''}</Text>
                 <Text style={styles.itemSub}>{formatMonthYearNumeric(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYearNumeric(w.endDate)}</Text>
@@ -112,57 +112,74 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
           ))}
         </View>
 
-        <View style={{ marginTop: 6 }}>
+        <View style={{ marginTop: 16 }}>
+          <Text style={styles.sectionHeading}>PROJECTS</Text>
+          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+        </View>
+
+        <View style={{ marginTop: 8 }}>
+          {projects && projects.filter((p: any) => p.enabled).map((p: any, i: number) => (
+            <View key={i} style={{ marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.itemTitle}>{p.projectTitle}</Text>
+                <Text style={styles.itemSub}>{formatMonthYearNumeric(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYearNumeric(p.endDate)}</Text>
+              </View>
+              {p.description && renderBulletedParagraph(p.description)}
+            </View>
+          ))}
+        </View>
+
+        <View style={{ marginTop: 16 }}>
           <Text style={styles.sectionHeading}>EDUCATION</Text>
-          <View style={{ height: 1, backgroundColor: '#eee', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
 
         <View style={{ marginTop: 8 }}>
           {education.higherEducationEnabled && education.higherEducation.slice().sort((a: any,b: any) => 0).map((edu: any, i: number) => (
-            <View key={`he-${i}`} style={{ marginBottom: 10 }}>
+            <View key={`he-${i}`} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={styles.itemTitle}>{edu.instituteName}</Text>
                 <Text style={styles.itemSub}>{edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{edu.degree}</Text>
-              {edu.resultFormat && edu.result && (<Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>)}
+              {edu.resultFormat && edu.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{edu.resultFormat}: {edu.result}</Text>)}
             </View>
           ))}
 
           {education.preUniversityEnabled && education.preUniversity && (education.preUniversity.instituteName || education.preUniversity.yearOfPassing) && (
-            <View style={{ marginBottom: 10 }}>
+            <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={styles.itemTitle}>{education.preUniversity.instituteName || 'Pre University'}</Text>
                 <Text style={styles.itemSub}>{formatYear(education.preUniversity.yearOfPassing)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>Pre University (12th Standard)</Text>
-              {education.preUniversity.resultFormat && education.preUniversity.result && (<Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>)}
+              {education.preUniversity.resultFormat && education.preUniversity.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>)}
             </View>
           )}
 
           {education.sslcEnabled && education.sslc && (education.sslc.instituteName || education.sslc.yearOfPassing) && (
-            <View style={{ marginBottom: 10 }}>
+            <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={styles.itemTitle}>{education.sslc.instituteName || 'SSLC'}</Text>
                 <Text style={styles.itemSub}>{formatYear(education.sslc.yearOfPassing)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>SSLC (10th Standard)</Text>
-              {education.sslc.resultFormat && education.sslc.result && (<Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>)}
+              {education.sslc.resultFormat && education.sslc.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>)}
             </View>
           )}
         </View>
 
-        <View style={{ marginTop: 6 }}>
+        <View style={{ marginTop: 16 }}>
           <Text style={styles.sectionHeading}>SKILLS</Text>
-          <View style={{ height: 1, backgroundColor: '#eee', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
-        <View style={{ marginTop: 6 }}><Text style={{ fontSize: 10, color: '#444' }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text></View>
+        <View style={{ marginTop: 8 }}><Text style={{ fontSize: 10, color: '#2b2a2a' }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text></View>
 
-        <View style={{ marginTop: 6 }}>
+        <View style={{ marginTop: 16 }}>
           <Text style={styles.sectionHeading}>CERTIFICATIONS</Text>
-          <View style={{ height: 1, backgroundColor: '#eee', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
-        <View style={{ marginTop: 6 }}><Text style={{ fontSize: 10, color: '#444' }}>{certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle).join(', ')}</Text></View>
+        <View style={{ marginTop: 8 }}><Text style={{ fontSize: 10, color: '#2b2a2a' }}>{certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle).join(', ')}</Text></View>
 
       </Page>
     </Document>
