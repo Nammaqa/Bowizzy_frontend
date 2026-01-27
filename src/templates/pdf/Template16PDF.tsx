@@ -93,6 +93,15 @@ const formatYear = (s?: string) => {
   return y ? y[1] : str;
 };
 
+const getStarsByLevel = (skillLevel?: string): string => {
+  const level = String(skillLevel || '').toLowerCase().trim();
+  if (level === 'beginner') return '*';
+  if (level === 'intermediate') return '**';
+  if (level === 'advanced') return '****';
+  if (level === 'expert') return '*****';
+  return '*****';
+};
+
 interface Template16PDFProps { data: ResumeData }
 
 const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
@@ -111,12 +120,12 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
             <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
             {role && <Text style={styles.role}>{role}</Text>}
             <View style={{ marginTop: 6 }}>
-              {addressLine && <Text style={{ fontSize: 10, color: '#6b7280' }}>{addressLine}</Text>}
-              {phone && <Text style={{ fontSize: 10, color: '#6b7280' }}>{phone}</Text>}
+              {addressLine && <Text style={{ fontSize: 10, color: '#000' }}>{addressLine}</Text>}
+              {phone && <Text style={{ fontSize: 10, color: '#000' }}>{phone}</Text>}
             </View>
           </View>
           <View style={{ width: 180 }}>
-            {email && <Text style={styles.contact}>{email}</Text>}
+            {email && <Text style={{ ...styles.contact, color: '#000' }}>{email}</Text>}
           </View>
         </View>
 
@@ -138,7 +147,7 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
             <View key={i} style={{ marginBottom: 8 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.itemTitle}>{w.jobTitle} — {w.companyName}{w.location ? `, ${w.location}` : ''}</Text>
-                <Text style={styles.itemSub}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
+                <Text style={{ ...styles.itemSub, color: '#000' }}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
               </View>
               {w.description && renderBulletedParagraph(w.description)}
             </View>
@@ -157,7 +166,7 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
                 <View key={i} style={{ marginBottom: 8 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text style={styles.itemTitle}>{p.projectTitle}</Text>
-                    <Text style={styles.itemSub}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</Text>
+                    <Text style={{ ...styles.itemSub, color: '#000' }}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</Text>
                   </View>
                   {p.description && renderBulletedParagraph(p.description)}
                 </View>
@@ -176,11 +185,11 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
             <View key={`he-${i}`} style={{ marginBottom: 8 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.itemTitle}>{edu.instituteName}</Text>
-                <Text style={styles.itemSub}>{formatYear(edu.startYear)} — {edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</Text>
+                <Text style={{ ...styles.itemSub, color: '#000' }}>{formatYear(edu.startYear)} — {edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</Text>
               </View>
-              <Text style={{ fontSize: 10, color: '#6b7280' }}>{edu.degree}</Text>
+              <Text style={{ fontSize: 10, color: '#000' }}>{edu.degree}</Text>
               {edu.resultFormat && edu.result ? (
-                <Text style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Times-Bold', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>
+                <Text style={{ fontSize: 10, color: '#000', fontFamily: 'Times-Bold', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>
               ) : null}
             </View>
           ))}
@@ -193,7 +202,7 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
         <View style={{ marginTop: 6 }}>{(skillsLinks.skills || []).filter((s: any) => s.enabled && s.skillName).map((s: any, i: number) => (
           <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <Text style={{ fontSize: 10, color: '#444' }}>• {s.skillName}</Text>
-            <Text style={{ fontSize: 10, color: '#111827', textAlign: 'right', width: 60 }}>*****</Text>
+            <Text style={{ fontSize: 10, color: '#111827', textAlign: 'right', width: 60 }}>{getStarsByLevel(s.skillLevel)}</Text>
           </View>
         ))}</View>
 
@@ -202,9 +211,8 @@ const Template16PDF: React.FC<Template16PDFProps> = ({ data }) => {
           <View style={{ height: 1, backgroundColor: '#ddd', width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
         <View style={{ marginTop: 6 }}>{((personal as any).languagesKnown || (personal as any).languages || []).map((l: string, i: number) => (
-          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <View key={i} style={{ marginBottom: 4 }}>
             <Text style={{ fontSize: 10, color: '#444' }}>• {l}</Text>
-            <Text style={{ fontSize: 10, color: '#111827', textAlign: 'right', width: 60 }}>*****</Text>
           </View>
         ))}</View>
 

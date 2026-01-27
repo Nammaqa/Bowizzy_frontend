@@ -48,6 +48,15 @@ const formatYear = (s?: string) => {
   return y ? y[1] : str;
 };
 
+const getStarsByLevel = (skillLevel?: string): string => {
+  const level = String(skillLevel || '').toLowerCase().trim();
+  if (level === 'beginner') return '*';
+  if (level === 'intermediate') return '**';
+  if (level === 'advanced') return '****';
+  if (level === 'expert') return '*****';
+  return '*****';
+};
+
 const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
   const { personal, experience, education, projects, skillsLinks, certifications } = data;
   const role = (experience && (experience as any).jobRole) || (experience.workExperiences && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle) && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle).jobTitle) || '';
@@ -60,12 +69,12 @@ const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
         <div>
           <h1 style={{ margin: 0, fontSize: 22, color: '#111827', fontFamily: 'Georgia, serif', fontWeight: 700 }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</h1>
           {role && <div style={{ fontSize: 11, color: '#000', marginTop: 4, fontWeight: 700 }}>{role}</div>}
-          <div style={{ marginTop: 6, fontSize: 11, color: '#6b7280' }}>
+          <div style={{ marginTop: 6, fontSize: 11, color: '#000' }}>
             {personal.address && <div>{String(personal.address).split(',')[0]}</div>}
             {personal.mobileNumber && <div>{personal.mobileNumber}</div>}
           </div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280' }}>
+        <div style={{ textAlign: 'right', fontSize: 11, color: '#000' }}>
           {personal.email && <div>{personal.email}</div>}
         </div>
       </div>
@@ -96,8 +105,8 @@ const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
             {experience.workExperiences.filter(e => e.enabled).map((w, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <div style={{ fontWeight: 700 }}>{w.jobTitle} <span style={{ fontWeight: 600, color: '#6b7280' }}>— {w.companyName}{w.location ? `, ${w.location}` : ''}</span></div>
-                  <div style={{ color: '#6b7280' }}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</div>
+                  <div style={{ fontWeight: 700 }}>{w.jobTitle} <span style={{ fontWeight: 600, color: '#000' }}>— {w.companyName}{w.location ? `, ${w.location}` : ''}</span></div>
+                  <div style={{ color: '#000' }}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</div>
                 </div>
                 {w.description && (
                   <div style={{ marginTop: 4, color: '#444', paddingLeft: 10 }}
@@ -120,7 +129,7 @@ const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
                   <div key={i} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ fontWeight: 700 }}>{p.projectTitle}</div>
-                      <div style={{ color: '#6b7280' }}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</div>
+                      <div style={{ color: '#000' }}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</div>
                     </div>
                     {p.description && (
                       <div style={{ marginTop: 4, color: '#444', paddingLeft: 10 }}
@@ -143,11 +152,11 @@ const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
               <div key={`he-${i}`} style={{ marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ fontWeight: 700 }}>{edu.instituteName}</div>
-                  <div style={{ color: '#6b7280' }}>{formatYear(edu.startYear)} — {edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</div>
+                  <div style={{ color: '#000' }}>{formatYear(edu.startYear)} — {edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</div>
                 </div>
-                <div style={{ fontSize: 11, color: '#6b7280' }}>{edu.degree}</div>
+                <div style={{ fontSize: 11, color: '#000' }}>{edu.degree}</div>
                 {edu.resultFormat && edu.result ? (
-                  <div style={{ marginTop: 6, color: '#6b7280' }}>{edu.resultFormat}: {edu.result}</div>
+                  <div style={{ marginTop: 6, color: '#000' }}>{edu.resultFormat}: {edu.result}</div>
                 ) : null}
               </div>
             ))}
@@ -158,16 +167,15 @@ const Template16Display: React.FC<Template16DisplayProps> = ({ data }) => {
             <div style={{ height: 1, background: '#ddd', marginTop: 4, width: '100%' }} />
           </div>
 
-          <div style={{ marginTop: 6 }}>{skillsLinks.skills.filter(s => s.enabled && s.skillName).map((s,i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}><div>• {s.skillName}</div><div style={{ color: '#111827', fontSize: 12, minWidth: 60, textAlign: 'right' }}>*****</div></div>)}</div>
+          <div style={{ marginTop: 6 }}>{skillsLinks.skills.filter(s => s.enabled && s.skillName).map((s,i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}><div>• {s.skillName}</div><div style={{ color: '#111827', fontSize: 12, minWidth: 60, textAlign: 'right' }}>{getStarsByLevel(s.skillLevel)}</div></div>)}</div>
 
           <div style={{ marginTop: 12 }}>
             <div style={{ textTransform: 'uppercase', fontSize: 11, letterSpacing: 1.2, color: '#111827', fontWeight: 700 }}>Languages</div>
             <div style={{ height: 1, background: '#ddd', marginTop: 4, width: '100%' }} />
           </div>
           <div style={{ marginTop: 6 }}>{((personal as any).languagesKnown || (personal as any).languages || []).map((l: string, i: number) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div key={i} style={{ marginBottom: 4 }}>
               <div>• {l}</div>
-              <div style={{ color: '#111827', fontSize: 12, minWidth: 60, textAlign: 'right' }}>*****</div>
             </div>
           ))}</div>
 
