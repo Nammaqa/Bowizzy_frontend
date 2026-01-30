@@ -109,7 +109,7 @@ export default function Register() {
     e.preventDefault();
     setFormError("");
 
-    setLoading(true);
+    
 
     if (!agree) return setFormError("You must agree to the terms.");
 
@@ -132,6 +132,7 @@ export default function Register() {
 
     if (!linkedinUsername || !/^[A-Za-z0-9-]+$/.test(linkedinUsername))
       return setFormError("Invalid LinkedIn identifier.");
+      setLoading(true);
 
     try {
       // If a coupon was entered but not checked/validated yet, validate it now
