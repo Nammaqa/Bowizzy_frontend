@@ -572,6 +572,12 @@ export default function PersonalDetailsForm({
       return;
     }
 
+    // Scroll to top of the next step (Education) after proceeding
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    }, 0);
 
     onNext(formData);
   };

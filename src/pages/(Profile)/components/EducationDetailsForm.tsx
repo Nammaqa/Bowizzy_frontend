@@ -40,6 +40,31 @@ export default function EducationDetailsForm({
   hideHeader = false,
 }: EducationDetailsFormProps) {
   const [sslcExpanded, setSslcExpanded] = useState(true);
+
+  // Scroll to top on mount so SSLC is always visible
+  useEffect(() => {
+    // Try to scroll the nearest scrollable parent, fallback to window
+    setTimeout(() => {
+      let scrolled = false;
+      // Find the nearest scrollable parent
+      let el = document.getElementById("education-details-form-root");
+      if (el) {
+        let parent = el.parentElement;
+        while (parent) {
+          const overflowY = window.getComputedStyle(parent).overflowY;
+          if (overflowY === "auto" || overflowY === "scroll") {
+            parent.scrollTop = 0;
+            scrolled = true;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+      if (!scrolled && typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    }, 100);
+  }, []);
   const [puExpanded, setPuExpanded] = useState(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -1383,6 +1408,7 @@ export default function EducationDetailsForm({
 
   return (
     <form
+      id="education-details-form-root"
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
     >

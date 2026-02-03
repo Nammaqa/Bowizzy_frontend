@@ -712,8 +712,32 @@ export default function SkillsLinksDetailsForm({
     );
   };
 
+  useEffect(() => {
+    // Try to scroll the nearest scrollable parent, fallback to window
+    setTimeout(() => {
+      let scrolled = false;
+      let el = document.getElementById("skills-links-details-form-root");
+      if (el) {
+        let parent = el.parentElement;
+        while (parent) {
+          const overflowY = window.getComputedStyle(parent).overflowY;
+          if (overflowY === "auto" || overflowY === "scroll") {
+            parent.scrollTop = 0;
+            scrolled = true;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+      if (!scrolled && typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    }, 100);
+  }, []);
+
   return (
     <form
+      id="skills-links-details-form-root"
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
     >
