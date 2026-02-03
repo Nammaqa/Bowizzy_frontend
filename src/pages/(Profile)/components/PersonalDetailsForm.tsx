@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { fetchCountries, fetchStates, fetchCities } from "@/services/locationService";
 import { ChevronDown, RotateCcw, X, Save } from "lucide-react";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 import { deleteFromCloudinary } from "@/utils/deleteFromCloudinary";
@@ -64,6 +65,68 @@ export default function PersonalDetailsForm({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Location dropdown state
+  const [countryOptions, setCountryOptions] = useState<any[]>([]);
+  const [stateOptions, setStateOptions] = useState<any[]>([]);
+  const [cityOptions, setCityOptions] = useState<any[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+    // Fetch countries on mount
+    useEffect(() => {
+      setLoadingCountries(true);
+      fetchCountries()
+        .then((data) => {
+          setCountryOptions(data || []);
+        })
+        .catch(() => setCountryOptions([]))
+        .finally(() => setLoadingCountries(false));
+    }, []);
+
+    // Fetch states when country changes
+    useEffect(() => {
+      if (!formData.country) {
+        setStateOptions([]);
+        setCityOptions([]);
+        return;
+      }
+      const selectedCountry = countryOptions.find(
+        (c) => c.name === formData.country || c.isoCode === formData.country
+      );
+      if (!selectedCountry) return;
+      setLoadingStates(true);
+      fetchStates(selectedCountry.isoCode)
+        .then((data) => {
+          setStateOptions(data || []);
+        })
+        .catch(() => setStateOptions([]))
+        .finally(() => setLoadingStates(false));
+      setCityOptions([]);
+      setFormData((prev) => ({ ...prev, state: "", city: "" }));
+    }, [formData.country, countryOptions]);
+
+    // Fetch cities when state changes
+    useEffect(() => {
+      if (!formData.country || !formData.state) {
+        setCityOptions([]);
+        return;
+      }
+      const selectedCountry = countryOptions.find(
+        (c) => c.name === formData.country || c.isoCode === formData.country
+      );
+      const selectedState = stateOptions.find(
+        (s) => s.name === formData.state || s.isoCode === formData.state
+      );
+      if (!selectedCountry || !selectedState) return;
+      setLoadingCities(true);
+      fetchCities(selectedCountry.isoCode, selectedState.isoCode)
+        .then((data) => {
+          setCityOptions(data || []);
+        })
+        .catch(() => setCityOptions([]))
+        .finally(() => setLoadingCities(false));
+      setFormData((prev) => ({ ...prev, city: "" }));
+    }, [formData.state, formData.country, countryOptions, stateOptions]);
   const [newLanguage, setNewLanguage] = useState("");
   const [personalDetailsExpanded, setPersonalDetailsExpanded] = useState(true);
   const [languagesExpanded, setLanguagesExpanded] = useState(true);
@@ -1000,11 +1063,12 @@ export default function PersonalDetailsForm({
                       value={formData.country}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
+                      disabled={loadingCountries}
                     >
-                      <option value="">Select Country</option>
-                      <option value="India">India</option>
-                      <option value="USA">USA</option>
-                      <option value="UK">UK</option>
+                      <option value="">{loadingCountries ? "Loading..." : "Select Country"}</option>
+                      {countryOptions.map((country) => (
+                        <option key={country.isoCode} value={country.name}>{country.name}</option>
+                      ))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
@@ -1020,11 +1084,12 @@ export default function PersonalDetailsForm({
                       value={formData.state}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
+                      disabled={loadingStates || !formData.country}
                     >
-                      <option value="">Select State</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Delhi">Delhi</option>
+                      <option value="">{loadingStates ? "Loading..." : "Select State"}</option>
+                      {stateOptions.map((state) => (
+                        <option key={state.isoCode} value={state.name}>{state.name}</option>
+                      ))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
@@ -1040,11 +1105,12 @@ export default function PersonalDetailsForm({
                       value={formData.city}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
+                      disabled={loadingCities || !formData.state}
                     >
-                      <option value="">Select City</option>
-                      <option value="Bangalore">Bangalore</option>
-                      <option value="Mumbai">Mumbai</option>
-                      <option value="Delhi">Delhi</option>
+                      <option value="">{loadingCities ? "Loading..." : "Select City"}</option>
+                      {cityOptions.map((city) => (
+                        <option key={city.name} value={city.name}>{city.name}</option>
+                      ))}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
