@@ -240,7 +240,7 @@ export default function Dashboard() {
 
   const dashboardData = {
     upcomingInterview: {
-      title: "No upcoming interviews",
+      title: "Coming soon",
       date: "",
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop",
     },
@@ -442,8 +442,8 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mb-2">
                       {(() => {
                         const displayDate = upcomingInterview?.date || dashboardData.upcomingInterview.date;
-                        return displayDate && displayDate !== "" ? displayDate : "No upcoming interviews scheduled";
-                      })()}
+                        return displayDate && displayDate !== "" ? displayDate : "Coming soon";
+                      })()} 
                     </p>
                     {upcomingInterview && !noSchedule && (
                       <div className="flex gap-2">
@@ -665,6 +665,8 @@ export default function Dashboard() {
               </p>
               <div className="flex gap-2">
                 <button
+                  onClick={() => window.open('https://nammaqa.com', '_blank', 'noopener,noreferrer')}
+                  aria-label="Join NammaQA Community (opens in new tab)"
                   className="px-4 py-1.5 rounded-lg text-white text-sm font-medium"
                   style={{ background: gradientColor }}
                 >
