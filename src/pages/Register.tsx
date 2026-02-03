@@ -124,8 +124,8 @@ export default function Register() {
     if (!/^[6-9]\d{9}$/.test(phoneNumber))
       return setFormError("Phone number must be valid.");
 
-    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email))
-      return setFormError("Enter a valid Gmail address.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return setFormError("Enter a valid email address.");
 
     if (!isAdult(dateOfBirth))
       return setFormError("You must be 18 years or older.");
@@ -339,8 +339,8 @@ export default function Register() {
                     const val = e.target.value;
                     setEmail(val);
 
-                    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(val)) {
-                      setFieldError("email", "Only Gmail allowed");
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                      setFieldError("email", "Invalid email address");
                     } else {
                       setFieldError("email", "");
                     }
