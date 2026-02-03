@@ -112,7 +112,23 @@ const Template19PDF: React.FC<Template19PDFProps> = ({ data }) => {
                     <Text style={{ color: '#151616', marginTop: 4 }}>{edu.degree}{edu.fieldOfStudy ? ` (${edu.fieldOfStudy})` : ''}</Text>
                     {(edu.resultFormat && edu.result) && <Text style={{ color: '#151616', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</Text>}
                   </View>
-                ))}</View>
+                ))}
+
+                {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={{ fontSize: 10, fontFamily: 'Times-Bold' }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                    <Text style={{ color: '#151616', marginTop: 4 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</Text>
+                    {education.preUniversity.resultFormat && education.preUniversity.result && <Text style={{ color: '#151616', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>}
+                  </View>
+                )} 
+
+                {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+                  <View style={{ marginBottom: 8 }}>
+                    <Text style={{ fontSize: 10, fontFamily: 'Times-Bold' }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                    <Text style={{ color: '#151616', marginTop: 4 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</Text>
+                    {education.sslc.resultFormat && education.sslc.result && <Text style={{ color: '#151616', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>}
+                  </View>
+                )}</View>
               </View>
 
               <View style={{ marginTop: 12 }}>

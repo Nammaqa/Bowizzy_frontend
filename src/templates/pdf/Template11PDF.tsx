@@ -337,6 +337,39 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
                   </Text>
                 </View>
               ))}
+
+              {/* Pre University (PUC/12th) */}
+              {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+                <View style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
+                  </View>
+                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>
+                    Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}
+                  </Text>
+                  {education.preUniversity.resultFormat && education.preUniversity.result && (
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
+                  )}
+                </View>
+              )} 
+
+              {/* SSLC (10th) */}
+              {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+                <View style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{education.sslc.yearOfPassing || ''}</Text>
+                  </View>
+                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>
+                    SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}
+                  </Text>
+                  {education.sslc.resultFormat && education.sslc.result && (
+                    <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
+                  )}
+                </View>
+              )} 
+
             </View>
           )}
 

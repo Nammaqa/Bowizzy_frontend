@@ -194,6 +194,36 @@ const Template11Display: React.FC<Template11DisplayProps> = ({
                 </div>
               </div>
             ))}
+
+            {/* Pre University (PUC/12th) */}
+            {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#000000', flex: 1, marginRight: 8 }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                  <div style={{ fontSize: 10, color: '#000000', fontWeight: 700 }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#000000', fontWeight: 'normal', marginTop: 4 }}>
+                  Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}
+                </div>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (
+                  <div style={{ marginTop: 6, color: '#000000' }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>
+                )}
+              </div>
+            )} 
+
+            {/* SSLC (10th) */}
+            {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#000000', flex: 1, marginRight: 8 }}>{education.sslc.instituteName || 'SSLC'}</div>
+                  <div style={{ fontSize: 10, color: '#000000', fontWeight: 700 }}>{education.sslc.yearOfPassing || ''}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#000000', fontWeight: 'normal', marginTop: 4 }}>
+                  SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}
+                </div>
+              </div>
+            )}
+
           </section>
         )}
 

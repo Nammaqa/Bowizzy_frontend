@@ -211,6 +211,30 @@ const Template18PDF: React.FC<Template18PDFProps> = ({ data }) => {
                 </View>
                 </View>
               ))}
+
+              {/* Pre University */}
+              {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+                <View style={{ marginBottom: 10 }}>
+                  <Text style={{ marginTop: 6, color: '#000', fontFamily: 'Times-Bold' }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: '#000' }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</Text>
+                    <Text style={{ fontSize: 11, color: '#000' }}>{education.preUniversity.yearOfPassing ? String(education.preUniversity.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</Text>
+                  </View>
+                  {education.preUniversity.resultFormat && education.preUniversity.result && (<Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>)}
+                </View>
+              )}
+
+              {/* SSLC */}
+              {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+                <View style={{ marginBottom: 10 }}>
+                  <Text style={{ marginTop: 6, color: '#000', fontFamily: 'Times-Bold' }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: '#000' }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</Text>
+                    <Text style={{ fontSize: 11, color: '#000' }}>{education.sslc.yearOfPassing ? String(education.sslc.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</Text>
+                  </View>
+                  {education.sslc.resultFormat && education.sslc.result && (<Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>)}
+                </View>
+              )}
             </View>
           </View>
 

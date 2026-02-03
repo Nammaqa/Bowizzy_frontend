@@ -130,6 +130,29 @@ const Template17Display: React.FC<Template17DisplayProps> = ({ data }) => {
                   ) : null}
                 </div>
               ))}
+
+              {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontWeight: 700 }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                    <div style={{ color: '#000' }}>{education.preUniversity.yearOfPassing ? String(education.preUniversity.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</div>
+                  </div>
+                  <div style={{ color: '#000', marginTop: 4 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</div>
+                  {education.preUniversity.resultFormat && education.preUniversity.result && (<div style={{ marginTop: 6, color: '#444', fontWeight: 700 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>)}
+                </div>
+              )}
+
+              {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontWeight: 700 }}>{education.sslc.instituteName || 'SSLC'}</div>
+                    <div style={{ color: '#000' }}>{education.sslc.yearOfPassing ? String(education.sslc.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</div>
+                  </div>
+                  <div style={{ color: '#000', marginTop: 4 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</div>
+                  {education.sslc.resultFormat && education.sslc.result && (<div style={{ marginTop: 6, color: '#444', fontWeight: 700 }}>{education.sslc.resultFormat}: {education.sslc.result}</div>)}
+                </div>
+              )}
+
             </div>
 
             <div style={{ marginTop: 18 }}>

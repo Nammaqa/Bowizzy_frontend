@@ -80,7 +80,21 @@ const Template19Display: React.FC<Template19DisplayProps> = ({ data }) => {
                     {(edu.resultFormat && edu.result) && <div style={{ color: '#151616', marginTop: 4 }}>{edu.resultFormat}: {edu.result}</div>}
                   </div>
                 ))}
-              </div>
+                {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700 }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                    <div style={{ color: '#151616', marginTop: 4 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</div>
+                    {education.preUniversity.resultFormat && education.preUniversity.result && <div style={{ color: '#151616', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>}
+                  </div>
+                )}
+
+                {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700 }}>{education.sslc.instituteName || 'SSLC'}</div>
+                    <div style={{ color: '#151616', marginTop: 4 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</div>
+                    {education.sslc.resultFormat && education.sslc.result && <div style={{ color: '#151616', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</div>}
+                  </div>
+                )}              </div>
             </div>
 
             <div style={{ marginTop: 18 }}>

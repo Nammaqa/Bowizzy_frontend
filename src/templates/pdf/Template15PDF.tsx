@@ -158,6 +158,34 @@ const Template15PDF: React.FC<Template15PDFProps> = ({ data }) => {
               </View>
             </View>
           ))}
+
+          {/* Pre University (PUC/12th) */}
+          {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+            <View style={{ marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.itemTitle}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                <Text style={{ fontSize: 11, color: '#121314ff', fontFamily: 'Times-Bold' }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
+              </View>
+              <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</Text>
+              {education.preUniversity.resultFormat && education.preUniversity.result && (
+                <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
+              )}
+            </View>
+          )}
+
+          {/* SSLC (10th) */}
+          {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+            <View style={{ marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.itemTitle}>{education.sslc.instituteName || 'SSLC'}</Text>
+                <Text style={{ fontSize: 11, color: '#121314ff', fontFamily: 'Times-Bold' }}>{education.sslc.yearOfPassing ? String(education.sslc.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</Text>
+              </View>
+              <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</Text>
+              {education.sslc.resultFormat && education.sslc.result && (
+                <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={{ marginTop: 12 }}>

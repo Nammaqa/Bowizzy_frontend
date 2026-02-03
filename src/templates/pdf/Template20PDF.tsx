@@ -170,6 +170,34 @@ const Template20PDF: React.FC<Template20PDFProps> = ({ data }) => {
                 {edu.description && renderBulletedParagraph(edu.description)}
               </View>
             ))}
+
+            {/* Pre University */}
+            {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+              <View style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontFamily: 'Times-Bold' }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                  <Text style={{ fontSize: 11, color: '#000' }}>{education.preUniversity.yearOfPassing ? formatYear(education.preUniversity.yearOfPassing) : ''}</Text>
+                </View>
+                <Text style={{ fontSize: 11, color: '#000', marginTop: 6 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</Text>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (
+                  <Text style={{ fontSize: 11, color: '#000', marginTop: 6 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
+                )}
+              </View>
+            )}
+
+            {/* SSLC */}
+            {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+              <View style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontFamily: 'Times-Bold' }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                  <Text style={{ fontSize: 11, color: '#000' }}>{education.sslc.yearOfPassing ? formatYear(education.sslc.yearOfPassing) : ''}</Text>
+                </View>
+                <Text style={{ fontSize: 11, color: '#000', marginTop: 6 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</Text>
+                {education.sslc.resultFormat && education.sslc.result && (
+                  <Text style={{ fontSize: 11, color: '#000', marginTop: 6 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
+                )}
+              </View>
+            )}
           </View>
         </View>
 

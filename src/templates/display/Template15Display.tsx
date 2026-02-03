@@ -119,6 +119,30 @@ const Template15Display: React.FC<Template15DisplayProps> = ({ data }) => {
                 </div>
               </div>
             ))}
+
+            {/** Pre University (PUC/12th) */}
+            {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 700 }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                  <div style={{ fontSize: 11, color: '#101113ff', fontWeight: 700 }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</div>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (<div style={{ marginTop: 6, color: '#2b2a2a' }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>)}
+              </div>
+            )}
+
+            {/** SSLC (10th) */}
+            {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 700 }}>{education.sslc.instituteName || 'SSLC'}</div>
+                  <div style={{ fontSize: 11, color: '#101113ff', fontWeight: 700 }}>{education.sslc.yearOfPassing ? String(education.sslc.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</div>
+                {education.sslc.resultFormat && education.sslc.result && (<div style={{ marginTop: 6, color: '#2b2a2a' }}>{education.sslc.resultFormat}: {education.sslc.result}</div>)}
+              </div>
+            )}
           </div>
 
           <div style={{ marginTop: 12 }}>

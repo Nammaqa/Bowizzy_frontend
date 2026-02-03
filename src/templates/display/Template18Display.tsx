@@ -146,6 +146,28 @@ const Template18Display: React.FC<Template18DisplayProps> = ({ data }) => {
                 </div>
               </div>
             ))}
+
+            {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: '#000', marginTop: 4, fontWeight: 800 }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <div style={{ color: '#000' }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</div>
+                  <div style={{ color: '#000', fontWeight: 400 }}>{education.preUniversity.yearOfPassing ? String(education.preUniversity.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</div>
+                </div>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (<div style={{ marginTop: 6, color: '#444' }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>)}
+              </div>
+            )}
+
+            {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: '#000', marginTop: 4, fontWeight: 800 }}>{education.sslc.instituteName || 'SSLC'}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <div style={{ color: '#000' }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</div>
+                  <div style={{ color: '#000', fontWeight: 400 }}>{education.sslc.yearOfPassing ? String(education.sslc.yearOfPassing).match(/(\d{4})/)?.[1] : ''}</div>
+                </div>
+                {education.sslc.resultFormat && education.sslc.result && (<div style={{ marginTop: 6, color: '#444' }}>{education.sslc.resultFormat}: {education.sslc.result}</div>)}
+              </div>
+            )}
           </div>
         </section>
 

@@ -118,6 +118,32 @@ const Template20Display: React.FC<Template20DisplayProps> = ({ data }) => {
                 )}
               </div>
             ))}
+
+            {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 800, color: '#000' }}>{education.preUniversity.instituteName || 'Pre University'}</div>
+                  <div style={{ color: '#000', fontWeight: 800 }}>{education.preUniversity.yearOfPassing ? formatYear(education.preUniversity.yearOfPassing) : ''}</div>
+                </div>
+                <div style={{ color: '#000', marginTop: 6 }}>Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}</div>
+                {education.preUniversity.resultFormat && education.preUniversity.result && (
+                  <div style={{ marginTop: 6, color: '#000' }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</div>
+                )}
+              </div>
+            )}
+
+            {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 800, color: '#000' }}>{education.sslc.instituteName || 'SSLC'}</div>
+                  <div style={{ color: '#000', fontWeight: 800 }}>{education.sslc.yearOfPassing ? formatYear(education.sslc.yearOfPassing) : ''}</div>
+                </div>
+                <div style={{ color: '#000', marginTop: 6 }}>SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}</div>
+                {education.sslc.resultFormat && education.sslc.result && (
+                  <div style={{ marginTop: 6, color: '#000' }}>{education.sslc.resultFormat}: {education.sslc.result}</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
