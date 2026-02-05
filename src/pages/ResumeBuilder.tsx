@@ -179,11 +179,10 @@ export default function ResumeBuilder() {
                 }}
                 onClick={handleNewResume}
               >
-                <img
-                  src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/qhRmgt2LET/4ie3c11r_expires_30_days.png"
-                  className="w-[114px] h-[140px] rounded-lg object-fill"
-                  alt="New Resume"
-                />
+                <svg className="w-[114px] h-[140px]" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="70" y1="40" x2="70" y2="100" stroke="#3A3A3A" strokeWidth="6" strokeLinecap="round"/>
+                  <line x1="40" y1="70" x2="100" y2="70" stroke="#3A3A3A" strokeWidth="6" strokeLinecap="round"/>
+                </svg>
                 <span className="text-[#3A3A3A] text-sm">New Resume</span>
               </button>
 
