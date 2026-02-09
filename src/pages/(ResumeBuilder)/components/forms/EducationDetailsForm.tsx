@@ -64,8 +64,103 @@ const degrees = [
   { value: "M.Tech", label: "M.Tech" },
   { value: "M.Sc", label: "M.Sc" },
   { value: "MBA", label: "MBA" },
+  { value: "Diploma", label: "Diploma" },
   { value: "PhD", label: "PhD" },
 ];
+
+export const branchesByDegree: Record<string, string[]> = {
+  Diploma: [
+    "Mechanical",
+    "Civil",
+    "Electrical",
+    "Electronics",
+    "Computer",
+    "IT",
+    "Automobile",
+  ],
+
+  "B.Tech": [
+    "Computer Science",
+    "Information Technology",
+    "AI & Data Science",
+    "Electronics & Communication",
+    "Electrical",
+    "Mechanical",
+    "Civil",
+    "Cyber Security",
+  ],
+
+  "B.E": [
+    "Computer Science",
+    "Information Technology",
+    "Electronics & Communication",
+    "Electrical",
+    "Mechanical",
+    "Civil",
+  ],
+
+  "B.Sc": [
+    "Computer Science",
+    "IT",
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Statistics",
+    "Biotechnology",
+  ],
+
+  "B.A": [
+    "English",
+    "History",
+    "Economics",
+    "Political Science",
+    "Psychology",
+    "Sociology",
+  ],
+
+  "B.Com": [
+    "General",
+    "Accounting",
+    "Finance",
+    "Banking",
+    "Taxation",
+  ],
+
+  "M.Tech": [
+    "CSE",
+    "Data Science",
+    "VLSI",
+    "Structural Engineering",
+    "Power Systems",
+    "Thermal Engineering",
+  ],
+
+  "M.Sc": [
+    "Computer Science",
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Data Science",
+  ],
+
+  MBA: [
+    "Finance",
+    "Marketing",
+    "HR",
+    "Operations",
+    "Business Analytics",
+    "International Business",
+  ],
+
+  PhD: [
+    "Computer Science",
+    "Engineering",
+    "Management",
+    "Science",
+    "Arts",
+    "Commerce",
+  ],
+};
 
 const buildYear = (val: string | null | undefined): string | number | null => {
   if (val === undefined || val === null || val === "") return null;
@@ -1027,13 +1122,26 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
               onChange={(v) => updateHigherEducation(id, "degree", v)}
               options={degrees}
             />
-            <FormInput
-              label="Field of Study"
-              placeholder="Enter Field of Study"
-              value={education.fieldOfStudy}
-              onChange={(v) => updateHigherEducation(id, "fieldOfStudy", v)}
-              error={errors[`higherEducation.${id}.fieldOfStudy`]}
-            />
+            {branchesByDegree[education.degree] ? (
+              <FormSelect
+                label="Field of Study"
+                placeholder="Select Branch"
+                value={education.fieldOfStudy}
+                onChange={(v) => updateHigherEducation(id, "fieldOfStudy", v)}
+                options={branchesByDegree[education.degree].map((b) => ({
+                  value: b,
+                  label: b,
+                }))}
+              />
+            ) : (
+              <FormInput
+                label="Field of Study"
+                placeholder="Enter Field of Study"
+                value={education.fieldOfStudy}
+                onChange={(v) => updateHigherEducation(id, "fieldOfStudy", v)}
+                error={errors[`higherEducation.${id}.fieldOfStudy`]}
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1134,8 +1242,8 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
   return (
     <div className="flex flex-col gap-5">
       <FormSection
-        title="SSLC (10th Standard)"
-        required={false}
+        title={"SSLC (10th Standard)"}
+        required={true}
         enabled={data.sslcEnabled}
         onToggle={(enabled) => onChange({ ...data, sslcEnabled: enabled })}
         showActions={true}
@@ -1229,7 +1337,7 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       </FormSection>
 
       <FormSection
-        title="Pre University (12th Standard)"
+        title="Pre-university (12th Standard)"
         required={false}
         enabled={data.preUniversityEnabled}
         onToggle={(enabled) =>
@@ -1341,8 +1449,8 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       </FormSection>
 
       <FormSection
-        title="Higher Education"
-        required={false}
+        title={"Education"}
+        required={true}
         enabled={data.higherEducationEnabled}
         onToggle={(enabled) =>
           onChange({ ...data, higherEducationEnabled: enabled })

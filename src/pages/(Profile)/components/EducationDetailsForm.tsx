@@ -6,6 +6,100 @@ import {
   deleteEducation,
 } from "@/services/educationService";
 
+export const branchesByDegree: Record<string, string[]> = {
+  Diploma: [
+    "Mechanical",
+    "Civil",
+    "Electrical",
+    "Electronics",
+    "Computer",
+    "IT",
+    "Automobile",
+  ],
+
+  "B.Tech": [
+    "Computer Science",
+    "Information Technology",
+    "AI & Data Science",
+    "Electronics & Communication",
+    "Electrical",
+    "Mechanical",
+    "Civil",
+    "Cyber Security",
+  ],
+
+  "B.E": [
+    "Computer Science",
+    "Information Technology",
+    "Electronics & Communication",
+    "Electrical",
+    "Mechanical",
+    "Civil",
+  ],
+
+  "B.Sc": [
+    "Computer Science",
+    "IT",
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Statistics",
+    "Biotechnology",
+  ],
+
+  "B.A": [
+    "English",
+    "History",
+    "Economics",
+    "Political Science",
+    "Psychology",
+    "Sociology",
+  ],
+
+  "B.Com": [
+    "General",
+    "Accounting",
+    "Finance",
+    "Banking",
+    "Taxation",
+  ],
+
+  "M.Tech": [
+    "CSE",
+    "Data Science",
+    "VLSI",
+    "Structural Engineering",
+    "Power Systems",
+    "Thermal Engineering",
+  ],
+
+  "M.Sc": [
+    "Computer Science",
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Data Science",
+  ],
+
+  MBA: [
+    "Finance",
+    "Marketing",
+    "HR",
+    "Operations",
+    "Business Analytics",
+    "International Business",
+  ],
+
+  PhD: [
+    "Computer Science",
+    "Engineering",
+    "Management",
+    "Science",
+    "Arts",
+    "Commerce",
+  ],
+};
+
 interface EducationDetailsFormProps {
   onNext: (data: any) => void;
   onBack: () => void;
@@ -1118,9 +1212,9 @@ export default function EducationDetailsForm({
       >
         <div className="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 md:py-4 border-b border-gray-200">
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-            {isExtra ? `Higher Education ${index + 1}` : (
+            {isExtra ? `Education ${index + 1}` : (
               <>
-                Higher Education<span className="text-red-500">*</span>
+                Education<span className="text-red-500">*</span>
               </>
             )}
           </h3>
@@ -1204,8 +1298,14 @@ export default function EducationDetailsForm({
                     className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
                   >
                     <option value="">Select Degree</option>
-                    <option value="Bachelor">Bachelor's Degree</option>
-                    <option value="Master">Master's Degree</option>
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="B.E">B.E</option>
+                    <option value="B.Sc">B.Sc</option>
+                    <option value="B.A">B.A</option>
+                    <option value="B.Com">B.Com</option>
+                    <option value="M.Tech">M.Tech</option>
+                    <option value="M.Sc">M.Sc</option>
+                    <option value="MBA">MBA</option>
                     <option value="Diploma">Diploma</option>
                     <option value="PhD">PhD</option>
                   </select>
@@ -1218,22 +1318,39 @@ export default function EducationDetailsForm({
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                   Field Of Study
                 </label>
-                <div className="relative">
-                  <select
-                    value={education.fieldOfStudy}
-                    onChange={(e) =>
-                      handleChange("fieldOfStudy", e.target.value)
-                    }
-                    className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
-                  >
-                    <option value="">Select Field of Study</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Business">Business</option>
-                    <option value="Arts">Arts</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                {branchesByDegree[education.degree] ? (
+                  <div className="relative">
+                    <select
+                      value={education.fieldOfStudy}
+                      onChange={(e) =>
+                        handleChange("fieldOfStudy", e.target.value)
+                      }
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
+                    >
+                      <option value="">Select Branch</option>
+                      {branchesByDegree[education.degree].map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={education.fieldOfStudy}
+                      onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
+                      placeholder="Enter Field Of Study"
+                      className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
+                        errors[`${prefix}-fieldOfStudy`]
+                          ? "border-red-500 focus:ring-red-400"
+                          : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
+                      }`}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Institution Name */}
@@ -1597,7 +1714,7 @@ export default function EducationDetailsForm({
         <div className="bg-white border border-gray-200 rounded-xl mb-4 md:mb-5 overflow-hidden">
           <div className="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 md:py-4 border-b border-gray-200">
             <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-              Pre-university (12th Standard)<span className="text-red-500">*</span>
+              Pre-university (12th Standard)
             </h3>
             <div className="flex gap-2 items-center">
               {puChanged && (
