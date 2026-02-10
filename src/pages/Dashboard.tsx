@@ -15,7 +15,9 @@ import {
   File,
   Briefcase,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
+import { getResumeTemplates } from '@/services/resumeServices';
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -279,6 +281,26 @@ export default function Dashboard() {
     linkedInScore: 45,
     resumes: [],
   };
+
+  const [resumes, setResumes] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadResumes = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || 'null');
+        const userId = userData?.user_id;
+        const token = userData?.token;
+        if (!userId || !token) return;
+        const list = await getResumeTemplates(userId, token);
+        setResumes(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.warn('Failed to load resume templates', err);
+        setResumes([]);
+      }
+    };
+
+    loadResumes();
+  }, []);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -545,7 +567,7 @@ export default function Dashboard() {
                   className="px-4 py-1.5 rounded-lg text-sm font-medium border"
                   style={{ color: "#FF8251", borderColor: "#FF8251" }}
                 >
-                  Explore
+                  Coming soon
                 </button>
               </div>
             </div>
@@ -616,40 +638,51 @@ export default function Dashboard() {
                     className="px-4 py-1.5 rounded-lg text-white text-sm font-medium"
                     style={{ background: gradientColor }}
                   >
-                    Optimize Profile
+                    Coming soon
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <h2 className="text-xs font-semibold mb-3 uppercase tracking-wide">
-                Resume at a Glance
-              </h2>
-              <div className="grid grid-cols-4 gap-2">
-                {dashboardData.resumes.length > 0 ? (
-                  dashboardData.resumes.map((resume, index) => (
+              <div>
+                <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+                  <div className="flex items-start gap-3">
                     <div
-                      key={index}
-                      className="aspect-[8.5/11] bg-gray-100 rounded shadow-sm overflow-hidden"
+                      className="w-9 h-9 rounded-md flex items-center justify-center"
+                      style={{
+                        background: "#fff",
+                        border: "2px solid #F5CC46",
+                        boxShadow: "0 6px 18px rgba(245,204,70,0.06)",
+                      }}
                     >
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <FileText className="w-6 h-6" />
+                      <FileText className="w-4 h-4 text-[#FF8251]" />
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">
+                          BUILD A WINNING RESUME
+                        </p>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mt-3">
+                        Generate a professional, ATS-friendly resume tailored to your job role in minutes.
+                      </p>
+
+                      <div className="mt-4">
+                        <button
+                          onClick={() => navigate("/ResumeBuilder")}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold shadow-sm"
+                          style={{ background: gradientColor }}
+                        >
+                          Build Resume
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <>
-                    {[1, 2, 3, 4].map((_, index) => (
-                      <div
-                        key={index}
-                        className="aspect-[8.5/11] bg-gray-100 rounded shadow-sm flex items-center justify-center"
-                      >
-                        <FileText className="w-6 h-6 text-gray-300" />
-                      </div>
-                    ))}
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
