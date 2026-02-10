@@ -1,7 +1,8 @@
-import { Search, Bell, Share2, Menu, User, Plus, Ticket } from 'lucide-react';
+import { Search, Bell, Share2, Menu, User, Plus, Ticket, Copy } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useEffect, useState, useRef } from 'react';
 import api from '@/api';
+import { getResumeTemplates } from '@/services/resumeServices';
 
 export default function DashNav({heading}: {heading: string}) {
     const { toggleSidebar } = useSidebar()
@@ -50,6 +51,31 @@ export default function DashNav({heading}: {heading: string}) {
 
         loadCredits();
     }, []);
+
+    // Share modal state and templates
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [templatesLoading, setTemplatesLoading] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+    const [copyStatus, setCopyStatus] = useState<string | null>(null);
+
+    const fetchTemplates = async () => {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user') || 'null');
+            const userId = userData?.user_id;
+            const token = userData?.token;
+            if (!userId || !token) return;
+            setTemplatesLoading(true);
+            const list = await getResumeTemplates(userId, token);
+            setTemplates(Array.isArray(list) ? list : []);
+            if (Array.isArray(list) && list.length) setSelectedTemplate(list[0]);
+        } catch (err) {
+            console.warn('Failed to load resume templates', err);
+            setTemplates([]);
+        } finally {
+            setTemplatesLoading(false);
+        }
+    };
 
     // close popup on outside click
     useEffect(() => {
@@ -167,10 +193,59 @@ export default function DashNav({heading}: {heading: string}) {
                     )}
                 </div>
 
-                <button className="flex items-center gap-1 px-4 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-100 transition">
+                <>
+                <button
+                    onClick={() => {
+                        setShowShareModal(true);
+                        fetchTemplates();
+                    }}
+                    className="flex items-center gap-1 px-4 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-100 transition"
+                >
                     <Share2 size={16} />
                     <span className="text-sm">Share</span>
                 </button>
+
+                {showShareModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" style={{backdropFilter: 'blur(4px)'}} onClick={() => setShowShareModal(false)} />
+                        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-4 z-20 overflow-hidden">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-semibold">Share Resume</h3>
+                                <button onClick={() => setShowShareModal(false)} className="text-gray-500">✕</button>
+                            </div>
+
+                            <div className="max-h-[70vh] overflow-auto">
+                                {templatesLoading ? (
+                                    <div className="text-sm text-gray-500">Loading templates…</div>
+                                ) : templates.length === 0 ? (
+                                    <div className="text-sm text-gray-500">No templates found.</div>
+                                ) : (
+                                    templates.map((t) => (
+                                        <div key={t.resume_template_id || t.template_id} className="flex items-center justify-between gap-3 p-3 border-b">
+                                            <div className="flex-1 text-sm truncate">{t.template_name}</div>
+                                            <div className="flex items-center gap-2">
+                                                <input readOnly value={t.template_file_url} className="hidden md:block w-96 px-2 py-1 text-sm border rounded truncate" />
+                                                <button
+                                                    onClick={async () => {
+                                                        try { await navigator.clipboard.writeText(t.template_file_url); setCopyStatus('URL copied'); }
+                                                        catch { setCopyStatus('Copy failed'); }
+                                                        setTimeout(() => setCopyStatus(null), 2000);
+                                                    }}
+                                                    className="px-3 py-1 bg-orange-500 text-white rounded text-sm"
+                                                >
+                                                    Copy URL
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {copyStatus && <div className="mt-3 text-sm text-green-600">{copyStatus}</div>}
+                        </div>
+                    </div>
+                )}
+                </>
                 <button 
                     onClick={() => toggleSidebar()} 
                     className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white 
