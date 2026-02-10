@@ -10,29 +10,32 @@ const styles = StyleSheet.create({
     paddingLeft: 36,
     paddingRight: 36,
     fontSize: 10,
-    fontFamily: 'Times-Roman',
   },
   header: {
     textAlign: 'center',
     marginBottom: 12,
   },
-  name: { fontSize: 28, fontFamily: 'Times-Bold', marginBottom: 6 },
+  name: { fontSize: 28, marginBottom: 6 },
   summary: { fontSize: 10, color: '#333', marginBottom: 6 },
   contact: { fontSize: 10, color: '#2b2a2a' },
   divider: { height: 1, backgroundColor: '#333', marginVertical: 12 },
 
   grid: { flexDirection: 'row' },
   leftCol: { width: 120, paddingRight: 12 },
-  sectionHeading: { fontSize: 11, fontFamily: 'Times-Bold', letterSpacing: 1.2, textTransform: 'uppercase', color: '#111827' },
+  sectionHeading: { fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: '#111827' },
   rightCol: { flex: 1 },
 
-  sectionTitle: { fontSize: 11, fontFamily: 'Times-Bold', marginBottom: 6 },
-  itemTitle: { fontSize: 11, fontFamily: 'Times-Bold' },
-  itemSub: { fontSize: 10, color: '#2b2a2a', fontFamily: 'Times-Bold' },
+  sectionTitle: { fontSize: 11, marginBottom: 6 },
+  itemTitle: { fontSize: 11 },
+  itemSub: { fontSize: 10, color: '#2b2a2a' },
   bullet: { fontSize: 10, color: '#2b2a2a', marginTop: 4 },
 });
 
-interface Template12PDFProps { data: ResumeData }
+interface Template12PDFProps {
+  data: ResumeData;
+  primaryColor?: string;
+  fontFamily?: string;
+}
 
 const htmlToPlainText = (html?: string) => {
   if (!html) return '';
@@ -104,30 +107,62 @@ const formatMonthYear = (s?: string) => {
   return String(s);
 };
 
-const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
+const Template12PDF: React.FC<Template12PDFProps> = ({ data, primaryColor = '#111827', fontFamily = 'Times-Roman, serif' }) => {
   const { personal, experience, education, projects, skillsLinks, certifications } = data;
+
+  // Map CSS font families to react-pdf compatible fonts
+  const getPdfFontFamily = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Roman';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica';
+    if (fontLower.includes('times')) return 'Times-Roman';
+    if (fontLower.includes('georgia')) return 'Times-Roman';
+    if (fontLower.includes('calibri')) return 'Helvetica';
+    if (fontLower.includes('roboto')) return 'Helvetica';
+    if (fontLower.includes('inter')) return 'Helvetica';
+    
+    return 'Times-Roman';
+  };
+
+  const getPdfFontFamilyBold = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Bold';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica-Bold';
+    if (fontLower.includes('times')) return 'Times-Bold';
+    if (fontLower.includes('georgia')) return 'Times-Bold';
+    if (fontLower.includes('calibri')) return 'Helvetica-Bold';
+    if (fontLower.includes('roboto')) return 'Helvetica-Bold';
+    if (fontLower.includes('inter')) return 'Helvetica-Bold';
+    
+    return 'Times-Bold';
+  };
+
+  const pdfFontFamily = getPdfFontFamily(fontFamily);
+  const pdfFontFamilyBold = getPdfFontFamilyBold(fontFamily);
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
+          <Text style={{ ...styles.name, fontFamily: pdfFontFamilyBold, color: primaryColor }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           {personal.aboutCareerObjective ? <Text style={styles.summary}>{htmlToPlainText(personal.aboutCareerObjective)}</Text> : null}
           <Text style={styles.contact}>{[personal.email, personal.mobileNumber, personal.address].filter(Boolean).join(' | ')}</Text>
         </View>
 
-        <View style={styles.divider} />
+        <View style={{ ...styles.divider, backgroundColor: primaryColor }} />
 
         <View style={styles.grid}>
           <View style={styles.leftCol}>
-            <Text style={styles.sectionHeading}>WORK EXPERIENCE</Text>
+            <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>WORK EXPERIENCE</Text>
           </View>
           <View style={styles.rightCol}>
             {experience.workExperiences.filter(w => w.enabled).map((w: any, i: number) => (
               <View key={i} style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.itemTitle}>{w.jobTitle} — {w.companyName}</Text>
-                  <Text style={styles.itemSub}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
+                  <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{w.jobTitle} — {w.companyName}</Text>
+                  <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYear(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
                 </View>
                 {w.description && (
                   <View style={{ color: '#2b2a2a' }}>{renderBulletedParagraph(w.description)}</View>
@@ -144,14 +179,14 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
         <View style={{ height: 12 }} />
         <View style={styles.grid}>
           <View style={styles.leftCol}>
-            <Text style={styles.sectionHeading}>PROJECTS</Text>
+            <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>PROJECTS</Text>
           </View>
           <View style={styles.rightCol}>
             {projects && projects.filter((p: any) => p.enabled).map((p: any, i: number) => (
               <View key={i} style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.itemTitle}>{p.projectTitle}</Text>
-                  <Text style={styles.itemSub}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</Text>
+                  <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{p.projectTitle}</Text>
+                  <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYear(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYear(p.endDate)}</Text>
                 </View>
                 {p.description && renderBulletedParagraph(p.description)}
               </View>
@@ -166,14 +201,14 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
         <View style={{ height: 12 }} />
         <View style={styles.grid}>
           <View style={styles.leftCol}>
-            <Text style={styles.sectionHeading}>EDUCATION</Text>
+            <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>EDUCATION</Text>
           </View>
           <View style={styles.rightCol}>
             {education.higherEducationEnabled && education.higherEducation.map((edu: any, i: number) => (
               <View key={i} style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.itemTitle}>{edu.degree}</Text>
-                  <Text style={styles.itemSub}>{edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
+                  <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{edu.degree}</Text>
+                  <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 4 }}>{edu.instituteName}</Text>
                 {edu.resultFormat && edu.result && (
@@ -185,8 +220,8 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
             {education.preUniversityEnabled && education.preUniversity.instituteName && (
               <View style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.itemTitle}>PUC</Text>
-                  <Text style={styles.itemSub}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
+                  <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>PUC</Text>
+                  <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 4 }}>{education.preUniversity.instituteName}</Text>
                 {education.preUniversity.resultFormat && education.preUniversity.result && (
@@ -198,8 +233,8 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
             {education.sslcEnabled && education.sslc.instituteName && (
               <View style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.itemTitle}>SSLC</Text>
-                  <Text style={styles.itemSub}>{formatMonthYear(education.sslc.yearOfPassing) || ''}</Text>
+                  <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>SSLC</Text>
+                  <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYear(education.sslc.yearOfPassing) || ''}</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 4 }}>{education.sslc.instituteName}</Text>
                 {education.sslc.resultFormat && education.sslc.result && (
@@ -216,13 +251,13 @@ const Template12PDF: React.FC<Template12PDFProps> = ({ data }) => {
         {/* Other sections */}
         <View style={{ height: 12 }} />
         <View style={styles.grid}>
-          <View style={styles.leftCol}><Text style={styles.sectionHeading}>SKILLS</Text></View>
+          <View style={styles.leftCol}><Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>SKILLS</Text></View>
           <View style={styles.rightCol}><Text style={{ color: '#2b2a2a' }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text></View>
         </View>
 
         <View style={{ height: 8 }} />
         <View style={styles.grid}>
-          <View style={styles.leftCol}><Text style={styles.sectionHeading}>CERTIFICATIONS</Text></View>
+          <View style={styles.leftCol}><Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>CERTIFICATIONS</Text></View>
           <View style={styles.rightCol}><Text style={{ color: '#2b2a2a' }}>{certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle).join(', ')}</Text></View>
         </View>
 

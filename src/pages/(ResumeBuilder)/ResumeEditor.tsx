@@ -253,19 +253,21 @@ const mapLinksApiToLocal = (apiData: any[]) => {
   return linksObject;
 };
 const FONT_OPTIONS = [
-  { label: "Times New Roman", value: "Times New Roman, serif" },
+  { label: "Arial (Recommended)", value: "Arial, sans-serif" },
+  { label: "Times New Roman (Recommended)", value: "Times New Roman, serif" },
   { label: "Georgia", value: "Georgia, serif" },
-  { label: "Arial", value: "Arial, Helvetica, sans-serif" },
+  { label: "Calibri", value: "Calibri, sans-serif" },
   { label: "Roboto", value: "Roboto, sans-serif" },
-  { label: "Inter", value: "Inter, sans-serif" },
+  { label: "Inter", value: "Inter, sans-serif" }
 ];
 
 const COLOR_OPTIONS = [
   { label: "Black", value: "#000000" },
-  { label: "Navy Blue", value: "#1A1A43" },
-  { label: "Teal", value: "#0F766E" },
-  { label: "Dark Brown", value: "#7C2D12" },
-  { label: "Dark Purple", value: "#4C1D95" },
+  { label: "Dark Gray", value: "#333333" },
+  { label: "Navy Blue", value: "#1F3A8A" },
+  { label: "Slate Blue", value: "#334155" },
+  { label: "Dark Green", value: "#14532D" },
+  { label: "Maroon", value: "#7F1D1D" }
 ];
 
 export const ResumeEditor: React.FC = () => {
@@ -281,8 +283,8 @@ export const ResumeEditor: React.FC = () => {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchTimedOut, setFetchTimedOut] = useState(false);
-  const [fontName, setFontName] = useState("Times New Roman");
-const [fontFamily, setFontFamily] = useState("Times New Roman, serif");
+const [fontName, setFontName] = useState("Arial (Recommended)");
+  const [fontFamily, setFontFamily] = useState("Arial, sans-serif");
 const [colorName, setColorName] = useState("Black");
 const [primaryColor, setPrimaryColor] = useState("#000000");
 
@@ -307,6 +309,11 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
   const [previewPageCount, setPreviewPageCount] = useState<number>(1);
   const [previewCurrentPage, setPreviewCurrentPage] = useState<number>(1);
   const paginatedRef = useRef<{ goTo: (i: number) => void; next: () => void; prev: () => void } | null>(null);
+
+  const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
+  const [colorDropdownOpen, setColorDropdownOpen] = useState(false);
+  const fontDropdownRef = useRef<HTMLDivElement>(null);
+  const colorDropdownRef = useRef<HTMLDivElement>(null);
 
   const location = useLocation();
 
@@ -623,6 +630,20 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
   }, [userId, token, fetchAllData]);
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (fontDropdownRef.current && !fontDropdownRef.current.contains(event.target as Node)) {
+        setFontDropdownOpen(false);
+      }
+      if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
+        setColorDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     if (showPreviewModal) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = "hidden";
@@ -825,40 +846,103 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
   </h2>
 
   {/* Style controls */}
-  <div className="flex gap-2 items-center">
-   <select
-  value={fontName}
-  onChange={(e) => {
-    const selected = FONT_OPTIONS.find(
-      (f) => f.label === e.target.value
-    );
-    if (selected) {
-      setFontName(selected.label);
-      setFontFamily(selected.value);
-    }
-  }}
-  className="border rounded px-2 py-1 text-sm"
->
-  {FONT_OPTIONS.map((font) => (
-    <option key={font.label} value={font.label}>
-      {font.label}
-    </option>
-  ))}
-</select>
-    <select
-  value={primaryColor}
-  onChange={(e) => setPrimaryColor(e.target.value)}
-  className="border rounded px-2 py-1 text-sm"
->
-  {COLOR_OPTIONS.map((color) => (
-    <option key={color.value} value={color.value}>
-      {color.label}
-    </option>
-  ))}
-</select>
-  
+  <div className="flex gap-3 items-center">
+    {/* Font Selector */}
+    <div className="relative" ref={fontDropdownRef}>
+      <button
+        onClick={() => setFontDropdownOpen(!fontDropdownOpen)}
+        className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium bg-white hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+        style={{ fontFamily: fontFamily }}
+      >
+        <span className="font-semibold">{fontName}</span>
+        <svg
+          className={`w-4 h-4 text-gray-600 transition-transform ${fontDropdownOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </button>
+      {fontDropdownOpen && (
+        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+          <div className="p-3 max-h-80 overflow-y-auto">
+            <div className="text-xs font-semibold text-gray-500 px-3 py-2">SELECT FONT</div>
+            {FONT_OPTIONS.map((font) => (
+              <button
+                key={font.label}
+                onClick={() => {
+                  setFontName(font.label);
+                  setFontFamily(font.value);
+                  setFontDropdownOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-all mb-2 font-medium ${
+                  fontName === font.label
+                    ? "bg-orange-500 text-white shadow-md"
+                    : "hover:bg-orange-50 text-gray-700 border border-transparent hover:border-orange-200"
+                }`}
+                style={{ fontFamily: font.value }}
+              >
+                {font.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
 
-   
+    {/* Color Selector */}
+    <div className="relative" ref={colorDropdownRef}>
+      <button
+        onClick={() => setColorDropdownOpen(!colorDropdownOpen)}
+        className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium bg-white hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+      >
+        <div
+          className="w-6 h-6 rounded-lg border-2 border-white shadow-md"
+          style={{ backgroundColor: primaryColor }}
+        />
+        <span className="font-semibold text-gray-700">{COLOR_OPTIONS.find(c => c.value === primaryColor)?.label}</span>
+        <svg
+          className={`w-4 h-4 text-gray-600 transition-transform ${colorDropdownOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </button>
+      {colorDropdownOpen && (
+        <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-xl z-20">
+          <div className="p-4">
+            <div className="text-xs font-semibold text-gray-500 px-2 pb-3">SELECT COLOR</div>
+            <div className="grid grid-cols-2 gap-3">
+              {COLOR_OPTIONS.map((color) => (
+                <button
+                  key={color.value}
+                  onClick={() => {
+                    setPrimaryColor(color.value);
+                    setColorDropdownOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    primaryColor === color.value
+                      ? "bg-orange-100 border-2 border-orange-500 shadow-md"
+                      : "hover:bg-gray-50 border border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div
+                    className="w-10 h-10 rounded-lg border-2 border-white shadow-md flex-shrink-0"
+                    style={{ backgroundColor: color.value }}
+                  />
+                  <span className={`text-sm font-medium ${primaryColor === color.value ? 'text-orange-700' : 'text-gray-700'}`}>
+                    {color.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   </div>
 </div>
 
@@ -967,6 +1051,8 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
         autoShowPdfPreview={true}
         onPreviewComplete={() => setPreviewLoading(false)}
         onSaveAndExit={handleSaveAndExit}
+        primaryColor={primaryColor}
+        fontFamily={fontFamily}
       />
     </div>
   );

@@ -26,6 +26,8 @@ interface ResumePreviewModalProps {
   username?: string;
   experienceSummary?: string;
   jobRole?: string;
+  primaryColor?: string;
+  fontFamily?: string;
 }
 
 const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
@@ -44,6 +46,8 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
   username,
   experienceSummary = '',
   jobRole = '',
+  primaryColor = '#111827',
+  fontFamily = 'Times New Roman, serif',
 }) => {
   // Generate default resume name based on user info
   const generateDefaultResumeName = (): string => {
@@ -168,7 +172,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
           generatedBlob = pdfDoc.output('blob') as Blob;
         } else {
           const preparedData = await embedProfilePhoto(resumeData);
-          const doc = <PDFComponent data={preparedData} />;
+          const doc = <PDFComponent data={preparedData} primaryColor={primaryColor} fontFamily={fontFamily} />;
           const asPdf = pdf(doc);
           generatedBlob = await asPdf.toBlob();
         }
@@ -446,7 +450,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                     generatedBlob = pdfDoc.output('blob') as Blob;
                   } else {
                     const preparedData = await embedProfilePhoto(resumeData);
-                    const doc = <PDFComponent data={preparedData} />;
+                    const doc = <PDFComponent data={preparedData} primaryColor={primaryColor} fontFamily={fontFamily} />;
                     const asPdf = pdf(doc);
                     generatedBlob = await asPdf.toBlob();
                   }
@@ -580,7 +584,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                         finalBlob = pdfDoc.output('blob') as Blob;
                       } else {
                         const preparedData = await embedProfilePhoto(resumeData);
-                        const doc = <PDFComponent data={preparedData} />;
+                        const doc = <PDFComponent data={preparedData} primaryColor={primaryColor} fontFamily={fontFamily} />;
                         const asPdf = pdf(doc);
                         finalBlob = await asPdf.toBlob();
                       }
@@ -722,7 +726,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                                 } else {
                                   // Fallback: use react-pdf generation
                                   const preparedData = await embedProfilePhoto(resumeData);
-                                  const doc = <PDFComponent data={preparedData} />;
+                                  const doc = <PDFComponent data={preparedData} primaryColor={primaryColor} fontFamily={fontFamily} />;
                                   const asPdf = pdf(doc);
                                   generatedBlob = await asPdf.toBlob();
                                 }

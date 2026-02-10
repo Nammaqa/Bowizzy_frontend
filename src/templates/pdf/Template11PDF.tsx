@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     paddingRight: 0,
     fontSize: 10,
-    fontFamily: "Times-Roman",
     backgroundColor: "#ffffff",
   },
   header: {
@@ -31,7 +30,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 28,
-    fontFamily: "Times-Bold",
     color: "#111827",
     marginBottom: 8,
     lineHeight: 1.2,
@@ -74,13 +72,11 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: 11,
-    fontFamily: "Times-Bold",
     color: "#111827",
     marginBottom: 2,
   },
   itemTitle: {
     fontSize: 10,
-    fontFamily: "Times-Bold",
     color: "#111827",
     marginBottom: 0,
   },
@@ -92,7 +88,6 @@ const styles = StyleSheet.create({
   itemDate: {
     fontSize: 9,
     color: "#111827",
-    fontFamily: "Times-Bold",
   },
   bulletText: {
     fontSize: 10,
@@ -104,9 +99,11 @@ const styles = StyleSheet.create({
 
 interface Template11PDFProps {
   data: ResumeData;
+  primaryColor?: string;
+  fontFamily?: string;
 }
 
-const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
+const Template11PDF: React.FC<Template11PDFProps> = ({ data, primaryColor = '#111827', fontFamily = 'Times-Roman' }) => {
   const {
     personal,
     education,
@@ -115,6 +112,39 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
     skillsLinks,
     certifications,
   } = data;
+
+  // Map CSS font families to react-pdf compatible fonts
+  const getPdfFontFamily = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Roman';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica';
+    if (fontLower.includes('times')) return 'Times-Roman';
+    if (fontLower.includes('georgia')) return 'Times-Roman';
+    if (fontLower.includes('calibri')) return 'Helvetica';
+    if (fontLower.includes('roboto')) return 'Helvetica';
+    if (fontLower.includes('inter')) return 'Helvetica';
+    
+    return 'Times-Roman';
+  };
+
+  // Map CSS font families to react-pdf bold fonts
+  const getPdfFontFamilyBold = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Bold';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica-Bold';
+    if (fontLower.includes('times')) return 'Times-Bold';
+    if (fontLower.includes('georgia')) return 'Times-Bold';
+    if (fontLower.includes('calibri')) return 'Helvetica-Bold';
+    if (fontLower.includes('roboto')) return 'Helvetica-Bold';
+    if (fontLower.includes('inter')) return 'Helvetica-Bold';
+    
+    return 'Times-Bold';
+  };
+
+  const pdfFontFamily = getPdfFontFamily(fontFamily);
+  const pdfFontFamilyBold = getPdfFontFamilyBold(fontFamily);
 
   const ICON_PATHS: Record<string, string> = {
     phone: 'M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 22 2 13.93 2 3.5A1 1 0 013 2.5H6.5a1 1 0 011 1c0 1.24.2 2.45.57 3.57a1 1 0 01-.24 1.01l-2.2 2.2z',
@@ -275,10 +305,10 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
         {/* Header */}
         {/* Header Section - Classic Serif look */}
         <View style={{ paddingTop: 18, paddingBottom: 6, paddingLeft: 36, paddingRight: 36 }}>
-          <Text style={{ fontSize: 36, fontFamily: 'Times-Bold', color: '#111827', marginBottom: 0, lineHeight: 1, textAlign: 'left' }}>
+          <Text style={{ fontSize: 36, fontFamily: pdfFontFamilyBold, color: primaryColor, marginBottom: 0, lineHeight: 1, textAlign: 'left' }}>
             {personal.firstName}{personal.middleName ? ' ' + personal.middleName : ''}{personal.lastName ? ' ' + personal.lastName : ''}
           </Text>
-          <Text style={{ fontSize: 11, color: '#111827', marginTop: 8, textAlign: 'left' }}>
+          <Text style={{ fontSize: 11, color: primaryColor, marginTop: 8, textAlign: 'left' }}>
             {contactParts.join(' | ')}
           </Text>
         </View>
@@ -288,8 +318,8 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
           {/* About / Career Objective Section */}
           {personal.aboutCareerObjective && personal.aboutCareerObjective.trim() !== '' && (
             <View style={{ marginBottom: 6 }}>
-              <Text style={styles.sectionTitle}>CAREER OBJECTIVE</Text>
-              <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 6 }} />
+              <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: primaryColor, marginBottom: 2 }}>CAREER OBJECTIVE</Text>
+              <View style={{ height: 1, backgroundColor: primaryColor, width: '100%', marginBottom: 6 }} />
               <Text style={styles.objective}>{htmlToPlainText(personal.aboutCareerObjective)}</Text>
             </View>
           )}
@@ -297,19 +327,19 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
           {/* Experience Section */}
           {experience.workExperiences.length > 0 && (
             <View style={{ marginBottom: 12 }}>
-              <Text style={{ fontSize: 13, fontFamily: 'Times-Bold', color: '#111827', letterSpacing: 1.2, marginBottom: 8 }}>EXPERIENCE</Text>
-              <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
+              <Text style={{ fontSize: 13, fontFamily: pdfFontFamilyBold, color: primaryColor, letterSpacing: 1.2, marginBottom: 8 }}>EXPERIENCE</Text>
+              <View style={{ height: 1, backgroundColor: primaryColor, width: '100%', marginBottom: 8 }} />
               {experience.workExperiences.filter((w: any) => w.enabled).map((w: any, i: number) => (
                 <View key={i} style={{ marginBottom: 12 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <Text style={{ fontSize: 12, fontFamily: 'Times-Bold', color: '#111827', flex: 1, marginRight: 8 }}>{w.companyName}</Text>
-                      <Text style={{ fontSize: 11, color: '#111827', fontFamily: 'Times-Bold', width: 120, textAlign: 'right' }}>{formatMonthYear(w.startDate)} - {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
+                      <Text style={{ fontSize: 12, fontFamily: pdfFontFamilyBold, color: primaryColor, flex: 1, marginRight: 8 }}>{w.companyName}</Text>
+                      <Text style={{ fontSize: 11, color: primaryColor, fontFamily: pdfFontFamilyBold, width: 120, textAlign: 'right' }}>{formatMonthYear(w.startDate)} - {w.currentlyWorking ? 'Present' : formatMonthYear(w.endDate)}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', marginBottom: 6 }}>
                       <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Bold' }}>{w.jobTitle}</Text>
+                        <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamilyBold }}>{w.jobTitle}</Text>
                       </View>
-                      {w.location && <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Bold', width: 120, textAlign: 'right' }}>{w.location}</Text>}
+                      {w.location && <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamilyBold, width: 120, textAlign: 'right' }}>{w.location}</Text>}
                     </View>
                     {w.description && (
                       <View style={{ marginLeft: 12 }}>
@@ -324,15 +354,15 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
           {/* Education Section */}
           {education.higherEducationEnabled && education.higherEducation.length > 0 && (
             <View style={{ marginBottom: 8 }}>
-              <Text style={{ fontSize: 13, fontFamily: 'Times-Bold', color: '#111827', letterSpacing: 1.2, marginBottom: 8 }}>EDUCATION</Text>
-              <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 6 }} />
+              <Text style={{ fontSize: 13, fontFamily: pdfFontFamilyBold, color: primaryColor, letterSpacing: 1.2, marginBottom: 8 }}>EDUCATION</Text>
+              <View style={{ height: 1, backgroundColor: primaryColor, width: '100%', marginBottom: 6 }} />
               {education.higherEducation.map((edu, idx) => (
                 <View key={idx} style={{ marginBottom: 8 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{edu.instituteName}</Text>
-                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
+                    <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: '#000000', flex: 1, marginRight: 8 }}>{edu.instituteName}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: pdfFontFamilyBold }}>{formatMonthYear(edu.startYear)} - {edu.currentlyPursuing ? 'Present' : formatMonthYear(edu.endYear)}</Text>
                   </View>
-                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', fontWeight: 'normal', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamily, fontWeight: 'normal', marginTop: 4 }}>
                     {getFullDegreeName(edu.degree)}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}
                   </Text>
                 </View>
@@ -342,14 +372,14 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
               {(education.preUniversityEnabled || education.preUniversity.instituteName || education.higherEducation.length > 0) && (
                 <View style={{ marginBottom: 8 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
-                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
+                    <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: '#000000', flex: 1, marginRight: 8 }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: pdfFontFamilyBold }}>{formatMonthYear(education.preUniversity.yearOfPassing) || ''}</Text>
                   </View>
-                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamily, marginTop: 4 }}>
                     Pre University (12th Standard){education.preUniversity.subjectStream ? ` — ${education.preUniversity.subjectStream}` : ''}
                   </Text>
                   {education.preUniversity.resultFormat && education.preUniversity.result && (
-                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: pdfFontFamily, marginTop: 4 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>
                   )}
                 </View>
               )} 
@@ -358,14 +388,14 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
               {(education.sslcEnabled || education.sslc.instituteName || education.higherEducation.length > 0) && (
                 <View style={{ marginBottom: 8 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{education.sslc.instituteName || 'SSLC'}</Text>
-                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{education.sslc.yearOfPassing || ''}</Text>
+                    <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: '#000000', flex: 1, marginRight: 8 }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: pdfFontFamilyBold }}>{education.sslc.yearOfPassing || ''}</Text>
                   </View>
-                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamily, marginTop: 4 }}>
                     SSLC (10th Standard){education.sslc.boardType ? ` — ${education.sslc.boardType}` : ''}
                   </Text>
                   {education.sslc.resultFormat && education.sslc.result && (
-                    <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
+                    <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamily, marginTop: 4 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>
                   )}
                 </View>
               )} 
@@ -376,16 +406,16 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
           {/* Certifications Section */}
           {certifications.length > 0 && (
             <View style={{ marginBottom: 12 }}>
-              <Text style={{ fontSize: 13, fontFamily: 'Times-Bold', color: '#111827', letterSpacing: 1.2, marginBottom: 8 }}>TECHNICAL CERTIFICATIONS</Text>
-              <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 8 }} />
+              <Text style={{ fontSize: 13, fontFamily: pdfFontFamilyBold, color: primaryColor, letterSpacing: 1.2, marginBottom: 8 }}>TECHNICAL CERTIFICATIONS</Text>
+              <View style={{ height: 1, backgroundColor: primaryColor, width: '100%', marginBottom: 8 }} />
               {certifications.filter((c: any) => c.enabled).map((cert: any, idx: number) => (
                 <View key={idx} style={{ marginBottom: 8 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', flex: 1, marginRight: 8 }}>{cert.certificateTitle}</Text>
-                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: 'Times-Bold' }}>{cert.date}</Text>
+                    <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: '#000000', flex: 1, marginRight: 8 }}>{cert.certificateTitle}</Text>
+                    <Text style={{ fontSize: 10, color: '#000000', fontFamily: pdfFontFamilyBold }}>{cert.date}</Text>
                   </View>
                   {cert.description && (
-                    <Text style={{ fontSize: 11, color: '#000000', fontFamily: 'Times-Roman', fontWeight: 'normal', marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: '#000000', fontFamily: pdfFontFamily, fontWeight: 'normal', marginTop: 4 }}>
                       {DOMPurify.sanitize(cert.description).replace(/<[^>]+>/g, '')}
                     </Text>
                   )}
@@ -397,12 +427,12 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data }) => {
           {/* Other Section - Skills Only (show only if there are enabled skills) */}
           {skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).length > 0 && (
             <View>
-              <Text style={{ fontSize: 13, fontFamily: 'Times-Bold', color: '#111827', letterSpacing: 1.2, marginBottom: 8 }}>OTHER</Text>
-              <View style={{ height: 1, backgroundColor: '#333', width: '100%', marginBottom: 12 }} />
+              <Text style={{ fontSize: 13, fontFamily: pdfFontFamilyBold, color: primaryColor, letterSpacing: 1.2, marginBottom: 8 }}>OTHER</Text>
+              <View style={{ height: 1, backgroundColor: primaryColor, width: '100%', marginBottom: 12 }} />
 
               {/* Skills */}
               <View style={{ marginBottom: 10 }}>
-                <Text style={{ fontSize: 11, fontFamily: 'Times-Bold', color: '#000000', marginBottom: 4 }}>Technical Skills:</Text>
+                <Text style={{ fontSize: 11, fontFamily: pdfFontFamilyBold, color: '#000000', marginBottom: 4 }}>Technical Skills:</Text>
                 <Text style={{ fontSize: 11, color: '#000000', fontWeight: 'normal' }}>
                   {skillsLinks.skills
                     .filter((s: any) => s.enabled && s.skillName)
