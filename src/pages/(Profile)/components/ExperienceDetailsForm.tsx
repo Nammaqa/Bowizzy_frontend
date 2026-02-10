@@ -731,13 +731,12 @@ export default function ExperienceDetailsForm({
               <button
                 type="button"
                 onClick={() => handleSaveExperience(experience)}
-                className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                title="Save changes"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                aria-pressed="false"
+                aria-label="Save experience changes"
               >
-                <Save
-                  className="w-3 h-3 text-green-600 cursor-pointer"
-                  strokeWidth={2.5}
-                />
+                <Save className="w-4 h-4" strokeWidth={2} />
+                Save
               </button>
             )}
             <button
@@ -1066,13 +1065,12 @@ export default function ExperienceDetailsForm({
                 <button
                   type="button"
                   onClick={handleSaveJobRole}
-                  className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                  title="Save changes"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                  aria-pressed="false"
+                  aria-label="Save job role changes"
                 >
-                  <Save
-                    className="w-3 h-3 text-green-600 cursor-pointer"
-                    strokeWidth={2.5}
-                  />
+                  <Save className="w-4 h-4" strokeWidth={2} />
+                  Save
                 </button>
               )}
               <button
@@ -1168,27 +1166,48 @@ export default function ExperienceDetailsForm({
           Add Work Experience
         </button>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
-          >
-            Previous
-          </button>
-          <button
-            type="submit"
-            disabled={hasUnsavedChanges}
-            style={{
-              background: hasUnsavedChanges
-                ? "#BDBDBD"
-                : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
-            }}
-            className="px-6 sm:px-8 py-2.5 sm:py-3 bg-orange-400 hover:bg-orange-500 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
-          >
-            Proceed to next
-          </button>
+        {/* Validation Feedback & Action Buttons */}
+        <div className="flex flex-col gap-4">
+          {(jobRoleChanged || experienceChanges && Object.keys(experienceChanges).length > 0) && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
+              <ul className="text-xs text-yellow-700 space-y-1 ml-4">
+                {jobRoleChanged && <li>• Job Role (unsaved changes)</li>}
+                {Object.keys(experienceChanges).length > 0 && <li>• Work Experience (unsaved changes)</li>}
+              </ul>
+            </div>
+          )}
+
+          {!jobRole ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
+              <ul className="text-xs text-red-700 space-y-1 ml-4 mt-1">
+                <li>• Job Role (required)</li>
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              type="submit"
+              disabled={(jobRoleChanged || (experienceChanges && Object.keys(experienceChanges).length > 0)) || !jobRole}
+              style={{
+                background: ((jobRoleChanged || (experienceChanges && Object.keys(experienceChanges).length > 0)) || !jobRole)
+                  ? "#BDBDBD"
+                  : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+              }}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+            >
+              Proceed to next
+            </button>
+          </div>
         </div>
       </div>
     </form>

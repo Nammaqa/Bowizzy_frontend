@@ -577,14 +577,17 @@ export default function CertificationDetailsForm({
         }));
       }
 
-      // Sync state
+      // Sync state - update both certificates AND initialCertsRef to mark changes as saved
       if (updatedCert) {
-        setCertificates((prev) =>
-          prev.map((c) => (c.id === cert.id ? updatedCert : c))
-        );
-        initialCertsRef.current[cert.id] = updatedCert;
+        setCertificates((prev) => {
+          const updated = prev.map((c) => (c.id === cert.id ? updatedCert : c));
+          // Update ref immediately so change detection knows there are no changes
+          initialCertsRef.current[cert.id] = updatedCert;
+          return updated;
+        });
       }
 
+      // Clear changes for this certificate
       setCertChanges((prev) => {
         const updated = { ...prev };
         delete updated[certId];
@@ -672,10 +675,12 @@ export default function CertificationDetailsForm({
               <button
                 type="button"
                 onClick={() => handleSaveCertificate(certificate, index)}
-                className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                title="Save changes"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                aria-pressed="false"
+                aria-label="Save certificate changes"
               >
-                <Save className="w-3 h-3 text-green-600" strokeWidth={2.5} />
+                <Save className="w-4 h-4" strokeWidth={2} />
+                Save
               </button>
             )}
             <button
@@ -1012,27 +1017,38 @@ export default function CertificationDetailsForm({
             Add Certificate
           </button>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onBack}
-              className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
-            >
-              Previous
-            </button>
-            <button
-              type="submit"
-              disabled={hasUnsavedChanges}
-              style={{
-                background: hasUnsavedChanges
-                  ? "#BDBDBD"
-                  : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
-              }}
-              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-orange-400 hover:bg-orange-700 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
-            >
-              Go to DashBoard
-            </button>
+          {/* Validation Feedback & Action Buttons */}
+          <div className="flex flex-col gap-4">
+            {hasUnsavedChanges && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
+                <ul className="text-xs text-yellow-700 space-y-1 ml-4">
+                  <li>• Certificates (unsaved changes)</li>
+                </ul>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onBack}
+                className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
+              >
+                Previous
+              </button>
+              <button
+                type="submit"
+                disabled={hasUnsavedChanges}
+                style={{
+                  background: hasUnsavedChanges
+                    ? "#BDBDBD"
+                    : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+                }}
+                className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+              >
+                Go to DashBoard
+              </button>
+            </div>
           </div>
         </div>
       </form>
