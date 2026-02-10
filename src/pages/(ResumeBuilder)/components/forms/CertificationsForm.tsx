@@ -695,17 +695,15 @@ export const CertificationsForm: React.FC<CertificationsFormProps> = ({
                 <button
                   type="button"
                   onClick={() => handleSaveCertificate(cert)}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
                   title={
                     cert.certificate_id
                       ? "Update changes"
                       : "Save new certificate"
                   }
                 >
-                  <Save
-                    className="w-3 h-3 text-green-600 cursor-pointer"
-                    strokeWidth={2.5}
-                  />
+                  <Save className="w-4 h-4" strokeWidth={2} />
+                  Save
                 </button>
               )}
               <button
