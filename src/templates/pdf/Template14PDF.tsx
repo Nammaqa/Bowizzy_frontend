@@ -4,15 +4,15 @@ import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import type { ResumeData } from '@/types/resume';
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 28, paddingBottom: 24, paddingLeft: 36, paddingRight: 36, fontSize: 10, fontFamily: 'Times-Roman' },
+  page: { paddingTop: 28, paddingBottom: 24, paddingLeft: 36, paddingRight: 36, fontSize: 10 },
   headerWrap: { marginBottom: 6 },
-  name: { fontSize: 30, fontFamily: 'Times-Bold', color: '#b91c1c', marginBottom: 2 },
+  name: { fontSize: 30, color: '#b91c1c', marginBottom: 2 },
   subtitle: { fontSize: 12, color: '#6b7280', marginBottom: 6 },
   contact: { fontSize: 10, color: '#6b7280' },
   divider: { height: 1, backgroundColor: '#eee', marginTop: 12, marginBottom: 0, width: '100%' },
-  sectionHeading: { fontSize: 11, fontFamily: 'Times-Bold', letterSpacing: 1.5, textTransform: 'uppercase', color: '#b91c1c' },
-  itemTitle: { fontSize: 13, fontFamily: 'Times-Bold' },
-  itemSub: { fontSize: 11, color: '#111827', fontFamily: 'Times-Bold' },
+  sectionHeading: { fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#b91c1c' },
+  itemTitle: { fontSize: 13 },
+  itemSub: { fontSize: 11, color: '#111827' },
   bullet: { fontSize: 10, color: '#444', marginTop: 4 },
 });
 
@@ -74,10 +74,46 @@ const formatYear = (s?: string) => {
   return y ? y[1] : str;
 };
 
-interface Template14PDFProps { data: ResumeData }
+interface Template14PDFProps {
+  data: ResumeData;
+  primaryColor?: string;
+  fontFamily?: string;
+}
 
-const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
+const Template14PDF: React.FC<Template14PDFProps> = ({ data, primaryColor = '#111827', fontFamily = 'Times-Roman, serif' }) => {
   const { personal, experience, education, projects, skillsLinks, certifications } = data;
+
+  // Map CSS font families to react-pdf compatible fonts
+  const getPdfFontFamily = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Roman';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica';
+    if (fontLower.includes('times')) return 'Times-Roman';
+    if (fontLower.includes('georgia')) return 'Times-Roman';
+    if (fontLower.includes('calibri')) return 'Helvetica';
+    if (fontLower.includes('roboto')) return 'Helvetica';
+    if (fontLower.includes('inter')) return 'Helvetica';
+    
+    return 'Times-Roman';
+  };
+
+  const getPdfFontFamilyBold = (cssFont?: string): string => {
+    if (!cssFont) return 'Times-Bold';
+    const fontLower = cssFont.toLowerCase();
+    
+    if (fontLower.includes('arial')) return 'Helvetica-Bold';
+    if (fontLower.includes('times')) return 'Times-Bold';
+    if (fontLower.includes('georgia')) return 'Times-Bold';
+    if (fontLower.includes('calibri')) return 'Helvetica-Bold';
+    if (fontLower.includes('roboto')) return 'Helvetica-Bold';
+    if (fontLower.includes('inter')) return 'Helvetica-Bold';
+    
+    return 'Times-Bold';
+  };
+
+  const pdfFontFamily = getPdfFontFamily(fontFamily);
+  const pdfFontFamilyBold = getPdfFontFamilyBold(fontFamily);
   // Use the separate jobRole if set by the user; otherwise fall back to first work experience jobTitle
   const profession = (experience && (experience as any).jobRole) || (experience.workExperiences && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle) && experience.workExperiences.find((w: any) => w.enabled && w.jobTitle).jobTitle) || '';
 
@@ -90,22 +126,22 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.headerWrap}>
-          <Text style={styles.name}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
+          <Text style={{ ...styles.name, fontFamily: pdfFontFamilyBold, color: primaryColor }}>{personal.firstName} {(personal.middleName || '')} {personal.lastName}</Text>
           {profession && <Text style={styles.subtitle}>{profession}</Text>}
           <Text style={styles.contact}>{pdfContactLine}</Text>
         </View>
 
         <View style={{ marginTop: 12 }}>
-          <Text style={styles.sectionHeading}>WORK EXPERIENCE</Text>
-          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>WORK EXPERIENCE</Text>
+          <View style={{ height: 1.5, backgroundColor: primaryColor, width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
 
         <View style={{ marginTop: 8 }}>
           {experience.workExperiences.filter((w: any) => w.enabled).map((w: any, i: number) => (
             <View key={i} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.itemTitle}>{w.jobTitle} — {w.companyName}{w.location ? `, ${w.location}` : ''}</Text>
-                <Text style={styles.itemSub}>{formatMonthYearNumeric(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYearNumeric(w.endDate)}</Text>
+                <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{w.jobTitle} — {w.companyName}{w.location ? `, ${w.location}` : ''}</Text>
+                <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYearNumeric(w.startDate)} — {w.currentlyWorking ? 'Present' : formatMonthYearNumeric(w.endDate)}</Text>
               </View>
               {w.description && renderBulletedParagraph(w.description)}
             </View>
@@ -113,16 +149,16 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
         </View>
 
         <View style={{ marginTop: 16 }}>
-          <Text style={styles.sectionHeading}>PROJECTS</Text>
-          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>PROJECTS</Text>
+          <View style={{ height: 1.5, backgroundColor: primaryColor, width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
 
         <View style={{ marginTop: 8 }}>
           {projects && projects.filter((p: any) => p.enabled).map((p: any, i: number) => (
             <View key={i} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.itemTitle}>{p.projectTitle}</Text>
-                <Text style={styles.itemSub}>{formatMonthYearNumeric(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYearNumeric(p.endDate)}</Text>
+                <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{p.projectTitle}</Text>
+                <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatMonthYearNumeric(p.startDate)} — {p.currentlyWorking ? 'Present' : formatMonthYearNumeric(p.endDate)}</Text>
               </View>
               {p.description && renderBulletedParagraph(p.description)}
             </View>
@@ -130,16 +166,16 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
         </View>
 
         <View style={{ marginTop: 16 }}>
-          <Text style={styles.sectionHeading}>EDUCATION</Text>
-          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>EDUCATION</Text>
+          <View style={{ height: 1.5, backgroundColor: primaryColor, width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
 
         <View style={{ marginTop: 8 }}>
           {education.higherEducationEnabled && education.higherEducation.slice().sort((a: any,b: any) => 0).map((edu: any, i: number) => (
             <View key={`he-${i}`} style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.itemTitle}>{edu.instituteName}</Text>
-                <Text style={styles.itemSub}>{edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</Text>
+                <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{edu.instituteName}</Text>
+                <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{edu.currentlyPursuing ? 'Present' : formatYear(edu.endYear)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>{edu.degree}</Text>
               {edu.resultFormat && edu.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{edu.resultFormat}: {edu.result}</Text>)}
@@ -149,8 +185,8 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
           {education.preUniversityEnabled && education.preUniversity && (education.preUniversity.instituteName || education.preUniversity.yearOfPassing) && (
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.itemTitle}>{education.preUniversity.instituteName || 'Pre University'}</Text>
-                <Text style={styles.itemSub}>{formatYear(education.preUniversity.yearOfPassing)}</Text>
+                <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{education.preUniversity.instituteName || 'Pre University'}</Text>
+                <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatYear(education.preUniversity.yearOfPassing)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>Pre University (12th Standard)</Text>
               {education.preUniversity.resultFormat && education.preUniversity.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{education.preUniversity.resultFormat}: {education.preUniversity.result}</Text>)}
@@ -160,8 +196,8 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
           {education.sslcEnabled && education.sslc && (education.sslc.instituteName || education.sslc.yearOfPassing) && (
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.itemTitle}>{education.sslc.instituteName || 'SSLC'}</Text>
-                <Text style={styles.itemSub}>{formatYear(education.sslc.yearOfPassing)}</Text>
+                <Text style={{ ...styles.itemTitle, fontFamily: pdfFontFamilyBold }}>{education.sslc.instituteName || 'SSLC'}</Text>
+                <Text style={{ ...styles.itemSub, fontFamily: pdfFontFamilyBold }}>{formatYear(education.sslc.yearOfPassing)}</Text>
               </View>
               <Text style={{ fontSize: 10, color: '#444', marginTop: 4 }}>SSLC (10th Standard)</Text>
               {education.sslc.resultFormat && education.sslc.result && (<Text style={{ fontSize: 10, color: '#2b2a2a', marginTop: 6 }}>{education.sslc.resultFormat}: {education.sslc.result}</Text>)}
@@ -170,14 +206,14 @@ const Template14PDF: React.FC<Template14PDFProps> = ({ data }) => {
         </View>
 
         <View style={{ marginTop: 16 }}>
-          <Text style={styles.sectionHeading}>SKILLS</Text>
-          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>SKILLS</Text>
+          <View style={{ height: 1.5, backgroundColor: primaryColor, width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
         <View style={{ marginTop: 8 }}><Text style={{ fontSize: 10, color: '#2b2a2a' }}>{skillsLinks.skills.filter((s: any) => s.enabled && s.skillName).map((s: any) => s.skillName).join(', ')}</Text></View>
 
         <View style={{ marginTop: 16 }}>
-          <Text style={styles.sectionHeading}>CERTIFICATIONS</Text>
-          <View style={{ height: 1.5, backgroundColor: '#999', width: '100%', marginTop: 4, marginBottom: 0 }} />
+          <Text style={{ ...styles.sectionHeading, fontFamily: pdfFontFamilyBold, color: primaryColor }}>CERTIFICATIONS</Text>
+          <View style={{ height: 1.5, backgroundColor: primaryColor, width: '100%', marginTop: 4, marginBottom: 0 }} />
         </View>
         <View style={{ marginTop: 8 }}><Text style={{ fontSize: 10, color: '#2b2a2a' }}>{certifications.filter((c: any) => c.enabled && c.certificateTitle).map((c: any) => c.certificateTitle).join(', ')}</Text></View>
 
