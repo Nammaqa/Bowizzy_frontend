@@ -814,10 +814,12 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
                 <button
                   type="button"
                   onClick={handleUpdateLanguages}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                  title="Save changes"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                  aria-pressed="false"
+                  aria-label="Save language changes"
                 >
-                  <Save className="w-3 h-3 text-green-600" strokeWidth={2.5} />
+                  <Save className="w-4 h-4" strokeWidth={2} />
+                  Save
                 </button>
               )}
               <button
@@ -923,10 +925,12 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
                 <button
                   type="button"
                   onClick={handleUpdateLocation}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                  title="Save changes"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                  aria-pressed="false"
+                  aria-label="Save location changes"
                 >
-                  <Save className="w-3 h-3 text-green-600" strokeWidth={2.5} />
+                  <Save className="w-4 h-4" strokeWidth={2} />
+                  Save
                 </button>
               )}
               <button
@@ -1041,10 +1045,12 @@ export const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
                 <button
                   type="button"
                   onClick={handleUpdateCareerObjective}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-                  title="Save changes"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                  aria-pressed="false"
+                  aria-label="Save career objective changes"
                 >
-                  <Save className="w-3 h-3 text-green-600" strokeWidth={2.5} />
+                  <Save className="w-4 h-4" strokeWidth={2} />
+                  Save
                 </button>
               )}
               <button

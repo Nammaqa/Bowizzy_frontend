@@ -1091,13 +1091,12 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
             <button
               type="button"
               onClick={() => handleSaveHigherEducation(education)}
-              className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-              title={isNewCard ? "Save new education" : "Save changes"}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+              aria-pressed="false"
+              aria-label={isNewCard ? "Save new education" : "Save education changes"}
             >
-              <Save
-                className="w-3 h-3 text-green-600 cursor-pointer"
-                strokeWidth={2.5}
-              />
+              <Save className="w-4 h-4" strokeWidth={2} />
+              Save
             </button>
           )}
           <button
@@ -1266,13 +1265,12 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
             <button
               type="button"
               onClick={handleSaveSslc}
-              className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-              title={data.sslc.education_id ? "Update SSLC" : "Save SSLC"}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+              aria-pressed="false"
+              aria-label={data.sslc.education_id ? "Update SSLC" : "Save SSLC"}
             >
-              <Save
-                className="w-3 h-3 text-green-600 cursor-pointer"
-                strokeWidth={2.5}
-              />
+              <Save className="w-4 h-4" strokeWidth={2} />
+              Save
             </button>
           )}
           <button
@@ -1365,17 +1363,12 @@ export const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
             <button
               type="button"
               onClick={handleSavePu}
-              className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-green-600 hover:bg-green-50 transition-colors"
-              title={
-                data.preUniversity.education_id
-                  ? "Update Pre University"
-                  : "Save Pre University"
-              }
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+              aria-pressed="false"
+              aria-label={data.preUniversity.education_id ? "Update Pre University" : "Save Pre University"}
             >
-              <Save
-                className="w-3 h-3 text-green-600 cursor-pointer"
-                strokeWidth={2.5}
-              />
+              <Save className="w-4 h-4" strokeWidth={2} />
+              Save
             </button>
           )}
           <button
