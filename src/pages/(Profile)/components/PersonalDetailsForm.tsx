@@ -593,14 +593,26 @@ export default function PersonalDetailsForm({
 
   const canProceed = !Object.keys(errors).some((key) => errors[key]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
 
+  // 🔹 Unsaved changes check with section names
   if (languagesChanged || locationChanged) {
-    setSubmitError("Please save your changes before proceeding.");
+    let message = "Please save your changes before proceeding:\n\n";
+
+    if (languagesChanged) {
+      message += "• Languages Known (unsaved changes)\n";
+    }
+
+    if (locationChanged) {
+      message += "• Current Location (unsaved changes)\n";
+    }
+
+    setSubmitError(message);
     return;
   }
 
+  // 🔹 Validation errors check
   if (
     Object.keys(errors).some(
       (key) => key !== "pincode" && key !== "passportNumber" && errors[key]
@@ -610,10 +622,9 @@ export default function PersonalDetailsForm({
     return;
   }
 
-  setSubmitError(""); // clear error
+  setSubmitError("");
   onNext(formData);
 };
-
     // Scroll to top of the next step (Education) after proceeding
     
 
@@ -646,9 +657,9 @@ export default function PersonalDetailsForm({
       <h3 className="text-lg font-semibold text-red-600 mb-2">
         Error
       </h3>
-      <p className="text-sm text-gray-700 mb-4">
-        {submitError}
-      </p>
+      <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+  {submitError}
+</p>
 
       <div className="flex justify-end">
         <button
