@@ -72,6 +72,7 @@ export default function PersonalDetailsForm({
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
     // Fetch countries on mount
     useEffect(() => {
@@ -590,43 +591,31 @@ export default function PersonalDetailsForm({
     }
   };
 
-  const canProceed = !(
-    languagesChanged ||
-    locationChanged ||
-    Object.keys(errors).some((key) => errors[key])
-  );
+  const canProceed = !Object.keys(errors).some((key) => errors[key]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (languagesChanged || locationChanged) {
-      setLanguagesFeedback(
-        languagesChanged ? "Please save your changes before proceeding" : ""
-      );
-      setLocationFeedback(
-        locationChanged ? "Please save your changes before proceeding" : ""
-      );
-      return;
-    }
+  if (languagesChanged || locationChanged) {
+    setSubmitError("Please save your changes before proceeding.");
+    return;
+  }
 
-    if (
-      Object.keys(errors).some(
-        (key) => key !== "pincode" && key !== "passportNumber" && errors[key]
-      )
-    ) {
-      alert("Please fix validation errors before proceeding.");
-      return;
-    }
+  if (
+    Object.keys(errors).some(
+      (key) => key !== "pincode" && key !== "passportNumber" && errors[key]
+    )
+  ) {
+    setSubmitError("Please fix validation errors before proceeding.");
+    return;
+  }
+
+  setSubmitError(""); // clear error
+  onNext(formData);
+};
 
     // Scroll to top of the next step (Education) after proceeding
-    setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "auto" });
-      }
-    }, 0);
-
-    onNext(formData);
-  };
+    
 
   const filteredSuggestions = useMemo(() => {
     if (!newLanguage.trim()) return [];
@@ -646,6 +635,33 @@ export default function PersonalDetailsForm({
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
     >
+      {submitError && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div
+      className="absolute inset-0 backdrop-blur-sm bg-white/20"
+      onClick={() => setSubmitError("")}
+    ></div>
+
+    <div className="relative bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md z-50 animate-fadeIn">
+      <h3 className="text-lg font-semibold text-red-600 mb-2">
+        Error
+      </h3>
+      <p className="text-sm text-gray-700 mb-4">
+        {submitError}
+      </p>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setSubmitError("")}
+          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="max-w-6xl mx-auto">
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">
@@ -1240,16 +1256,6 @@ export default function PersonalDetailsForm({
         </div>
 
         <div className="flex flex-col gap-4">
-          {(languagesChanged || locationChanged) && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
-              <ul className="text-xs text-yellow-700 space-y-1 ml-4">
-                {languagesChanged && <li>• Languages Known (unsaved changes)</li>}
-                {locationChanged && <li>• Current Location (unsaved changes)</li>}
-              </ul>
-            </div>
-          )}
-          
           {!formData.languages || formData.languages.length === 0 ? (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
@@ -1262,7 +1268,7 @@ export default function PersonalDetailsForm({
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={!canProceed}
+              disabled={false}
               style={{
                 background: canProceed
                   ? "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)"
