@@ -51,13 +51,13 @@ export default function SkillsLinksDetailsForm({
   const initialSkills: Skill[] =
     initialData.skills && initialData.skills.length > 0
       ? initialData.skills.map((s: any) => ({
-          ...s,
-          id: s.id || s.skill_id?.toString() || Date.now().toString(),
-        }))
+        ...s,
+        id: s.id || s.skill_id?.toString() || Date.now().toString(),
+      }))
       : [
-          { id: "1", skillName: "", skillLevel: "" },
-          { id: "2", skillName: "", skillLevel: "" },
-        ];
+        { id: "1", skillName: "", skillLevel: "" },
+        { id: "2", skillName: "", skillLevel: "" },
+      ];
 
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
 
@@ -66,19 +66,19 @@ export default function SkillsLinksDetailsForm({
     initialData.links && initialData.links.length > 0
       ? initialData.links
       : [
-          {
-            id: "1",
-            linkedinProfile: "",
-            githubProfile: "",
-            portfolioUrl: "",
-            portfolioDescription: "",
-            publicationUrl: "",
-            publicationDescription: "",
-          },
-        ];
+        {
+          id: "1",
+          linkedinProfile: "",
+          githubProfile: "",
+          portfolioUrl: "",
+          portfolioDescription: "",
+          publicationUrl: "",
+          publicationDescription: "",
+        },
+      ];
 
   const [links, setLinks] = useState<Link[]>(initialLinks);
-
+  const [submitError, setSubmitError] = useState("");
   const [skillsExpanded, setSkillsExpanded] = useState(true);
   const [linksExpanded, setLinksExpanded] = useState(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -228,7 +228,7 @@ export default function SkillsLinksDetailsForm({
         return next;
       });
     }
-  }; 
+  };
 
   // Handler for saving all skills in bulk (individual PUT/POST based on change tracking)
   const handleSaveAllSkills = async () => {
@@ -437,7 +437,7 @@ export default function SkillsLinksDetailsForm({
         [`link-${linkIndex}-publicationUrl`]: error,
       }));
     }
-  }; 
+  };
 
   // Helper to clear single link input field
   const clearLinkField = (linkIndex: number, field: string) => {
@@ -627,40 +627,21 @@ export default function SkillsLinksDetailsForm({
       return;
     }
 
+
     if (hasUnsavedChanges) {
-      Object.keys(skillChanges).forEach((id) => {
-        setSkillFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your skill changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setSkillFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
-      });
-      Object.keys(linkChanges).forEach((id) => {
-        setLinkFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your link changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setLinkFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
-      });
+      let message = "Please save your changes before proceeding:\n\n";
+
+      if (Object.keys(skillChanges).length > 0) {
+        message += "• Skills (unsaved changes)\n";
+      }
+
+      if (Object.keys(linkChanges).length > 0) {
+        message += "• Links (unsaved changes)\n";
+      }
+
+      setSubmitError(message);
       return;
     }
-
     // Filter out completely empty skill cards before sending to next step
     const validSkills = skills.filter((s) => s.skillName || s.skill_id);
 
@@ -714,11 +695,10 @@ export default function SkillsLinksDetailsForm({
               aria-required={fieldName === "linkedinProfile"}
               aria-invalid={!!errors[`link-${linkIndex}-${fieldName}`]}
               placeholder={`Enter ${label}...`}
-              className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${
-                errors[`link-${linkIndex}-${fieldName}`]
+              className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${errors[`link-${linkIndex}-${fieldName}`]
                   ? "border-red-500 focus:ring-red-400"
                   : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-              }`}
+                }`}
             />
 
             {/* Clear Button (Always inside the input) */}
@@ -771,7 +751,34 @@ export default function SkillsLinksDetailsForm({
       id="skills-links-details-form-root"
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
-    >
+    >{submitError && (
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div
+          className="absolute inset-0 backdrop-blur-md bg-white/10"
+          onClick={() => setSubmitError("")}
+        ></div>
+
+        <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">
+            Error
+          </h3>
+
+          <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+            {submitError}
+          </p>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setSubmitError("")}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
       <div className="max-w-6xl mx-auto">
         {/* Step Header */}
         <div className="mb-4 md:mb-6">
@@ -811,9 +818,8 @@ export default function SkillsLinksDetailsForm({
                 className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <ChevronDown
-                  className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${
-                    !skillsExpanded ? "rotate-180" : ""
-                  }`}
+                  className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${!skillsExpanded ? "rotate-180" : ""
+                    }`}
                   strokeWidth={2.5}
                 />
               </button>
@@ -833,11 +839,10 @@ export default function SkillsLinksDetailsForm({
           {/* Skills Feedback */}
           {Object.values(skillFeedback).some((f) => f) && (
             <div
-              className={`p-4 text-sm ${
-                Object.values(skillFeedback).every((f) => f.includes("success"))
+              className={`p-4 text-sm ${Object.values(skillFeedback).every((f) => f.includes("success"))
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+                }`}
             >
               {Object.values(skillFeedback)
                 .filter((f) => f)
@@ -856,11 +861,10 @@ export default function SkillsLinksDetailsForm({
                     <div key={skill.id}>
                       {feedback && (
                         <p
-                          className={`mb-2 p-1 text-xs rounded ${
-                            feedback.includes("successfully")
+                          className={`mb-2 p-1 text-xs rounded ${feedback.includes("successfully")
                               ? "bg-green-50 text-green-700"
                               : "bg-red-50 text-red-700"
-                          }`}
+                            }`}
                         >
                           {feedback}
                         </p>
@@ -885,11 +889,10 @@ export default function SkillsLinksDetailsForm({
                               aria-required={true}
                               aria-invalid={!!(errors[`skill-${index}-skillName`] || errors.skills)}
                               placeholder="Enter Skill Name..."
-                              className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${
-                                (errors[`skill-${index}-skillName`] || errors.skills)
+                              className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 ${(errors[`skill-${index}-skillName`] || errors.skills)
                                   ? "border-red-500 focus:ring-red-400"
                                   : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                              }`}
+                                }`}
                             />
                           </div>
                           {errors[`skill-${index}-skillName`] && (
@@ -999,9 +1002,8 @@ export default function SkillsLinksDetailsForm({
                   className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   <ChevronDown
-                    className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${
-                      !linksExpanded ? "rotate-180" : ""
-                    }`}
+                    className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${!linksExpanded ? "rotate-180" : ""
+                      }`}
                     strokeWidth={2.5}
                   />
                 </button>
@@ -1021,11 +1023,10 @@ export default function SkillsLinksDetailsForm({
             {/* Links Feedback */}
             {linkFeedback[link.id] && (
               <div
-                className={`p-4 text-sm ${
-                  linkFeedback[link.id].includes("success")
+                className={`p-4 text-sm ${linkFeedback[link.id].includes("success")
                     ? "bg-green-50 text-green-700 border border-green-200"
                     : "bg-red-50 text-red-700 border border-red-200"
-                }`}
+                  }`}
               >
                 {linkFeedback[link.id]}
               </div>
@@ -1095,49 +1096,38 @@ export default function SkillsLinksDetailsForm({
         ))}
 
         {/* Action Buttons */}
-          {/* Validation Feedback & Action Buttons */}
-          <div className="flex flex-col gap-4">
-            {hasUnsavedChanges && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
-                <ul className="text-xs text-yellow-700 space-y-1 ml-4">
-                  {Object.keys(skillChanges).length > 0 && <li>• Skills (unsaved changes)</li>}
-                  {Object.keys(linkChanges).length > 0 && <li>• Links (unsaved changes)</li>}
-                </ul>
-              </div>
-            )}
+        {/* Validation Feedback & Action Buttons */}
+        <div className="flex flex-col gap-4">
 
-            {skills && skills.length < 2 ? (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
-                <ul className="text-xs text-red-700 space-y-1 ml-4 mt-1">
-                  <li>• Skills (at least 2 skills are required)</li>
-                </ul>
-              </div>
-            ) : null}
 
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={onBack}
-                className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
-              >
-                Previous
-              </button>
-              <button
-                type="submit"
-                disabled={hasUnsavedChanges || (skills && skills.length < 2)}
-                style={{
-                  background: (hasUnsavedChanges || (skills && skills.length < 2))
-                    ? "#BDBDBD"
-                    : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
-                }}
-                className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
-              >
-                Proceed to next
-              </button>
+          {skills && skills.length < 2 ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
+              <ul className="text-xs text-red-700 space-y-1 ml-4 mt-1">
+                <li>• Skills (at least 2 skills are required)</li>
+              </ul>
             </div>
+          ) : null}
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-orange-300 hover:border-orange-400 text-orange-400 rounded-xl font-medium text-xs sm:text-sm transition-colors cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              type="submit"
+              disabled={false} style={{
+                background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+              }}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+            >
+              Proceed to next
+            </button>
           </div>
+        </div>
       </div>
     </form>
   );

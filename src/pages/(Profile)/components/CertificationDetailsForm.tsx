@@ -55,27 +55,28 @@ export default function CertificationDetailsForm({
   const initialCertificates: Certificate[] =
     initialData.certificates && initialData.certificates.length > 0
       ? initialData.certificates.map((c: any) => ({
-          ...c,
-          id: c.id || c.certificate_id?.toString() || Date.now().toString(),
-        }))
+        ...c,
+        id: c.id || c.certificate_id?.toString() || Date.now().toString(),
+      }))
       : [
-          {
-            id: "1",
-            certificateType: "",
-            certificateTitle: "",
-            domain: "",
-            certificateProvidedBy: "",
-            date: "",
-            description: "",
-            uploadedFile: null,
-            uploadedFileName: "",
-            isExpanded: true,
-          },
-        ];
+        {
+          id: "1",
+          certificateType: "",
+          certificateTitle: "",
+          domain: "",
+          certificateProvidedBy: "",
+          date: "",
+          description: "",
+          uploadedFile: null,
+          uploadedFileName: "",
+          isExpanded: true,
+        },
+      ];
 
   const [certificates, setCertificates] =
     useState<Certificate[]>(initialCertificates);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitError, setSubmitError] = useState("");
 
   // --- Change Tracking / Feedback ---
   const [certChanges, setCertChanges] = useState<Record<string, string[]>>({});
@@ -376,7 +377,7 @@ export default function CertificationDetailsForm({
       uploadedFileName: file.name,
       uploadedFileUrl: uploadRes.url,
       uploadedFileType: file.type,
-      cloudDeleteToken: uploadRes.deleteToken, 
+      cloudDeleteToken: uploadRes.deleteToken,
     };
 
     setCertificates(updated);
@@ -626,21 +627,15 @@ export default function CertificationDetailsForm({
     e.preventDefault();
 
     if (hasUnsavedChanges) {
-      Object.keys(certChanges).forEach((id) => {
-        setCertFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your certificate changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setCertFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
+      let message = "Please save your changes before proceeding:\n\n";
+
+      certificates.forEach((cert, index) => {
+        if (certChanges[cert.id]) {
+          message += `• Certificate ${index + 1} (unsaved changes)\n`;
+        }
       });
+
+      setSubmitError(message);
       return;
     }
 
@@ -689,9 +684,8 @@ export default function CertificationDetailsForm({
               className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <ChevronDown
-                className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${
-                  !certificate.isExpanded ? "rotate-180" : ""
-                }`}
+                className={`w-3 h-3 text-gray-600 cursor-pointer transition-transform ${!certificate.isExpanded ? "rotate-180" : ""
+                  }`}
                 strokeWidth={2.5}
               />
             </button>
@@ -723,11 +717,10 @@ export default function CertificationDetailsForm({
         {/* Feedback */}
         {feedback && (
           <div
-            className={`p-4 text-sm ${
-              feedback.includes("successfully")
+            className={`p-4 text-sm ${feedback.includes("successfully")
                 ? "bg-green-50 text-green-700 border border-green-200"
                 : "bg-red-50 text-red-700 border border-red-200"
-            }`}
+              }`}
           >
             {feedback}
           </div>
@@ -788,11 +781,10 @@ export default function CertificationDetailsForm({
                       )
                     }
                     placeholder="Enter Certificate Title"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors[`cert-${index}-certificateTitle`]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`cert-${index}-certificateTitle`]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors[`cert-${index}-certificateTitle`] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -816,11 +808,10 @@ export default function CertificationDetailsForm({
                       handleCertificateChange(index, "domain", e.target.value)
                     }
                     placeholder="Enter Domain"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors[`cert-${index}-domain`]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`cert-${index}-domain`]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors[`cert-${index}-domain`] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -845,11 +836,10 @@ export default function CertificationDetailsForm({
                       )
                     }
                     placeholder="Certificate Provided By"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors[`cert-${index}-certificateProvidedBy`]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`cert-${index}-certificateProvidedBy`]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors[`cert-${index}-certificateProvidedBy`] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -871,8 +861,8 @@ export default function CertificationDetailsForm({
                         handleCertificateChange(index, "date", e.target.value)
                       }
                       placeholder="Select Month and Year"
-                        className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm pr-8"
-                        max={getTodayDate()}
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm pr-8"
+                      max={getTodayDate()}
                     />
                   </div>
                   {errors[`cert-${index}-date`] && (
@@ -919,11 +909,10 @@ export default function CertificationDetailsForm({
                     <div
                       onDrop={(e) => handleFileDrop(index, e)}
                       onDragOver={(e) => e.preventDefault()}
-                      className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center hover:border-orange-400 transition-colors cursor-pointer ${
-                        errors[`cert-${index}-file`]
+                      className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center hover:border-orange-400 transition-colors cursor-pointer ${errors[`cert-${index}-file`]
                           ? "border-red-500"
                           : "border-gray-300"
-                      }`}
+                        }`}
                       onClick={() =>
                         fileInputRefs.current[certificate.id]?.click()
                       }
@@ -991,6 +980,34 @@ export default function CertificationDetailsForm({
   return (
     <div className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6">
       <form id="certification-details-form-root" onSubmit={handleSubmit}>
+        {submitError && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div
+              className="absolute inset-0 backdrop-blur-md bg-white/10"
+              onClick={() => setSubmitError("")}
+            ></div>
+
+            <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
+              <h3 className="text-lg font-semibold text-red-600 mb-2">
+                Error
+              </h3>
+
+              <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+                {submitError}
+              </p>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSubmitError("")}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="max-w-6xl mx-auto">
           {/* Step Header */}
           <div className="mb-4 md:mb-6">
@@ -1019,14 +1036,6 @@ export default function CertificationDetailsForm({
 
           {/* Validation Feedback & Action Buttons */}
           <div className="flex flex-col gap-4">
-            {hasUnsavedChanges && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
-                <ul className="text-xs text-yellow-700 space-y-1 ml-4">
-                  <li>• Certificates (unsaved changes)</li>
-                </ul>
-              </div>
-            )}
 
             <div className="flex justify-end gap-3">
               <button
@@ -1038,11 +1047,9 @@ export default function CertificationDetailsForm({
               </button>
               <button
                 type="submit"
-                disabled={hasUnsavedChanges}
+                disabled={false}
                 style={{
-                  background: hasUnsavedChanges
-                    ? "#BDBDBD"
-                    : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+                  background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
                 }}
                 className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
               >

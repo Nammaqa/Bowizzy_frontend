@@ -161,6 +161,7 @@ export default function EducationDetailsForm({
   }, []);
   const [puExpanded, setPuExpanded] = useState(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitError, setSubmitError] = useState("");
 
   // SSLC Data
   const [sslcData, setSslcData] = useState({
@@ -1125,66 +1126,70 @@ export default function EducationDetailsForm({
 
   // Final submission handler
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Check for validation errors across all fields
-    if (Object.values(errors).some((err) => err.length > 0)) {
-      alert("Please fix validation errors before proceeding.");
-      return;
+  // 1️⃣ Validation errors
+  if (Object.values(errors).some((err) => err.length > 0)) {
+    setSubmitError("Please fix validation errors before proceeding.");
+    return;
+  }
+
+  // 2️⃣ Unsaved changes
+if (hasUnsavedChanges) {
+  let message = "Please save your changes before proceeding:\n\n";
+
+  if (sslcChanged) {
+    message += "• SSLC (10th Standard) (unsaved changes)\n";
+  }
+
+  if (puChanged) {
+    message += "• Pre-University (12th Standard) (unsaved changes)\n";
+  }
+
+  // Mandatory Higher Education cards
+  higherEducations.forEach((edu, index) => {
+    if (higherChanges[edu.id]) {
+      message += `• Education ${index + 1} (unsaved changes)\n`;
     }
+  });
 
-    if (hasUnsavedChanges) {
-      setSslcFeedback(
-        sslcChanged ? "Please save your SSLC changes before proceeding" : ""
-      );
-      setPuFeedback(
-        puChanged ? "Please save your PU changes before proceeding" : ""
-      );
-      Object.keys(higherChanges).forEach((id) => {
-        setHigherFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setHigherFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
-      });
-      Object.keys(extraChanges).forEach((id) => {
-        setExtraFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setExtraFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
-      });
-      return;
+  // Additional Education cards
+  extraEducations.forEach((edu, index) => {
+    if (extraChanges[edu.id]) {
+      message += `• Additional Education ${index + 1} (unsaved changes)\n`;
     }
+  });
 
-    onNext({
-      sslc: sslcData,
-      pu: puData,
-      higherEducations: higherEducations.filter(
-        (e) => e.degree || e.institutionName || e.education_id
-      ),
-      extraEducations: extraEducations.filter(
-        (e) => e.degree || e.institutionName || e.education_id
-      ),
-      deletedEducationIds: deletedEducationIds.current,
-    });
-  };
+  setSubmitError(message);
+  return;
+}
+
+  // 3️⃣ Mandatory degree check
+  if (
+    higherEducations &&
+    higherEducations.length > 0 &&
+    !higherEducations[0]?.degree
+  ) {
+    setSubmitError(
+      "First Education Entry (degree) is required before proceeding."
+    );
+    return;
+  }
+
+  setSubmitError("");
+
+  onNext({
+    sslc: sslcData,
+    pu: puData,
+    higherEducations: higherEducations.filter(
+      (e) => e.degree || e.institutionName || e.education_id
+    ),
+    extraEducations: extraEducations.filter(
+      (e) => e.degree || e.institutionName || e.education_id
+    ),
+    deletedEducationIds: deletedEducationIds.current,
+  });
+};
 
   // Render function for all education cards
   const renderEducationCard = (
@@ -1531,7 +1536,34 @@ export default function EducationDetailsForm({
       id="education-details-form-root"
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
-    >
+    >{submitError && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div
+      className="absolute inset-0 backdrop-blur-md bg-white/10"
+      onClick={() => setSubmitError("")}
+    ></div>
+
+    <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
+      <h3 className="text-lg font-semibold text-red-600 mb-2">
+        Error
+      </h3>
+
+      <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+        {submitError}
+      </p>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setSubmitError("")}
+          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="max-w-6xl mx-auto">
         {/* Step Header */}
         {!hideHeader && (
@@ -1909,24 +1941,9 @@ export default function EducationDetailsForm({
 
         {/* Validation Feedback & Action Buttons */}
         <div className="flex flex-col gap-4">
-          {hasUnsavedChanges && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
-              <ul className="text-xs text-yellow-700 space-y-1 ml-4">
-                {sslcChanged && <li>• SSLC (10th Standard) (unsaved changes)</li>}
-                {puChanged && <li>• Pre-University (12th Standard) (unsaved changes)</li>}
-              </ul>
-            </div>
-          )}
+          
 
-          {higherEducations && higherEducations.length > 0 && !higherEducations[0]?.degree ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
-              <ul className="text-xs text-red-700 space-y-1 ml-4 mt-1">
-                <li>• First Education Entry (degree is required)</li>
-              </ul>
-            </div>
-          ) : null}
+          
 
           <div className="flex justify-end gap-3">
             <button
@@ -1938,12 +1955,10 @@ export default function EducationDetailsForm({
             </button>
             <button
               type="submit"
-              disabled={hasUnsavedChanges || (higherEducations && higherEducations.length > 0 && !higherEducations[0]?.degree)}
-              style={{
-                background: (hasUnsavedChanges || (higherEducations && higherEducations.length > 0 && !higherEducations[0]?.degree))
-                  ? "#BDBDBD"
-                  : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
-              }}
+                disabled={false}   
+                style={{
+  background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+}}           
               className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
             >
               Proceed to next

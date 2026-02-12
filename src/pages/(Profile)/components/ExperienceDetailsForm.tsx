@@ -47,30 +47,31 @@ export default function ExperienceDetailsForm({
   const [jobRole, setJobRole] = useState(initialData.jobRole || "");
   const [jobRoleExpanded, setJobRoleExpanded] = useState(true);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitError, setSubmitError] = useState("");
 
   // Initialize work experiences, ensuring at least one card is present
   const initialExperiences: WorkExperience[] =
     initialData.workExperiences && initialData.workExperiences.length > 0
       ? initialData.workExperiences.map((exp: any) => ({
-          ...exp,
-          id: exp.id || exp.experience_id?.toString() || Date.now().toString(),
-          isExpanded: exp.isExpanded ?? false,
-        }))
+        ...exp,
+        id: exp.id || exp.experience_id?.toString() || Date.now().toString(),
+        isExpanded: exp.isExpanded ?? false,
+      }))
       : [
-          {
-            id: "1",
-            companyName: "",
-            jobTitle: "",
-            employmentType: "",
-            location: "",
-            workMode: "",
-            startDate: "",
-            endDate: "",
-            description: "",
-            currentlyWorking: false,
-            isExpanded: true, // Expand first empty card
-          },
-        ];
+        {
+          id: "1",
+          companyName: "",
+          jobTitle: "",
+          employmentType: "",
+          location: "",
+          workMode: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+          currentlyWorking: false,
+          isExpanded: true, // Expand first empty card
+        },
+      ];
 
   const [workExperiences, setWorkExperiences] =
     useState<WorkExperience[]>(initialExperiences);
@@ -259,7 +260,7 @@ export default function ExperienceDetailsForm({
       });
       setJobRoleFeedback("");
     }
-  }; 
+  };
 
   // Handler for saving Job Role (PUT call to new endpoint)
   const handleSaveJobRole = async () => {
@@ -661,44 +662,42 @@ export default function ExperienceDetailsForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ensure Job Role is provided when visible
+    // 1️⃣ Mandatory Job Role check
     if (!hideJobRole && !jobRole.trim()) {
-      setErrors((prev) => ({ ...prev, jobRole: "Job Role is required" }));
-      setJobRoleFeedback("Job Role is required");
+      setSubmitError("Job Role is required before proceeding.");
       setJobRoleExpanded(true);
-      const sel = document.querySelector('#experience-details-form-root select[aria-required="true"]') as HTMLSelectElement | null;
-      if (sel) sel.focus();
       return;
     }
 
+    // 2️⃣ Validation errors check
+    if (Object.values(errors).some((err) => err.length > 0)) {
+      setSubmitError("Please fix validation errors before proceeding.");
+      return;
+    }
+
+    // 3️⃣ Unsaved changes check
     if (hasUnsavedChanges) {
-      setJobRoleFeedback(
-        jobRoleChanged
-          ? "Please save your Job Role changes before proceeding"
-          : ""
-      );
-      Object.keys(experienceChanges).forEach((id) => {
-        setExperienceFeedback((prev) => ({
-          ...prev,
-          [id]: "Please save your changes before proceeding",
-        }));
-        setTimeout(
-          () =>
-            setExperienceFeedback((prev) => {
-              const updated = { ...prev };
-              delete updated[id];
-              return updated;
-            }),
-          3000
-        );
+      let message = "Please save your changes before proceeding:\n\n";
+
+      if (jobRoleChanged) {
+        message += "• Job Role (unsaved changes)\n";
+      }
+
+      workExperiences.forEach((exp, index) => {
+        if (experienceChanges[exp.id]) {
+          message += `• Work Experience ${index + 1} (unsaved changes)\n`;
+        }
       });
+
+      setSubmitError(message);
       return;
     }
 
-    // Filter out completely empty cards before sending to next step
     const validExperiences = workExperiences.filter(
       (exp) => exp.companyName || exp.experience_id
     );
+
+    setSubmitError("");
 
     onNext({
       jobRole,
@@ -706,7 +705,6 @@ export default function ExperienceDetailsForm({
       deletedExperienceIds: deletedExperienceIds.current,
     });
   };
-
   // Render function for all experience cards
   const renderExperienceCard = (
     experience: WorkExperience,
@@ -745,9 +743,8 @@ export default function ExperienceDetailsForm({
               className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
             >
               <ChevronDown
-                className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${
-                  !experience.isExpanded ? "rotate-180" : ""
-                }`}
+                className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${!experience.isExpanded ? "rotate-180" : ""
+                  }`}
                 strokeWidth={2.5}
               />
             </button>
@@ -779,11 +776,10 @@ export default function ExperienceDetailsForm({
 
         {feedback && (
           <div
-            className={`p-4 text-sm ${
-              feedback.includes("successfully")
+            className={`p-4 text-sm ${feedback.includes("successfully")
                 ? "bg-green-50 text-green-700 border border-green-200"
                 : "bg-red-50 text-red-700 border border-red-200"
-            }`}
+              }`}
           >
             {feedback}
           </div>
@@ -805,11 +801,10 @@ export default function ExperienceDetailsForm({
                     handleExperienceChange(index, "companyName", e.target.value)
                   }
                   placeholder="Enter Company Name"
-                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                    errors[`exp-${index}-companyName`]
+                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`exp-${index}-companyName`]
                       ? "border-red-500 focus:ring-red-400"
                       : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                  }`}
+                    }`}
                 />
                 {errors[`exp-${index}-companyName`] && (
                   <p className="mt-1 text-xs text-red-500">
@@ -830,11 +825,10 @@ export default function ExperienceDetailsForm({
                     handleExperienceChange(index, "jobTitle", e.target.value)
                   }
                   placeholder="Enter Job Title"
-                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                    errors[`exp-${index}-jobTitle`]
+                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`exp-${index}-jobTitle`]
                       ? "border-red-500 focus:ring-red-400"
                       : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                  }`}
+                    }`}
                 />
                 {errors[`exp-${index}-jobTitle`] && (
                   <p className="mt-1 text-xs text-red-500">
@@ -952,11 +946,10 @@ export default function ExperienceDetailsForm({
                     max={getCurrentMonth()}
                     placeholder="Select End Date"
                     disabled={experience.currentlyWorking}
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 disabled:bg-gray-100 ${
-                      errors[`exp-${index}-endDate`]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm pr-8 disabled:bg-gray-100 ${errors[`exp-${index}-endDate`]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                 </div>
                 {errors[`exp-${index}-endDate`] && (
@@ -1037,6 +1030,34 @@ export default function ExperienceDetailsForm({
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
     >
+      {submitError && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="absolute inset-0 backdrop-blur-md bg-white/10"
+            onClick={() => setSubmitError("")}
+          ></div>
+
+          <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
+            <h3 className="text-lg font-semibold text-red-600 mb-2">
+              Error
+            </h3>
+
+            <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+              {submitError}
+            </p>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSubmitError("")}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto">
         {/* Step Header */}
         {!hideHeader && (
@@ -1055,99 +1076,97 @@ export default function ExperienceDetailsForm({
         {/* Job Role Section */}
         {!hideJobRole && (
           <div className="bg-white border border-gray-200 rounded-xl mb-4 md:mb-5 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 md:py-4 border-b border-gray-200">
-            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-              Job Role <span className="text-red-500">*</span>
-            </h3>
-            <div className="flex gap-2 items-center">
-              {jobRoleChanged && (
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 md:py-4 border-b border-gray-200">
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
+                Job Role <span className="text-red-500">*</span>
+              </h3>
+              <div className="flex gap-2 items-center">
+                {jobRoleChanged && (
+                  <button
+                    type="button"
+                    onClick={handleSaveJobRole}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
+                    aria-pressed="false"
+                    aria-label="Save job role changes"
+                  >
+                    <Save className="w-4 h-4" strokeWidth={2} />
+                    Save
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleSaveJobRole}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md text-sm font-medium shadow-sm hover:from-orange-500 hover:to-orange-600 transition cursor-pointer"
-                  aria-pressed="false"
-                  aria-label="Save job role changes"
+                  onClick={() => setJobRoleExpanded(!jobRoleExpanded)}
+                  className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
                 >
-                  <Save className="w-4 h-4" strokeWidth={2} />
-                  Save
+                  <ChevronDown
+                    className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${!jobRoleExpanded ? "rotate-180" : ""
+                      }`}
+                    strokeWidth={2.5}
+                  />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setJobRoleExpanded(!jobRoleExpanded)}
-                className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
-              >
-                <ChevronDown
-                  className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${
-                    !jobRoleExpanded ? "rotate-180" : ""
-                  }`}
-                  strokeWidth={2.5}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => setJobRole(initialJobRole.current)} // Revert to initial state
-                className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
-              >
-                <RotateCcw
-                  className="w-3 h-3 text-gray-600 cursor-pointer"
-                  strokeWidth={2.5}
-                />
-              </button>
-            </div>
-          </div>
-
-          {jobRoleFeedback && (
-            <div
-              className={`p-4 text-sm ${
-                jobRoleFeedback.includes("successfully")
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
-              }`}
-            >
-              {jobRoleFeedback}
-            </div>
-          )}
-
-          {/* Content */}
-          {jobRoleExpanded && (
-            <div className="p-4 sm:p-5 md:p-6">
-              <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                We'll use your job role to tailor resumes, prep, and interviews
-                for you. Make sure it's entered correctly so everything matches.
-              </p>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                  Job Role <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    value={jobRole}
-                    onChange={handleJobRoleChange}
-                    required
-                    aria-required="true"
-                    aria-invalid={!!errors.jobRole}
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none ${errors.jobRole ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-300 focus:ring-2 focus:ring-orange-400 focus:border-transparent'} text-xs sm:text-sm appearance-none bg-white pr-8`}
-                  >
-                    <option value="">Select Job Role</option>
-                    <option value="Software Engineer">Software Engineer</option>
-                    <option value="Software Developer">Software Developer</option>
-                    <option value="Senior Software Engineer">Senior Software Engineer</option>
-                    <option value="Full Stack Developer">Full Stack Developer</option>
-                    <option value="Frontend Developer">Frontend Developer</option>
-                    <option value="Backend Developer">Backend Developer</option>
-                    <option value="DevOps Engineer">DevOps Engineer</option>
-                    <option value="Data Scientist">Data Scientist</option>
-                    <option value="Product Manager">Product Manager</option>
-                    <option value="UI/UX Designer">UI/UX Designer</option>
-                  </select>
-                  {errors.jobRole && <p className="mt-1 text-xs text-red-500">{errors.jobRole}</p>}
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setJobRole(initialJobRole.current)} // Revert to initial state
+                  className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <RotateCcw
+                    className="w-3 h-3 text-gray-600 cursor-pointer"
+                    strokeWidth={2.5}
+                  />
+                </button>
               </div>
             </div>
-          )}
+
+            {jobRoleFeedback && (
+              <div
+                className={`p-4 text-sm ${jobRoleFeedback.includes("successfully")
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+              >
+                {jobRoleFeedback}
+              </div>
+            )}
+
+            {/* Content */}
+            {jobRoleExpanded && (
+              <div className="p-4 sm:p-5 md:p-6">
+                <p className="text-xs sm:text-sm text-gray-600 mb-4">
+                  We'll use your job role to tailor resumes, prep, and interviews
+                  for you. Make sure it's entered correctly so everything matches.
+                </p>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
+                    Job Role <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={jobRole}
+                      onChange={handleJobRoleChange}
+                      required
+                      aria-required="true"
+                      aria-invalid={!!errors.jobRole}
+                      className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none ${errors.jobRole ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-300 focus:ring-2 focus:ring-orange-400 focus:border-transparent'} text-xs sm:text-sm appearance-none bg-white pr-8`}
+                    >
+                      <option value="">Select Job Role</option>
+                      <option value="Software Engineer">Software Engineer</option>
+                      <option value="Software Developer">Software Developer</option>
+                      <option value="Senior Software Engineer">Senior Software Engineer</option>
+                      <option value="Full Stack Developer">Full Stack Developer</option>
+                      <option value="Frontend Developer">Frontend Developer</option>
+                      <option value="Backend Developer">Backend Developer</option>
+                      <option value="DevOps Engineer">DevOps Engineer</option>
+                      <option value="Data Scientist">Data Scientist</option>
+                      <option value="Product Manager">Product Manager</option>
+                      <option value="UI/UX Designer">UI/UX Designer</option>
+                    </select>
+                    {errors.jobRole && <p className="mt-1 text-xs text-red-500">{errors.jobRole}</p>}
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1168,24 +1187,9 @@ export default function ExperienceDetailsForm({
 
         {/* Validation Feedback & Action Buttons */}
         <div className="flex flex-col gap-4">
-          {(jobRoleChanged || experienceChanges && Object.keys(experienceChanges).length > 0) && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm font-medium text-yellow-800 mb-2">Please save your changes before proceeding:</p>
-              <ul className="text-xs text-yellow-700 space-y-1 ml-4">
-                {jobRoleChanged && <li>• Job Role (unsaved changes)</li>}
-                {Object.keys(experienceChanges).length > 0 && <li>• Work Experience (unsaved changes)</li>}
-              </ul>
-            </div>
-          )}
 
-          {!jobRole ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm font-medium text-red-800">Missing mandatory field:</p>
-              <ul className="text-xs text-red-700 space-y-1 ml-4 mt-1">
-                <li>• Job Role (required)</li>
-              </ul>
-            </div>
-          ) : null}
+
+
 
           <div className="flex justify-end gap-3">
             <button
@@ -1197,13 +1201,11 @@ export default function ExperienceDetailsForm({
             </button>
             <button
               type="submit"
-              disabled={(jobRoleChanged || (experienceChanges && Object.keys(experienceChanges).length > 0)) || !jobRole}
+              disabled={false}
               style={{
-                background: ((jobRoleChanged || (experienceChanges && Object.keys(experienceChanges).length > 0)) || !jobRole)
-                  ? "#BDBDBD"
-                  : "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+                background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
               }}
-              className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
+              className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer"
             >
               Proceed to next
             </button>
