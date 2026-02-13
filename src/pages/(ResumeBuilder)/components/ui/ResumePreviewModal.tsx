@@ -1,3 +1,9 @@
+// Razorpay type declaration for TypeScript
+declare global {
+  interface Window {
+    Razorpay?: any;
+  }
+}
 import React, { useState, useRef, useEffect } from "react";
 // Get resume amount from Vite env
 const RESUME_AMOUNT = Number(import.meta.env.VITE_RESUME_AMOUNT) || 19;
