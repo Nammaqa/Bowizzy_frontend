@@ -447,10 +447,28 @@ const Template11PDF: React.FC<Template11PDFProps> = ({ data, primaryColor = '#11
                 <Text style={{ fontSize: 11, color: '#000000', fontWeight: 'normal' }}>{personal.languagesKnown && personal.languagesKnown.length > 0 ? personal.languagesKnown.join(', ') : ''}</Text>
               </View> */}
             </View>
+
           )}
-        </View>
-      </Page>
-    </Document>
+        {/* Footer */}
+      </View>
+      <View style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 12,
+        paddingHorizontal: 36,
+        paddingVertical: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontSize: 10,
+        color: '#d1d1d1',
+      }} fixed>
+        <Text style={{ color: 'rgb(216, 211, 211)', fontSize: 10, letterSpacing: 0.5 }}>www.bowizzy.com</Text>
+        <Text style={{ color: 'rgb(216, 211, 211)', fontSize: 10, letterSpacing: 0.5 }}>Powered by Wizzybox</Text>
+      </View>
+    </Page>
+  </Document>
   );
 };
 

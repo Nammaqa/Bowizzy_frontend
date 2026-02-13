@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Lock } from "lucide-react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import ProfileStepper from "./components/ui/ProfileStepper";
 import PersonalDetailsForm from "./components/forms/PersonalDetailsForm";
@@ -815,12 +816,14 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
 
     const DisplayComponent = selectedTemplate.displayComponent || selectedTemplate.component;
     return (
-      <DisplayComponent
-        data={resumeData}
-        supportsPhoto={selectedTemplate.supportsPhoto ?? false}
-      />
+      <div className="relative">
+        <DisplayComponent
+          data={resumeData}
+          supportsPhoto={selectedTemplate.supportsPhoto ?? false}
+        />
+      </div>
     );
-  };
+    };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
@@ -1002,21 +1005,36 @@ const [primaryColor, setPrimaryColor] = useState("#000000");
                   )}
 
                   {/* Preview content with markers */}
-<div
-  className="relative transform scale-75 origin-top -mt-4"
-  style={{ fontFamily: fontFamily }}
->                    <div ref={previewContentRef} className="relative">
+                  {/* Lock icon for template12 to template20 */}
+                  {(() => {
+                    const templateIdStr = selectedTemplate?.id || templateId;
+                    const match = templateIdStr && templateIdStr.match(/^template(\d+)$/);
+                    const num = match ? parseInt(match[1], 10) : null;
+                    if (num && num >= 12 && num <= 20) {
+                      return (
+                        <div className="absolute top-4 left-4 z-20 flex items-center">
+                          <Lock className="w-8 h-8 text-gray-500" />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  <div
+                    className="relative transform scale-75 origin-top -mt-4"
+                    style={{ fontFamily: fontFamily }}
+                  >
+                    <div ref={previewContentRef} className="relative">
                       {selectedTemplate && (
                         <DisplayComponent
-  data={resumeData}
-  supportsPhoto={selectedTemplate.supportsPhoto ?? false}
-  fontFamily={fontFamily}
-  primaryColor={primaryColor}
-  showPageBreaks={paginatePreview && !loading}
-  onPageCountChange={(n: number) => setPreviewPageCount(n)}
-  onPageChange={(i: number) => setPreviewCurrentPage(i)}
-  pageControllerRef={paginatedRef}
-/>
+                          data={resumeData}
+                          supportsPhoto={selectedTemplate.supportsPhoto ?? false}
+                          fontFamily={fontFamily}
+                          primaryColor={primaryColor}
+                          showPageBreaks={paginatePreview && !loading}
+                          onPageCountChange={(n: number) => setPreviewPageCount(n)}
+                          onPageChange={(i: number) => setPreviewCurrentPage(i)}
+                          pageControllerRef={paginatedRef}
+                        />
                       )}
                       {/* <PageBreakMarkers markers={markers} /> */}
                     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Lock } from "lucide-react";
 import { X, Download, Eye, Save } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { getTemplateById } from "@/templates/templateRegistry";
@@ -50,6 +51,10 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
   fontFamily = 'Times New Roman, serif',
 }) => {
   // Generate default resume name based on user info
+  // Fix: Move showPayMsg state to top level to avoid conditional hook call
+  const [showPayMsg, setShowPayMsg] = React.useState(false);
+  const [payLoading, setPayLoading] = React.useState(false);
+  const [resumeUnlocked, setResumeUnlocked] = React.useState(false);
   const generateDefaultResumeName = (): string => {
     // Prefer explicit `username` prop, then try resumeData.personal names
     let namePart = '';
@@ -849,14 +854,143 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
 
                   {/* PDF Viewer */}
                   <div className="flex-1 overflow-auto bg-gray-100 rounded-lg mb-4">
-                    <iframe
-                      src={pdfUrl ? `${pdfUrl}#toolbar=0` : ''}
-                      className="w-full h-full border-none"
-                      title="Resume PDF Preview"
-                    />
+                      {/* Show Lock icon and label above PDF preview for template12-20 */}
+                      {(() => {
+                        const match = templateId && templateId.match(/^template(\d+)$/);
+                        const num = match ? parseInt(match[1], 10) : null;
+                        if (num && num >= 12 && num <= 20) {
+                          return (
+                            <div className="flex flex-col items-center justify-center mb-4">
+                              <Lock className="w-8 h-8 text-gray-500 mb-2" />
+                              <span className="text-sm font-semibold text-gray-700">Resume is locked</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      <iframe
+                        src={pdfUrl ? `${pdfUrl}#toolbar=0` : ''}
+                        className="w-full h-full border-none"
+                        title="Resume PDF Preview"
+                      />
                   </div>
 
                   {/* Footer Buttons */}
+                  {/* Show Lock icon for template12-20 below PDF preview, above Save & Exit */}
+                  {(() => {
+                    const match = templateId && templateId.match(/^template(\d+)$/);
+                    const num = match ? parseInt(match[1], 10) : null;
+                    const isLocked = num && num >= 12 && num <= 20;
+                    if (isLocked) {
+                      return (
+                        <div className="flex flex-col items-center justify-center mb-4">
+                          <button
+                            type="button"
+                            className="group flex items-center justify-center w-14 h-14 rounded-full bg-orange-50 hover:bg-orange-200 active:bg-orange-400 transition-colors border-2 border-orange-200 focus:outline-none relative"
+                            style={{ outline: 'none' }}
+                            onClick={() => setShowPayMsg(true)}
+                            title="Unlock this resume for ₹19"
+                          >
+                            <Lock className="w-8 h-8 text-orange-400 group-hover:text-orange-500 group-active:text-white transition-colors" />
+                          </button>
+                          <span className="text-gray-700 font-medium mt-2">Resume is locked</span>
+                          {showPayMsg && (
+                            <div className="mt-4 p-4 bg-orange-100 border border-orange-400 rounded-lg text-orange-700 text-center font-semibold z-50">
+                              Resume is locked. You need to pay <span className="text-orange-600 font-bold">₹19</span> to unlock.<br/>
+                              <button
+                                className="mt-3 px-6 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                disabled={payLoading}
+                                onClick={async () => {
+                                  setPayLoading(true);
+                                  try {
+                                    // Load Razorpay script if not loaded
+                                    const loadRazorpayScript = () => new Promise((resolve, reject) => {
+                                      if (typeof window !== 'undefined' && window.Razorpay) return resolve(true);
+                                      const script = document.createElement('script');
+                                      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                                      script.onload = () => resolve(true);
+                                      script.onerror = () => reject(new Error('Razorpay SDK failed to load'));
+                                      document.body.appendChild(script);
+                                    });
+                                    await loadRazorpayScript();
+                                    // Create order on backend (assume /payment/create-order endpoint exists)
+                                    const amount = 1; // rupees
+                                    const api = (await import('@/api')).default;
+                                    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                                    const token = userData?.token;
+                                    const createResp = await api.post('/payment/create-order', { amount }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+                                    const orderData = createResp?.data ?? createResp;
+                                    const orderId = orderData?.id || orderData?.order_id || orderData?.orderId || orderData?.razorpay_order_id;
+                                    let orderAmount = orderData?.amount ?? 1900;
+                                    const razorKey = orderData?.key || orderData?.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID || '';
+                                    // Normalize amount to paise
+                                    try {
+                                      const oa = Number(orderAmount);
+                                      if (!Number.isNaN(oa)) {
+                                        if (amount != null && (oa === amount || oa === Math.round(amount))) {
+                                          orderAmount = Math.round(oa * 100);
+                                        } else if (oa > 0 && oa < 1000 && amount != null && Math.abs(oa - amount) < 1) {
+                                          orderAmount = Math.round(amount * 100);
+                                        }
+                                      }
+                                    } catch (e) {}
+                                    const options = {
+                                      key: razorKey,
+                                      amount: orderAmount,
+                                      currency: 'INR',
+                                      name: 'Bowizzy',
+                                      description: 'Resume Unlock Payment',
+                                      order_id: orderId,
+                                      modal: {
+                                        ondismiss: () => {
+                                          setPayLoading(false);
+                                        }
+                                      },
+                                      handler: async function (response) {
+                                        setPayLoading(false);
+                                        setShowPayMsg(false);
+                                        setResumeUnlocked(true);
+                                        alert('Payment successful! Resume unlocked.');
+                                        // TODO: Call backend to unlock resume for user
+                                      },
+                                      prefill: {
+                                        name: userData?.name || userData?.full_name || '',
+                                        email: userData?.email || ''
+                                      },
+                                      theme: {
+                                        color: '#FF8251'
+                                      }
+                                    };
+                                    const rzp = new window.Razorpay(options);
+                                    if (typeof rzp.on === 'function') {
+                                      rzp.on('payment.failed', (resp) => {
+                                        setPayLoading(false);
+                                        alert('Payment failed or was cancelled.');
+                                      });
+                                    }
+                                    rzp.open();
+                                  } catch (err) {
+                                    setPayLoading(false);
+                                    alert('Failed to initiate payment. Please try again.');
+                                  }
+                                }}
+                              >
+                                {payLoading ? 'Initiating Payment...' : 'Pay ₹1'}
+                              </button>
+                              <button
+                                className="ml-4 mt-3 px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors"
+                                onClick={() => { setShowPayMsg(false); setPayLoading(false); }}
+                                disabled={payLoading}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex gap-3">
                       <button
@@ -876,7 +1010,8 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                       </button>
                       <button
                         onClick={handleSaveAndExitClick}
-                        className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        className="px-6 py-2.5 text-sm font-medium border-2 rounded-full flex items-center gap-2 transition-colors bg-white border-orange-400 text-gray-800 hover:bg-orange-50 shadow-sm"
+                        disabled={false}
                       >
                         <Save className="w-4 h-4 text-orange-500" />
                         Save & Exit
@@ -893,9 +1028,25 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({
                         setResumeName(generateDefaultResumeName());
                         setShowNameDialog(true);
                       }}
-                      className="px-6 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600 transition-colors flex items-center gap-2"
+                      className={`px-6 py-2.5 text-sm font-medium rounded-full flex items-center gap-2 transition-colors ${(() => {
+                        const match = templateId && templateId.match(/^template(\d+)$/);
+                        const num = match ? parseInt(match[1], 10) : null;
+                        if (num && num >= 12 && num <= 20 && !resumeUnlocked) {
+                          return 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60';
+                        }
+                        return 'text-white bg-orange-500 hover:bg-orange-600';
+                      })()}`}
+                      disabled={(() => {
+                        const match = templateId && templateId.match(/^template(\d+)$/);
+                        const num = match ? parseInt(match[1], 10) : null;
+                        return num && num >= 12 && num <= 20 && !resumeUnlocked;
+                      })()}
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className={`w-4 h-4 ${(() => {
+                        const match = templateId && templateId.match(/^template(\d+)$/);
+                        const num = match ? parseInt(match[1], 10) : null;
+                        return num && num >= 12 && num <= 20 && !resumeUnlocked ? 'text-gray-400' : 'text-white';
+                      })()}`} />
                       Download PDF
                     </button>
                   </div>
