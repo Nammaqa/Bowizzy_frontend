@@ -277,7 +277,7 @@ export default function EducationDetailsForm({
   useEffect(() => {
     const hasChanged =
       sslcData.institutionName !==
-        (initialSslc.current.institutionName || "") ||
+      (initialSslc.current.institutionName || "") ||
       sslcData.boardType !== (initialSslc.current.boardType || "") ||
       sslcData.resultFormat !== (initialSslc.current.resultFormat || "") ||
       sslcData.yearOfPassing !== (initialSslc.current.yearOfPassing || "") ||
@@ -1067,17 +1067,17 @@ export default function EducationDetailsForm({
         prev.map((edu, i) =>
           i === index
             ? {
-                ...edu,
-                degree: "",
-                institutionName: "",
-                universityBoard: "",
-                fieldOfStudy: "",
-                startYear: "",
-                endYear: "",
-                resultFormat: "",
-                result: "",
-                currentlyPursuing: false,
-              }
+              ...edu,
+              degree: "",
+              institutionName: "",
+              universityBoard: "",
+              fieldOfStudy: "",
+              startYear: "",
+              endYear: "",
+              resultFormat: "",
+              result: "",
+              currentlyPursuing: false,
+            }
             : edu
         )
       );
@@ -1126,70 +1126,70 @@ export default function EducationDetailsForm({
 
   // Final submission handler
   const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // 1️⃣ Validation errors
-  if (Object.values(errors).some((err) => err.length > 0)) {
-    setSubmitError("Please fix validation errors before proceeding.");
-    return;
-  }
-
-  // 2️⃣ Unsaved changes
-if (hasUnsavedChanges) {
-  let message = "Please save your changes before proceeding:\n\n";
-
-  if (sslcChanged) {
-    message += "• SSLC (10th Standard) (unsaved changes)\n";
-  }
-
-  if (puChanged) {
-    message += "• Pre-University (12th Standard) (unsaved changes)\n";
-  }
-
-  // Mandatory Higher Education cards
-  higherEducations.forEach((edu, index) => {
-    if (higherChanges[edu.id]) {
-      message += `• Education ${index + 1} (unsaved changes)\n`;
+    // 1️⃣ Validation errors
+    if (Object.values(errors).some((err) => err.length > 0)) {
+      setSubmitError("Please fix validation errors before proceeding.");
+      return;
     }
-  });
 
-  // Additional Education cards
-  extraEducations.forEach((edu, index) => {
-    if (extraChanges[edu.id]) {
-      message += `• Additional Education ${index + 1} (unsaved changes)\n`;
+    // 2️⃣ Unsaved changes
+    if (hasUnsavedChanges) {
+      let message = "Please save your changes before proceeding:\n\n";
+
+      if (sslcChanged) {
+        message += "• SSLC (10th Standard) (unsaved changes)\n";
+      }
+
+      if (puChanged) {
+        message += "• Pre-University (12th Standard) (unsaved changes)\n";
+      }
+
+      // Mandatory Higher Education cards
+      higherEducations.forEach((edu, index) => {
+        if (higherChanges[edu.id]) {
+          message += `• Education ${index + 1} (unsaved changes)\n`;
+        }
+      });
+
+      // Additional Education cards
+      extraEducations.forEach((edu, index) => {
+        if (extraChanges[edu.id]) {
+          message += `• Additional Education ${index + 1} (unsaved changes)\n`;
+        }
+      });
+
+      setSubmitError(message);
+      return;
     }
-  });
 
-  setSubmitError(message);
-  return;
-}
+    // 3️⃣ Mandatory degree check
+    if (
+      higherEducations &&
+      higherEducations.length > 0 &&
+      !higherEducations[0]?.degree
+    ) {
+      setSubmitError(
+        "First Education Entry (degree) is required before proceeding."
+      );
+      return;
+    }
 
-  // 3️⃣ Mandatory degree check
-  if (
-    higherEducations &&
-    higherEducations.length > 0 &&
-    !higherEducations[0]?.degree
-  ) {
-    setSubmitError(
-      "First Education Entry (degree) is required before proceeding."
-    );
-    return;
-  }
+    setSubmitError("");
 
-  setSubmitError("");
-
-  onNext({
-    sslc: sslcData,
-    pu: puData,
-    higherEducations: higherEducations.filter(
-      (e) => e.degree || e.institutionName || e.education_id
-    ),
-    extraEducations: extraEducations.filter(
-      (e) => e.degree || e.institutionName || e.education_id
-    ),
-    deletedEducationIds: deletedEducationIds.current,
-  });
-};
+    onNext({
+      sslc: sslcData,
+      pu: puData,
+      higherEducations: higherEducations.filter(
+        (e) => e.degree || e.institutionName || e.education_id
+      ),
+      extraEducations: extraEducations.filter(
+        (e) => e.degree || e.institutionName || e.education_id
+      ),
+      deletedEducationIds: deletedEducationIds.current,
+    });
+  };
 
   // Render function for all education cards
   const renderEducationCard = (
@@ -1217,9 +1217,9 @@ if (hasUnsavedChanges) {
       >
         <div className="flex items-center justify-between px-4 sm:px-5 md:px-6 py-3 md:py-4 border-b border-gray-200">
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-            {isExtra ? `Education ${index + 1}` : (
+            {isExtra ? `Degree ${index + 1}` : (
               <>
-                Education<span className="text-red-500">*</span>
+                Degree<span className="text-red-500">*</span>
               </>
             )}
           </h3>
@@ -1242,9 +1242,8 @@ if (hasUnsavedChanges) {
               className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
             >
               <ChevronDown
-                className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${
-                  expanded ? "" : "rotate-180"
-                }`}
+                className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${expanded ? "" : "rotate-180"
+                  }`}
                 strokeWidth={2.5}
               />
             </button>
@@ -1277,11 +1276,10 @@ if (hasUnsavedChanges) {
 
         {feedback && (
           <div
-            className={`p-4 text-sm ${
-              feedback.includes("successfully")
+            className={`p-4 text-sm ${feedback.includes("successfully")
                 ? "bg-green-50 text-green-700"
                 : "bg-red-50 text-red-700"
-            }`}
+              }`}
           >
             {feedback}
           </div>
@@ -1302,14 +1300,18 @@ if (hasUnsavedChanges) {
                     className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-xs sm:text-sm appearance-none bg-white pr-8"
                   >
                     <option value="">Select Degree</option>
-                    <option value="B.Tech">B.Tech</option>
+                    <option value="B.A">B.A</option>
+                    <option value="B.Arch">B.Arch</option>
+                    <option value="BBA">BBA</option>
+                    <option value="BCA">BCA</option>
+                    <option value="B.Com">B.Com</option>
                     <option value="B.E">B.E</option>
                     <option value="B.Sc">B.Sc</option>
-                    <option value="B.A">B.A</option>
-                    <option value="B.Com">B.Com</option>
+                    <option value="B.Tech">B.Tech</option>
                     <option value="M.Tech">M.Tech</option>
                     <option value="M.Sc">M.Sc</option>
                     <option value="MBA">MBA</option>
+                    <option value="BBA">MCA</option>
                     <option value="Diploma">Diploma</option>
                     <option value="PhD">PhD</option>
                   </select>
@@ -1347,11 +1349,10 @@ if (hasUnsavedChanges) {
                       value={education.fieldOfStudy}
                       onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
                       placeholder="Enter Field Of Study"
-                      className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                        errors[`${prefix}-fieldOfStudy`]
+                      className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`${prefix}-fieldOfStudy`]
                           ? "border-red-500 focus:ring-red-400"
                           : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                      }`}
+                        }`}
                     />
                   </div>
                 )}
@@ -1369,11 +1370,10 @@ if (hasUnsavedChanges) {
                     handleChange("institutionName", e.target.value)
                   }
                   placeholder="Enter Institution Name"
-                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                    errors[`${prefix}-institutionName`]
+                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`${prefix}-institutionName`]
                       ? "border-red-500 focus:ring-red-400"
                       : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                  }`}
+                    }`}
                 />
                 {errors[`${prefix}-institutionName`] && (
                   <p className="mt-1 text-xs text-red-500">
@@ -1394,11 +1394,10 @@ if (hasUnsavedChanges) {
                     handleChange("universityBoard", e.target.value)
                   }
                   placeholder="Enter University/ Board Name"
-                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                    errors[`${prefix}-universityBoard`]
+                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`${prefix}-universityBoard`]
                       ? "border-red-500 focus:ring-red-400"
                       : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                  }`}
+                    }`}
                 />
                 {errors[`${prefix}-universityBoard`] && (
                   <p className="mt-1 text-xs text-red-500">
@@ -1440,11 +1439,10 @@ if (hasUnsavedChanges) {
                     onChange={(e) => handleChange("endYear", e.target.value)}
                     max={getCurrentMonth()}
                     disabled={education.currentlyPursuing}
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm disabled:bg-gray-100 ${
-                      errors[`${prefix}-endYear`]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm disabled:bg-gray-100 ${errors[`${prefix}-endYear`]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                 </div>
                 {errors[`${prefix}-endYear`] && (
@@ -1503,11 +1501,10 @@ if (hasUnsavedChanges) {
                   value={education.result}
                   onChange={(e) => handleChange("result", e.target.value)}
                   placeholder="Enter Result"
-                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                    errors[`${prefix}-result`]
+                  className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors[`${prefix}-result`]
                       ? "border-red-500 focus:ring-red-400"
                       : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                  }`}
+                    }`}
                 />
                 {errors[`${prefix}-result`] && (
                   <p className="mt-1 text-xs text-red-500">
@@ -1537,33 +1534,33 @@ if (hasUnsavedChanges) {
       onSubmit={handleSubmit}
       className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6"
     >{submitError && (
-  <div className="fixed inset-0 flex items-center justify-center z-50">
-    <div
-      className="absolute inset-0 backdrop-blur-md bg-white/10"
-      onClick={() => setSubmitError("")}
-    ></div>
-
-    <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
-      <h3 className="text-lg font-semibold text-red-600 mb-2">
-        Error
-      </h3>
-
-      <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
-        {submitError}
-      </p>
-
-      <div className="flex justify-end">
-        <button
-          type="button"
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div
+          className="absolute inset-0 backdrop-blur-md bg-white/10"
           onClick={() => setSubmitError("")}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-        >
-          OK
-        </button>
+        ></div>
+
+        <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[90%] max-w-md z-50">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">
+            Error
+          </h3>
+
+          <p className="text-sm text-gray-700 mb-4 whitespace-pre-line">
+            {submitError}
+          </p>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setSubmitError("")}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            >
+              OK
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-)}
+    )}
       <div className="max-w-6xl mx-auto">
         {/* Step Header */}
         {!hideHeader && (
@@ -1605,9 +1602,8 @@ if (hasUnsavedChanges) {
                 className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <ChevronDown
-                  className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${
-                    sslcExpanded ? "" : "rotate-180"
-                  }`}
+                  className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${sslcExpanded ? "" : "rotate-180"
+                    }`}
                   strokeWidth={2.5}
                 />
               </button>
@@ -1627,11 +1623,10 @@ if (hasUnsavedChanges) {
 
           {sslcFeedback && (
             <div
-              className={`p-4 text-sm ${
-                sslcFeedback.includes("successfully")
+              className={`p-4 text-sm ${sslcFeedback.includes("successfully")
                   ? "bg-green-50 text-green-700"
                   : "bg-red-50 text-red-700"
-              }`}
+                }`}
             >
               {sslcFeedback}
             </div>
@@ -1650,11 +1645,10 @@ if (hasUnsavedChanges) {
                     value={sslcData.institutionName}
                     onChange={handleSslcChange}
                     placeholder="Enter Institute Name"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors["sslc-institutionName"]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors["sslc-institutionName"]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors["sslc-institutionName"] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -1723,11 +1717,10 @@ if (hasUnsavedChanges) {
                     value={sslcData.result}
                     onChange={handleSslcChange}
                     placeholder="Enter Result"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors["sslc-result"]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors["sslc-result"]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors["sslc-result"] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -1765,9 +1758,8 @@ if (hasUnsavedChanges) {
                 className="w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <ChevronDown
-                  className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${
-                    puExpanded ? "" : "rotate-180"
-                  }`}
+                  className={`w-3 h-3 text-gray-600 transition-transform cursor-pointer ${puExpanded ? "" : "rotate-180"
+                    }`}
                   strokeWidth={2.5}
                 />
               </button>
@@ -1787,11 +1779,10 @@ if (hasUnsavedChanges) {
 
           {puFeedback && (
             <div
-              className={`p-4 text-sm ${
-                puFeedback.includes("successfully")
+              className={`p-4 text-sm ${puFeedback.includes("successfully")
                   ? "bg-green-50 text-green-700"
                   : "bg-red-50 text-red-700"
-              }`}
+                }`}
             >
               {puFeedback}
             </div>
@@ -1810,11 +1801,10 @@ if (hasUnsavedChanges) {
                     value={puData.institutionName}
                     onChange={handlePuChange}
                     placeholder="Enter Institute Name"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors["pu-institutionName"]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors["pu-institutionName"]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors["pu-institutionName"] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -1902,11 +1892,10 @@ if (hasUnsavedChanges) {
                     value={puData.result}
                     onChange={handlePuChange}
                     placeholder="Enter Result"
-                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${
-                      errors["pu-result"]
+                    className={`w-full px-3 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-xs sm:text-sm ${errors["pu-result"]
                         ? "border-red-500 focus:ring-red-400"
                         : "border-gray-300 focus:ring-orange-400 focus:border-transparent"
-                    }`}
+                      }`}
                   />
                   {errors["pu-result"] && (
                     <p className="mt-1 text-xs text-red-500">
@@ -1941,9 +1930,9 @@ if (hasUnsavedChanges) {
 
         {/* Validation Feedback & Action Buttons */}
         <div className="flex flex-col gap-4">
-          
 
-          
+
+
 
           <div className="flex justify-end gap-3">
             <button
@@ -1955,10 +1944,10 @@ if (hasUnsavedChanges) {
             </button>
             <button
               type="submit"
-                disabled={false}   
-                style={{
-  background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
-}}           
+              disabled={false}
+              style={{
+                background: "linear-gradient(180deg, #FF9D48 0%, #FF8251 100%)",
+              }}
               className="px-6 sm:px-8 py-2.5 sm:py-3 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"
             >
               Proceed to next

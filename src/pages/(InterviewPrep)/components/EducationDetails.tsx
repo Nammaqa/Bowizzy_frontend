@@ -81,7 +81,7 @@ const EducationDetails = ({
       "PUC/Diploma / (10th+2)*",
       "Higher Education*",
     ];
-    return titles[index] || "Education*";
+    return titles[index] || "Degree*";
   };
 
   return (
